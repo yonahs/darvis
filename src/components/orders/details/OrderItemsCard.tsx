@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { formatCurrency } from "@/lib/utils"
 import type { Database } from "@/integrations/supabase/types"
 
@@ -20,11 +19,11 @@ export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
 
   // Helper function to determine stock status badge
   const getStockStatusBadge = (available: boolean | null) => {
-    if (available === null) return <Badge variant="outline">Unknown</Badge>
+    if (available === null) return <Badge className="rounded" variant="outline">Unknown</Badge>
     return available ? (
-      <Badge variant="success">In Stock</Badge>
+      <Badge className="rounded" variant="success">In Stock</Badge>
     ) : (
-      <Badge variant="destructive">Out of Stock</Badge>
+      <Badge className="rounded" variant="destructive">Out of Stock</Badge>
     )
   }
 
@@ -83,15 +82,14 @@ export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
                 </TableCell>
                 <TableCell>
                   <div className="space-y-2">
-                    <Badge variant={drugDetails.otc ? "secondary" : "default"} className="flex items-center gap-1 w-fit">
-                      <Pill className="h-3 w-3" />
-                      {drugDetails.otc ? "Over The Counter" : "Prescription Required"}
+                    <Badge className="rounded" variant={drugDetails.otc ? "secondary" : "default"}>
+                      {drugDetails.otc ? "OTC" : "Rx"}
                     </Badge>
                     
                     {drugDetails.prescriptionDetails && (
-                      <Badge variant="secondary" className="flex items-center gap-1 w-fit">
+                      <Badge className="rounded flex items-center gap-1 w-fit" variant="secondary">
                         <BellDot className="h-3 w-3" />
-                        Refills: {drugDetails.prescriptionDetails.filled || 0} of {drugDetails.prescriptionDetails.refills || 0} used
+                        {drugDetails.prescriptionDetails.filled || 0}/{drugDetails.prescriptionDetails.refills || 0} Refills
                       </Badge>
                     )}
                   </div>
