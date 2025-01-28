@@ -37,17 +37,12 @@ export const OrderDetailsContent = ({
 }: OrderDetailsContentProps) => {
   const [layouts] = useState({
     lg: [
-      // Three equal columns in first row
       { i: "client", x: 0, y: 0, w: 4, h: 3 },
       { i: "shipping", x: 4, y: 0, w: 4, h: 3 },
       { i: "financial", x: 8, y: 0, w: 4, h: 3 },
-      
-      // Three equal columns in second row
       { i: "orderItems", x: 0, y: 3, w: 4, h: 4 },
       { i: "logistics", x: 4, y: 3, w: 4, h: 4 },
       { i: "serviceNotes", x: 8, y: 3, w: 4, h: 4 },
-      
-      // Comments span full width in last row
       { i: "comments", x: 0, y: 7, w: 12, h: 4 },
     ],
     md: [
@@ -82,7 +77,8 @@ export const OrderDetailsContent = ({
         containerPadding={[0, 0]}
         isDraggable
         isResizable
-        compactType={null}
+        compactType="vertical"
+        verticalCompact={true}
         preventCollision={false}
         useCSSTransforms
       >
