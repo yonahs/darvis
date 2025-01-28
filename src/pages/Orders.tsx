@@ -13,30 +13,55 @@ import { supabase } from "@/integrations/supabase/client"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
+import { useToast } from "@/components/ui/use-toast"
 
 const Orders = () => {
   const [page] = useState(1)
   const pageSize = 10
+  const { toast } = useToast()
 
-  const { data: orders, isLoading } = useQuery({
+  const { data: orders, isLoading, error } = useQuery({
     queryKey: ["orders", page],
     queryFn: async () => {
       console.log("Fetching orders page:", page)
-      const { data, error } = await supabase
-        .from("vw_order_details")
-        .select()
-        .order("orderdate", { ascending: false })
-        .range((page - 1) * pageSize, page * pageSize - 1)
+      try {
+        const { data, error } = await supabase
+          .from("vw_order_details")
+          .select("*")
+          .order("orderdate", { ascending: false })
+          .range((page - 1) * pageSize, page * pageSize - 1)
 
-      if (error) {
-        console.error("Error fetching orders:", error)
-        throw error
+        if (error) {
+          console.error("Supabase error:", error)
+          throw error
+        }
+
+        console.log("Successfully fetched orders:", data)
+        return data
+      } catch (err) {
+        console.error("Failed to fetch orders:", err)
+        toast({
+          title: "Error",
+          description: "Failed to fetch orders. Please try again later.",
+          variant: "destructive",
+        })
+        throw err
       }
-
-      console.log("Fetched orders:", data)
-      return data
     },
   })
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="p-4">
+          <div className="rounded-md bg-destructive/15 p-4">
+            <h2 className="text-lg font-semibold text-destructive">Error Loading Orders</h2>
+            <p className="text-sm text-destructive">Please try again later or contact support if the problem persists.</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   return (
     <DashboardLayout>
