@@ -19,10 +19,13 @@ export const ServiceNotes = ({ orderId }: ServiceNotesProps) => {
       const { error } = await supabase
         .from("ordercomments")
         .insert({
+          id: Date.now(), // Generate a temporary ID
           orderid: orderId,
           comment: note,
           author: "Customer Service",
           commentdate: new Date().toISOString(),
+          deleteable: true,
+          showonreadyshipping: false
         })
 
       if (error) throw error

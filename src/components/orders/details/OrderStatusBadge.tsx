@@ -1,5 +1,7 @@
 import { Badge } from "@/components/ui/badge"
 import { AlertCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
 import type { Database } from "@/integrations/supabase/types"
 
 type Order = Database["public"]["Tables"]["orders"]["Row"]
@@ -11,6 +13,12 @@ interface OrderStatusBadgeProps {
 
 export const OrderStatusBadge = ({ order, onEscalate }: OrderStatusBadgeProps) => {
   if (!order) return null
+
+  const handleEscalate = () => {
+    console.log("Escalating order:", order.orderid)
+    toast.warning("Order has been escalated to customer service")
+    onEscalate()
+  }
 
   const getStatusColor = (status: number) => {
     switch (status) {
@@ -28,13 +36,14 @@ export const OrderStatusBadge = ({ order, onEscalate }: OrderStatusBadgeProps) =
          order.status === 2 ? "Processing" :
          order.status === 3 ? "Shipped" : "Unknown"}
       </Badge>
-      <button
-        onClick={onEscalate}
-        className="p-1 hover:bg-gray-100 rounded-full"
-        title="Escalate Order"
+      <Button
+        onClick={handleEscalate}
+        variant="ghost"
+        size="sm"
+        className="text-red-500 hover:text-red-600 hover:bg-red-50"
       >
-        <AlertCircle className="h-4 w-4 text-red-500" />
-      </button>
+        <AlertCircle className="h-4 w-4" />
+      </Button>
     </div>
   )
 }

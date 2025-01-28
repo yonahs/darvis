@@ -23,7 +23,6 @@ import { formatCurrency } from "@/lib/utils"
 const OrderDetail = () => {
   const { orderId } = useParams()
 
-  // Fetch order details
   const { data: orderData, isLoading: orderLoading } = useQuery({
     queryKey: ["order", orderId],
     queryFn: async () => {
@@ -119,7 +118,8 @@ const OrderDetail = () => {
   }
 
   const handleEscalate = () => {
-    toast.success("Order has been escalated")
+    console.log("Escalating order:", orderId)
+    toast.warning("Order has been escalated to customer service")
   }
 
   if (orderLoading) {
@@ -147,25 +147,18 @@ const OrderDetail = () => {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <div>
-                  <CardTitle className="text-lg">Order #{orderData?.orderid}</CardTitle>
+                  <CardTitle className="text-base">Order #{orderData?.orderid}</CardTitle>
                   <p className="text-sm text-muted-foreground">
                     {orderData?.orderdate && format(new Date(orderData.orderdate), "PPP")}
                   </p>
                 </div>
-                <div className="flex items-center gap-4">
-                  <OrderStatusBadge order={orderData} onEscalate={handleEscalate} />
-                  {orderData?.cancelled ? (
-                    <XCircle className="h-5 w-5 text-red-500" />
-                  ) : (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                  )}
-                </div>
+                <OrderStatusBadge order={orderData} onEscalate={handleEscalate} />
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Client Details Section */}
               <div>
-                <h3 className="text-md font-semibold mb-2">Client Details</h3>
+                <h3 className="text-sm font-semibold mb-2">Client Details</h3>
                 {clientData && (
                   <div className="space-y-1 text-sm">
                     <p>{clientData.firstname} {clientData.lastname}</p>
@@ -181,7 +174,7 @@ const OrderDetail = () => {
               {/* Financial Details Section */}
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-md font-semibold">Financial Details</h3>
+                  <h3 className="text-sm font-semibold">Financial Details</h3>
                   <Button onClick={handleMarkAsPaid} variant="outline" size="sm">
                     <CreditCard className="h-4 w-4 mr-2" />
                     Mark as Paid
@@ -207,7 +200,7 @@ const OrderDetail = () => {
 
               {/* Logistics Timeline */}
               <LogisticsTimeline 
-                status={orderData?.shipstatus}
+                status={{ id: orderData?.shipstatus || 1, shipstatus: orderData?.shipstatus?.toString() || "Pending" }}
                 lastUpdate={orderData?.sentdate}
                 trackingNumber={orderData?.ups}
               />
@@ -222,7 +215,7 @@ const OrderDetail = () => {
           <ShippingDetailsCard order={orderData} onMarkAsShipped={handleMarkAsShipped} />
           <Card>
             <CardHeader>
-              <CardTitle>Customer Service</CardTitle>
+              <CardTitle className="text-base">Customer Service</CardTitle>
             </CardHeader>
             <CardContent>
               <ServiceNotes orderId={parseInt(orderId || "0")} />
