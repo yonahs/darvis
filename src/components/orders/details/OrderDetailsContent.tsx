@@ -37,67 +37,55 @@ export const OrderDetailsContent = ({
 }: OrderDetailsContentProps) => {
   const [layouts] = useState({
     lg: [
-      // First row - Order Items spans 2 columns
-      { i: "orderItems", x: 0, y: 0, w: 8, h: 4 },
-      { i: "logistics", x: 8, y: 0, w: 4, h: 4 },
+      // Three equal columns in first row
+      { i: "client", x: 0, y: 0, w: 4, h: 3 },
+      { i: "shipping", x: 4, y: 0, w: 4, h: 3 },
+      { i: "financial", x: 8, y: 0, w: 4, h: 3 },
       
-      // Second row - 3 equal columns
-      { i: "client", x: 0, y: 4, w: 4, h: 3 },
-      { i: "shipping", x: 4, y: 4, w: 4, h: 3 },
-      { i: "financial", x: 8, y: 4, w: 4, h: 3 },
+      // Three equal columns in second row
+      { i: "orderItems", x: 0, y: 3, w: 4, h: 4 },
+      { i: "logistics", x: 4, y: 3, w: 4, h: 4 },
+      { i: "serviceNotes", x: 8, y: 3, w: 4, h: 4 },
       
-      // Third row - Service Notes and Comments
-      { i: "serviceNotes", x: 0, y: 7, w: 6, h: 4 },
-      { i: "comments", x: 6, y: 7, w: 6, h: 4 },
+      // Comments span full width in last row
+      { i: "comments", x: 0, y: 7, w: 12, h: 4 },
     ],
     md: [
-      { i: "orderItems", x: 0, y: 0, w: 8, h: 4 },
-      { i: "logistics", x: 8, y: 0, w: 4, h: 4 },
-      { i: "client", x: 0, y: 4, w: 4, h: 3 },
-      { i: "shipping", x: 4, y: 4, w: 4, h: 3 },
-      { i: "financial", x: 8, y: 4, w: 4, h: 3 },
-      { i: "serviceNotes", x: 0, y: 7, w: 6, h: 4 },
-      { i: "comments", x: 6, y: 7, w: 6, h: 4 },
+      { i: "client", x: 0, y: 0, w: 4, h: 3 },
+      { i: "shipping", x: 4, y: 0, w: 4, h: 3 },
+      { i: "financial", x: 8, y: 0, w: 4, h: 3 },
+      { i: "orderItems", x: 0, y: 3, w: 4, h: 4 },
+      { i: "logistics", x: 4, y: 3, w: 4, h: 4 },
+      { i: "serviceNotes", x: 8, y: 3, w: 4, h: 4 },
+      { i: "comments", x: 0, y: 7, w: 12, h: 4 },
     ],
     sm: [
-      { i: "orderItems", x: 0, y: 0, w: 6, h: 4 },
-      { i: "logistics", x: 0, y: 4, w: 6, h: 4 },
-      { i: "client", x: 0, y: 8, w: 6, h: 3 },
-      { i: "shipping", x: 0, y: 11, w: 6, h: 3 },
-      { i: "financial", x: 0, y: 14, w: 6, h: 3 },
+      { i: "client", x: 0, y: 0, w: 6, h: 3 },
+      { i: "shipping", x: 0, y: 3, w: 6, h: 3 },
+      { i: "financial", x: 0, y: 6, w: 6, h: 3 },
+      { i: "orderItems", x: 0, y: 9, w: 6, h: 4 },
+      { i: "logistics", x: 0, y: 13, w: 6, h: 4 },
       { i: "serviceNotes", x: 0, y: 17, w: 6, h: 4 },
       { i: "comments", x: 0, y: 21, w: 6, h: 4 },
     ],
   })
 
   return (
-    <div className="p-4">
+    <div className="p-0">
       <ResponsiveGridLayout
         className="layout"
         layouts={layouts}
         breakpoints={{ lg: 1200, md: 996, sm: 768 }}
         cols={{ lg: 12, md: 12, sm: 6 }}
         rowHeight={100}
-        margin={[16, 16]}
-        containerPadding={[16, 16]}
+        margin={[8, 8]}
+        containerPadding={[0, 0]}
         isDraggable
         isResizable
         compactType={null}
         preventCollision={false}
         useCSSTransforms
       >
-        <div key="orderItems" className="bg-white rounded-lg shadow-sm overflow-auto">
-          <OrderItemsCard drugDetails={drugDetails} />
-        </div>
-        
-        <div key="logistics" className="bg-white rounded-lg shadow-sm overflow-auto">
-          <LogisticsTimeline 
-            status={{ id: order?.shipstatus || 1, shipstatus: order?.shipstatus ? String(order.shipstatus) : "Not shipped" }}
-            lastUpdate={order?.sentdate}
-            trackingNumber={order?.ups}
-          />
-        </div>
-        
         <div key="client" className="bg-white rounded-lg shadow-sm overflow-auto">
           <ClientDetailsCard client={client} />
         </div>
@@ -109,7 +97,19 @@ export const OrderDetailsContent = ({
         <div key="financial" className="bg-white rounded-lg shadow-sm overflow-auto">
           <FinancialDetailsCard order={order} onMarkAsPaid={onMarkAsPaid} />
         </div>
+
+        <div key="orderItems" className="bg-white rounded-lg shadow-sm overflow-auto">
+          <OrderItemsCard drugDetails={drugDetails} />
+        </div>
         
+        <div key="logistics" className="bg-white rounded-lg shadow-sm overflow-auto">
+          <LogisticsTimeline 
+            status={{ id: order?.shipstatus || 1, shipstatus: order?.shipstatus ? String(order.shipstatus) : "Not shipped" }}
+            lastUpdate={order?.sentdate}
+            trackingNumber={order?.ups}
+          />
+        </div>
+
         <div key="serviceNotes" className="bg-white rounded-lg shadow-sm overflow-auto">
           <ServiceNotes orderId={order?.orderid || 0} />
         </div>
