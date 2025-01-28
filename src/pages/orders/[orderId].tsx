@@ -15,34 +15,23 @@ import { toast } from "sonner"
 const OrderDetail = () => {
   const { orderId } = useParams()
 
-  const { data: order, isLoading } = useQuery({
+  // Fetch order details
+  const { data: orderData, isLoading: orderLoading } = useQuery({
     queryKey: ["order", orderId],
     queryFn: async () => {
       console.log("Fetching order details for ID:", orderId)
       try {
-        const { data, error } = await supabase
+        const { data: order, error } = await supabase
           .from("orders")
-          .select(`
-            *,
-            clients (
-              firstname, lastname, birthdate, personalid, email, 
-              address, address2, city, state, country, zip
-            ),
-            newdrugdetails (
-              nameil, packsize, strength, saledollar
-            ),
-            ordercomments (
-              comment, author, commentdate
-            )
-          `)
+          .select("*")
           .eq("orderid", parseInt(orderId || "0"))
           .maybeSingle()
 
         if (error) throw error
-        if (!data) throw new Error("Order not found")
-
-        console.log("Order details fetched:", data)
-        return data
+        if (!order) throw new Error("Order not found")
+        
+        console.log("Order fetched:", order)
+        return order
       } catch (err) {
         console.error("Failed to fetch order:", err)
         throw err
@@ -50,7 +39,70 @@ const OrderDetail = () => {
     },
   })
 
-  if (isLoading) {
+  // Fetch client details
+  const { data: clientData } = useQuery({
+    queryKey: ["client", orderData?.clientid],
+    enabled: !!orderData?.clientid,
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from("clients")
+          .select("*")
+          .eq("clientid", orderData.clientid)
+          .maybeSingle()
+
+        if (error) throw error
+        return data
+      } catch (err) {
+        console.error("Failed to fetch client:", err)
+        return null
+      }
+    },
+  })
+
+  // Fetch drug details
+  const { data: drugDetails } = useQuery({
+    queryKey: ["drug", orderData?.drugdetailid],
+    enabled: !!orderData?.drugdetailid,
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from("newdrugdetails")
+          .select("*")
+          .eq("id", orderData.drugdetailid)
+          .maybeSingle()
+
+        if (error) throw error
+        return data
+      } catch (err) {
+        console.error("Failed to fetch drug details:", err)
+        return null
+      }
+    },
+  })
+
+  // Fetch order comments
+  const { data: comments } = useQuery({
+    queryKey: ["comments", orderId],
+    enabled: !!orderId,
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from("ordercomments")
+          .select("*")
+          .eq("orderid", parseInt(orderId || "0"))
+          .order("commentdate", { ascending: false })
+
+        if (error) throw error
+        return data || []
+      } catch (err) {
+        console.error("Failed to fetch comments:", err)
+        return []
+      }
+    },
+  })
+
+  if (orderLoading) {
     return (
       <div className="p-4">
         <div className="grid grid-cols-2 gap-4">
@@ -62,18 +114,6 @@ const OrderDetail = () => {
             </Card>
           ))}
         </div>
-      </div>
-    )
-  }
-
-  if (!order) {
-    return (
-      <div className="p-4">
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-muted-foreground">Order not found</p>
-          </CardContent>
-        </Card>
       </div>
     )
   }
@@ -101,13 +141,13 @@ const OrderDetail = () => {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <div>
-                  <CardTitle>Order #{order.orderid}</CardTitle>
+                  <CardTitle>Order #{orderData?.orderid}</CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    {order.orderdate && format(new Date(order.orderdate), "PPP")}
+                    {orderData?.orderdate && format(new Date(orderData.orderdate), "PPP")}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  {order.cancelled ? (
+                  {orderData?.cancelled ? (
                     <XCircle className="h-5 w-5 text-red-500" />
                   ) : (
                     <CheckCircle className="h-5 w-5 text-green-500" />
@@ -124,11 +164,11 @@ const OrderDetail = () => {
             </CardHeader>
             <CardContent className="space-y-2">
               <p>
-                {order.clients?.firstname} {order.clients?.lastname}
+                {clientData?.firstname} {clientData?.lastname}
               </p>
-              <p>DOB: {order.clients?.birthdate && format(new Date(order.clients.birthdate), "PP")}</p>
-              <p>ID: {order.clients?.personalid}</p>
-              <p>Email: {order.clients?.email}</p>
+              <p>DOB: {clientData?.birthdate && format(new Date(clientData.birthdate), "PP")}</p>
+              <p>ID: {clientData?.personalid}</p>
+              <p>Email: {clientData?.email}</p>
             </CardContent>
           </Card>
 
@@ -154,11 +194,11 @@ const OrderDetail = () => {
                 </TableHeader>
                 <TableBody>
                   <TableRow>
-                    <TableCell>{order.newdrugdetails?.nameil}</TableCell>
+                    <TableCell>{drugDetails?.nameil}</TableCell>
                     <TableCell>
-                      {order.newdrugdetails?.strength} - {order.newdrugdetails?.packsize}
+                      {drugDetails?.strength} - {drugDetails?.packsize}
                     </TableCell>
-                    <TableCell>{formatCurrency(order.newdrugdetails?.saledollar)}</TableCell>
+                    <TableCell>{formatCurrency(drugDetails?.saledollar)}</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
@@ -182,15 +222,15 @@ const OrderDetail = () => {
             <CardContent className="space-y-2">
               <div className="flex justify-between">
                 <span>Subtotal:</span>
-                <span>{formatCurrency(order.usprice)}</span>
+                <span>{formatCurrency(orderData?.usprice)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Shipping:</span>
-                <span>{formatCurrency(order.shippingprice)}</span>
+                <span>{formatCurrency(orderData?.shippingprice)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Total:</span>
-                <span className="font-bold">{formatCurrency(order.totalsale)}</span>
+                <span className="font-bold">{formatCurrency(orderData?.totalsale)}</span>
               </div>
             </CardContent>
           </Card>
@@ -207,16 +247,16 @@ const OrderDetail = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-2">
-              <p>Tracking: {order.ups || "Not available"}</p>
-              <p>Status: {order.shipstatus || "Not shipped"}</p>
+              <p>Tracking: {orderData?.ups || "Not available"}</p>
+              <p>Status: {orderData?.shipstatus || "Not shipped"}</p>
               <p>
-                {order.address}
-                {order.address2 && <br />}
-                {order.address2}
+                {orderData?.address}
+                {orderData?.address2 && <br />}
+                {orderData?.address2}
                 <br />
-                {order.city}, {order.state} {order.zip}
+                {orderData?.city}, {orderData?.state} {orderData?.zip}
                 <br />
-                {order.country}
+                {orderData?.country}
               </p>
             </CardContent>
           </Card>
@@ -227,7 +267,7 @@ const OrderDetail = () => {
               <CardTitle>Comments</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {order.ordercomments?.map((comment: any) => (
+              {comments?.map((comment: any) => (
                 <div key={comment.id} className="p-3 bg-muted rounded-lg">
                   <div className="flex justify-between text-sm">
                     <span className="font-medium">{comment.author}</span>
