@@ -20,6 +20,7 @@ export interface OrderDetails {
   payment: string
   cancelled: boolean
   orderbilled: number
+  shipper: string | null
 }
 
 interface OrdersTableProps {
@@ -60,6 +61,7 @@ export const OrdersTable = ({
             <TableHead>Status</TableHead>
             <TableHead>Total</TableHead>
             <TableHead>Payment</TableHead>
+            <TableHead>Shipper</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -71,6 +73,7 @@ export const OrdersTable = ({
               <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
               <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
               <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -89,11 +92,12 @@ export const OrdersTable = ({
             <TableHead>Status</TableHead>
             <TableHead>Total</TableHead>
             <TableHead>Payment</TableHead>
+            <TableHead>Shipper</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           <TableRow>
-            <TableCell colSpan={6} className="text-center py-8">
+            <TableCell colSpan={7} className="text-center py-8">
               No orders found
             </TableCell>
           </TableRow>
@@ -112,6 +116,7 @@ export const OrdersTable = ({
           <TableHead>Status</TableHead>
           <TableHead>Total</TableHead>
           <TableHead>Payment</TableHead>
+          <TableHead>Shipper</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -135,6 +140,7 @@ export const OrdersTable = ({
             </TableCell>
             <TableCell>{formatCurrency(order.totalsale)}</TableCell>
             <TableCell>{order.payment}</TableCell>
+            <TableCell>{order.shipper || '-'}</TableCell>
           </TableRow>
         ))}
       </TableBody>
