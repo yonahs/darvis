@@ -8,7 +8,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency } from "@/lib/utils"
 
@@ -38,6 +37,18 @@ export const OrdersTable = ({
   pageSize,
   onViewDetails,
 }: OrdersTableProps) => {
+  const getStatusVariant = (order: OrderDetails) => {
+    if (order.cancelled) return "destructive"
+    if (order.orderbilled) return "default" // Shipped/Processed
+    return "secondary" // Pending
+  }
+
+  const getRowHoverClass = (order: OrderDetails) => {
+    if (order.cancelled) return "hover:bg-red-50/50"
+    if (order.orderbilled) return "hover:bg-green-50/50"
+    return "hover:bg-gray-50/50"
+  }
+
   if (isLoading || isFetching) {
     return (
       <Table>
@@ -49,7 +60,6 @@ export const OrdersTable = ({
             <TableHead>Status</TableHead>
             <TableHead>Total</TableHead>
             <TableHead>Payment</TableHead>
-            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -61,7 +71,6 @@ export const OrdersTable = ({
               <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
               <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
               <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -80,12 +89,11 @@ export const OrdersTable = ({
             <TableHead>Status</TableHead>
             <TableHead>Total</TableHead>
             <TableHead>Payment</TableHead>
-            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           <TableRow>
-            <TableCell colSpan={7} className="text-center py-8">
+            <TableCell colSpan={6} className="text-center py-8">
               No orders found
             </TableCell>
           </TableRow>
@@ -104,12 +112,15 @@ export const OrdersTable = ({
           <TableHead>Status</TableHead>
           <TableHead>Total</TableHead>
           <TableHead>Payment</TableHead>
-          <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {orders.map((order) => (
-          <TableRow key={order.orderid}>
+          <TableRow 
+            key={order.orderid}
+            onClick={() => onViewDetails(order.orderid)}
+            className={`cursor-pointer transition-colors ${getRowHoverClass(order)}`}
+          >
             <TableCell className="font-medium">
               #{order.orderid}
             </TableCell>
@@ -118,29 +129,12 @@ export const OrdersTable = ({
             </TableCell>
             <TableCell>{order.clientname}</TableCell>
             <TableCell>
-              <Badge
-                variant={
-                  order.cancelled
-                    ? "destructive"
-                    : order.orderbilled
-                    ? "default"
-                    : "secondary"
-                }
-              >
+              <Badge variant={getStatusVariant(order)}>
                 {order.orderstatus}
               </Badge>
             </TableCell>
             <TableCell>{formatCurrency(order.totalsale)}</TableCell>
             <TableCell>{order.payment}</TableCell>
-            <TableCell>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onViewDetails(order.orderid)}
-              >
-                View Details
-              </Button>
-            </TableCell>
           </TableRow>
         ))}
       </TableBody>
