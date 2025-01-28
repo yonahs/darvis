@@ -32,6 +32,27 @@ const OrderDetail = () => {
     },
   })
 
+  // Fetch client details
+  const { data: clientData } = useQuery({
+    queryKey: ["client", orderData?.clientid],
+    enabled: !!orderData?.clientid,
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from("clients")
+          .select("*")
+          .eq("clientid", orderData.clientid)
+          .maybeSingle()
+
+        if (error) throw error
+        return data
+      } catch (err) {
+        console.error("Failed to fetch client details:", err)
+        return null
+      }
+    },
+  })
+
   // Fetch drug details
   const { data: drugDetails } = useQuery({
     queryKey: ["drug", orderData?.drugdetailid],
@@ -78,6 +99,10 @@ const OrderDetail = () => {
     toast.success("Order marked as shipped")
   }
 
+  const handleMarkAsPaid = () => {
+    toast.success("Order marked as paid")
+  }
+
   const handleEscalate = () => {
     console.log("Escalating order:", orderId)
     toast.warning("Order has been escalated to customer service")
@@ -100,9 +125,11 @@ const OrderDetail = () => {
       <OrderDetailsHeader order={orderData} onEscalate={handleEscalate} />
       <OrderDetailsContent
         order={orderData}
+        client={clientData}
         drugDetails={drugDetails}
         comments={comments}
         onMarkAsShipped={handleMarkAsShipped}
+        onMarkAsPaid={handleMarkAsPaid}
       />
     </div>
   )
