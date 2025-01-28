@@ -72,28 +72,20 @@ export const OrdersSearch = ({
   })
 
   const toggleStatus = (status: string) => {
-    if (!statusFilter) {
-      onStatusFilterChange([status])
-      return
-    }
-    
-    if (statusFilter.includes(status)) {
-      onStatusFilterChange(statusFilter.filter(s => s !== status))
+    const currentFilters = statusFilter || []
+    if (currentFilters.includes(status)) {
+      onStatusFilterChange(currentFilters.filter(s => s !== status))
     } else {
-      onStatusFilterChange([...statusFilter, status])
+      onStatusFilterChange([...currentFilters, status])
     }
   }
 
   const toggleShipper = (shipperId: string) => {
-    if (!shipperFilter) {
-      onShipperFilterChange([shipperId])
-      return
-    }
-
-    if (shipperFilter.includes(shipperId)) {
-      onShipperFilterChange(shipperFilter.filter(s => s !== shipperId))
+    const currentFilters = shipperFilter || []
+    if (currentFilters.includes(shipperId)) {
+      onShipperFilterChange(currentFilters.filter(s => s !== shipperId))
     } else {
-      onShipperFilterChange([...shipperFilter, shipperId])
+      onShipperFilterChange([...currentFilters, shipperId])
     }
   }
 
@@ -123,7 +115,7 @@ export const OrdersSearch = ({
                 aria-expanded={openShipper}
                 className="min-w-[200px] justify-between"
               >
-                {!shipperFilter?.length
+                {(shipperFilter || []).length === 0
                   ? "Filter by shipper"
                   : `${shipperFilter.length} shipper${shipperFilter.length > 1 ? 's' : ''} selected`}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -134,7 +126,7 @@ export const OrdersSearch = ({
                 <CommandInput placeholder="Search shippers..." />
                 <CommandEmpty>No shipper found.</CommandEmpty>
                 <CommandGroup>
-                  {shippers.map((shipper) => (
+                  {(shippers || []).map((shipper) => (
                     <CommandItem
                       key={shipper.shipperid}
                       value={shipper.display_name}
@@ -143,7 +135,7 @@ export const OrdersSearch = ({
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          shipperFilter?.includes(shipper.shipperid.toString()) ? "opacity-100" : "opacity-0"
+                          (shipperFilter || []).includes(shipper.shipperid.toString()) ? "opacity-100" : "opacity-0"
                         )}
                       />
                       {shipper.display_name}
@@ -162,7 +154,7 @@ export const OrdersSearch = ({
                 aria-expanded={openStatus}
                 className="min-w-[200px] justify-between"
               >
-                {!statusFilter?.length
+                {(statusFilter || []).length === 0
                   ? "Filter by status"
                   : `${statusFilter.length} status${statusFilter.length > 1 ? 'es' : ''} selected`}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -182,7 +174,7 @@ export const OrdersSearch = ({
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          statusFilter?.includes(status) ? "opacity-100" : "opacity-0"
+                          (statusFilter || []).includes(status) ? "opacity-100" : "opacity-0"
                         )}
                       />
                       {status}
