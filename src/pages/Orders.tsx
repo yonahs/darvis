@@ -11,12 +11,12 @@ import { useOrders } from "@/hooks/useOrders"
 const Orders = () => {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [statusFilter, setStatusFilter] = useState<string[]>([])
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
     to: undefined,
   })
-  const [shipperFilter, setShipperFilter] = useState<string>("all")
+  const [shipperFilter, setShipperFilter] = useState<string[]>([])
   const navigate = useNavigate()
   const pageSize = 10
 

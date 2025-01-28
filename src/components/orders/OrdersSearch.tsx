@@ -1,27 +1,44 @@
 import React from "react"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { DatePickerWithRange } from "@/components/ui/date-range-picker"
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Check, ChevronsUpDown } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface OrdersSearchProps {
   search: string
   onSearchChange: (value: string) => void
-  statusFilter: string
-  onStatusFilterChange: (value: string) => void
+  statusFilter: string[]
+  onStatusFilterChange: (value: string[]) => void
   dateRange: { from: Date | undefined; to: Date | undefined }
   onDateRangeChange: (range: { from: Date | undefined; to: Date | undefined }) => void
-  shipperFilter: string
-  onShipperFilterChange: (value: string) => void
+  shipperFilter: string[]
+  onShipperFilterChange: (value: string[]) => void
 }
+
+const statuses = [
+  "New",
+  "Processing",
+  "Shipped",
+  "Delivered",
+  "Cancelled"
+]
 
 export const OrdersSearch = ({
   search,
@@ -33,6 +50,9 @@ export const OrdersSearch = ({
   shipperFilter,
   onShipperFilterChange,
 }: OrdersSearchProps) => {
+  const [openStatus, setOpenStatus] = React.useState(false)
+  const [openShipper, setOpenShipper] = React.useState(false)
+
   const { data: shippers } = useQuery({
     queryKey: ["shippers"],
     queryFn: async () => {
@@ -45,6 +65,22 @@ export const OrdersSearch = ({
       return data
     },
   })
+
+  const toggleStatus = (status: string) => {
+    if (statusFilter.includes(status)) {
+      onStatusFilterChange(statusFilter.filter(s => s !== status))
+    } else {
+      onStatusFilterChange([...statusFilter, status])
+    }
+  }
+
+  const toggleShipper = (shipperId: string) => {
+    if (shipperFilter.includes(shipperId)) {
+      onShipperFilterChange(shipperFilter.filter(s => s !== shipperId))
+    } else {
+      onShipperFilterChange([...shipperFilter, shipperId])
+    }
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -63,32 +99,84 @@ export const OrdersSearch = ({
             date={dateRange}
             onDateChange={onDateRangeChange}
           />
-          <Select value={shipperFilter} onValueChange={onShipperFilterChange}>
-            <SelectTrigger className="w-full md:w-48">
-              <SelectValue placeholder="Filter by shipper" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Shippers</SelectItem>
-              {shippers?.map((shipper) => (
-                <SelectItem key={shipper.shipperid} value={shipper.shipperid.toString()}>
-                  {shipper.display_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={onStatusFilterChange}>
-            <SelectTrigger className="w-full md:w-48">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="New">New</SelectItem>
-              <SelectItem value="Processing">Processing</SelectItem>
-              <SelectItem value="Shipped">Shipped</SelectItem>
-              <SelectItem value="Delivered">Delivered</SelectItem>
-              <SelectItem value="Cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
+          
+          <Popover open={openShipper} onOpenChange={setOpenShipper}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={openShipper}
+                className="min-w-[200px] justify-between"
+              >
+                {shipperFilter.length === 0
+                  ? "Filter by shipper"
+                  : `${shipperFilter.length} shipper${shipperFilter.length > 1 ? 's' : ''} selected`}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-0">
+              <Command>
+                <CommandInput placeholder="Search shippers..." />
+                <CommandEmpty>No shipper found.</CommandEmpty>
+                <CommandGroup>
+                  {shippers?.map((shipper) => (
+                    <CommandItem
+                      key={shipper.shipperid}
+                      value={shipper.display_name}
+                      onSelect={() => toggleShipper(shipper.shipperid.toString())}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          shipperFilter.includes(shipper.shipperid.toString()) ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {shipper.display_name}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </Command>
+            </PopoverContent>
+          </Popover>
+
+          <Popover open={openStatus} onOpenChange={setOpenStatus}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={openStatus}
+                className="min-w-[200px] justify-between"
+              >
+                {statusFilter.length === 0
+                  ? "Filter by status"
+                  : `${statusFilter.length} status${statusFilter.length > 1 ? 'es' : ''} selected`}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-0">
+              <Command>
+                <CommandInput placeholder="Search status..." />
+                <CommandEmpty>No status found.</CommandEmpty>
+                <CommandGroup>
+                  {statuses.map((status) => (
+                    <CommandItem
+                      key={status}
+                      value={status}
+                      onSelect={() => toggleStatus(status)}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          statusFilter.includes(status) ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {status}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
     </div>

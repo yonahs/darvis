@@ -6,9 +6,9 @@ interface UseOrdersProps {
   page: number
   pageSize: number
   search: string
-  statusFilter: string
+  statusFilter: string[]
   dateRange: { from: Date | undefined; to: Date | undefined }
-  shipperFilter: string
+  shipperFilter: string[]
 }
 
 export const useOrders = ({ 
@@ -33,8 +33,8 @@ export const useOrders = ({
           query = query.or(`clientname.ilike.%${search}%,orderid.eq.${!isNaN(parseInt(search)) ? search : 0}`)
         }
 
-        if (statusFilter && statusFilter !== "all") {
-          query = query.eq("orderstatus", statusFilter)
+        if (statusFilter.length > 0) {
+          query = query.in("orderstatus", statusFilter)
         }
 
         if (dateRange.from) {
@@ -45,8 +45,8 @@ export const useOrders = ({
           query = query.lte("orderdate", dateRange.to.toISOString())
         }
 
-        if (shipperFilter && shipperFilter !== "all") {
-          query = query.eq("shipper", shipperFilter)
+        if (shipperFilter.length > 0) {
+          query = query.in("shipper", shipperFilter)
         }
 
         const from = (page - 1) * pageSize
