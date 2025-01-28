@@ -14,14 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
+import { Button } from "@/components/ui/button"
 import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
@@ -37,7 +30,7 @@ const Orders = () => {
       try {
         const { data, error } = await supabase
           .from("vw_order_details")
-          .select("*")
+          .select("orderid, orderdate, clientname, orderstatus, totalsale, payment, shipper")
           .order("orderdate", { ascending: false })
           .range((page - 1) * pageSize, page * pageSize - 1)
 
@@ -166,25 +159,25 @@ const Orders = () => {
           </Table>
         </div>
 
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious 
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page === 1 || isLoading}
-              />
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink>{page}</PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => handlePageChange(page + 1)}
-                disabled={!orders?.length || orders.length < pageSize || isLoading}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+        <div className="flex justify-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page === 1 || isLoading}
+          >
+            Previous
+          </Button>
+          <Button variant="outline" disabled>
+            Page {page}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => handlePageChange(page + 1)}
+            disabled={!orders?.length || orders.length < pageSize || isLoading}
+          >
+            Next
+          </Button>
+        </div>
       </div>
     </DashboardLayout>
   )
