@@ -2,6 +2,14 @@ import { useParams } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
+import { 
+  Card,
+  CardContent,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardDescription 
+} from "@/components/ui/card"
 import { OrderSummaryCard } from "@/components/orders/details/OrderSummaryCard"
 import { ClientDetailsCard } from "@/components/orders/details/ClientDetailsCard"
 import { OrderItemsCard } from "@/components/orders/details/OrderItemsCard"
