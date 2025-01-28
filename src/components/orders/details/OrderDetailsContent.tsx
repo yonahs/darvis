@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Responsive, WidthProvider } from "react-grid-layout"
 import "react-grid-layout/css/styles.css"
 import "react-resizable/css/styles.css"
@@ -25,6 +25,30 @@ interface OrderDetailsContentProps {
   onMarkAsPaid: () => void
 }
 
+const defaultLayouts = {
+  lg: [
+    { i: "client", x: 0, y: 0, w: 4, h: 2 },
+    { i: "shipping", x: 4, y: 0, w: 4, h: 3 },
+    { i: "financial", x: 8, y: 0, w: 4, h: 2 },
+    { i: "orderItems", x: 0, y: 2, w: 4, h: 3 },
+    { i: "comments", x: 4, y: 3, w: 8, h: 3 },
+  ],
+  md: [
+    { i: "client", x: 0, y: 0, w: 4, h: 2 },
+    { i: "shipping", x: 4, y: 0, w: 4, h: 3 },
+    { i: "financial", x: 8, y: 0, w: 4, h: 2 },
+    { i: "orderItems", x: 0, y: 2, w: 4, h: 3 },
+    { i: "comments", x: 4, y: 3, w: 8, h: 3 },
+  ],
+  sm: [
+    { i: "client", x: 0, y: 0, w: 6, h: 2 },
+    { i: "shipping", x: 0, y: 2, w: 6, h: 3 },
+    { i: "financial", x: 0, y: 5, w: 6, h: 2 },
+    { i: "orderItems", x: 0, y: 7, w: 6, h: 3 },
+    { i: "comments", x: 0, y: 10, w: 6, h: 3 },
+  ],
+}
+
 export const OrderDetailsContent = ({
   order,
   client,
@@ -33,29 +57,18 @@ export const OrderDetailsContent = ({
   onMarkAsShipped,
   onMarkAsPaid,
 }: OrderDetailsContentProps) => {
-  const [layouts] = useState({
-    lg: [
-      { i: "client", x: 0, y: 0, w: 4, h: 2 },
-      { i: "shipping", x: 4, y: 0, w: 4, h: 3 },
-      { i: "financial", x: 8, y: 0, w: 4, h: 2 },
-      { i: "orderItems", x: 0, y: 2, w: 4, h: 3 },
-      { i: "comments", x: 4, y: 3, w: 8, h: 3 },
-    ],
-    md: [
-      { i: "client", x: 0, y: 0, w: 4, h: 2 },
-      { i: "shipping", x: 4, y: 0, w: 4, h: 3 },
-      { i: "financial", x: 8, y: 0, w: 4, h: 2 },
-      { i: "orderItems", x: 0, y: 2, w: 4, h: 3 },
-      { i: "comments", x: 4, y: 3, w: 8, h: 3 },
-    ],
-    sm: [
-      { i: "client", x: 0, y: 0, w: 6, h: 2 },
-      { i: "shipping", x: 0, y: 2, w: 6, h: 3 },
-      { i: "financial", x: 0, y: 5, w: 6, h: 2 },
-      { i: "orderItems", x: 0, y: 7, w: 6, h: 3 },
-      { i: "comments", x: 0, y: 10, w: 6, h: 3 },
-    ],
+  // Load saved layouts from localStorage or use defaults
+  const [layouts, setLayouts] = useState(() => {
+    const savedLayouts = localStorage.getItem("orderDetailsLayouts")
+    return savedLayouts ? JSON.parse(savedLayouts) : defaultLayouts
   })
+
+  // Save layouts to localStorage whenever they change
+  const handleLayoutChange = (_, allLayouts: any) => {
+    console.log("Layout changed:", allLayouts)
+    setLayouts(allLayouts)
+    localStorage.setItem("orderDetailsLayouts", JSON.stringify(allLayouts))
+  }
 
   return (
     <div className="p-0">
@@ -73,6 +86,7 @@ export const OrderDetailsContent = ({
         verticalCompact={true}
         preventCollision={false}
         useCSSTransforms
+        onLayoutChange={handleLayoutChange}
       >
         <div key="client" className="bg-white rounded-lg shadow-sm overflow-auto">
           <ClientDetailsCard client={client} />
