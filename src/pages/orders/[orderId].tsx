@@ -12,6 +12,9 @@ import {
 import { OrderItemsCard } from "@/components/orders/details/OrderItemsCard"
 import { ShippingDetailsCard } from "@/components/orders/details/ShippingDetailsCard"
 import { CommentsCard } from "@/components/orders/details/CommentsCard"
+import { OrderStatusBadge } from "@/components/orders/details/OrderStatusBadge"
+import { ServiceNotes } from "@/components/orders/details/ServiceNotes"
+import { LogisticsTimeline } from "@/components/orders/details/LogisticsTimeline"
 import { format } from "date-fns"
 import { CheckCircle, XCircle, CreditCard } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -115,6 +118,10 @@ const OrderDetail = () => {
     toast.success("Order marked as shipped")
   }
 
+  const handleEscalate = () => {
+    toast.success("Order has been escalated")
+  }
+
   if (orderLoading) {
     return (
       <div className="p-4">
@@ -145,7 +152,8 @@ const OrderDetail = () => {
                     {orderData?.orderdate && format(new Date(orderData.orderdate), "PPP")}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4">
+                  <OrderStatusBadge order={orderData} onEscalate={handleEscalate} />
                   {orderData?.cancelled ? (
                     <XCircle className="h-5 w-5 text-red-500" />
                   ) : (
@@ -194,6 +202,15 @@ const OrderDetail = () => {
                   </div>
                 </div>
               </div>
+
+              <Separator />
+
+              {/* Logistics Timeline */}
+              <LogisticsTimeline 
+                status={orderData?.shipstatus}
+                lastUpdate={orderData?.sentdate}
+                trackingNumber={orderData?.ups}
+              />
             </CardContent>
           </Card>
           
@@ -203,6 +220,14 @@ const OrderDetail = () => {
         {/* Right Column */}
         <div className="space-y-4">
           <ShippingDetailsCard order={orderData} onMarkAsShipped={handleMarkAsShipped} />
+          <Card>
+            <CardHeader>
+              <CardTitle>Customer Service</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ServiceNotes orderId={parseInt(orderId || "0")} />
+            </CardContent>
+          </Card>
           <CommentsCard comments={comments} />
         </div>
       </div>
