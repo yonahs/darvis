@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { formatCurrency } from "@/lib/utils"
 import type { Database } from "@/integrations/supabase/types"
 
@@ -86,7 +87,16 @@ export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
                     {drugDetails.nameil}
-                    <BellDot className="h-4 w-4 text-amber-500" title="Refills available" />
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <BellDot className="h-4 w-4 text-amber-500" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Refills available</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </TableCell>
                 <TableCell>
