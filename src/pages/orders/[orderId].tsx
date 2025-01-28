@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const OrderDetail = () => {
   const { orderId } = useParams();
@@ -18,25 +19,64 @@ const OrderDetail = () => {
     queryKey: ['order', orderId],
     queryFn: async () => {
       console.log('Fetching order details for:', orderId);
-      const { data: order, error } = await supabase
+      
+      // First get the order details
+      const { data: order, error: orderError } = await supabase
         .from('orders')
-        .select(`
-          *,
-          clients (*),
-          newdrugdetails (*),
-          newdrugs (*),
-          ordercomments (*)
-        `)
+        .select('*')
         .eq('orderid', orderId)
         .single();
 
-      if (error) {
-        console.error('Error fetching order:', error);
-        throw error;
+      if (orderError) {
+        console.error('Error fetching order:', orderError);
+        throw orderError;
       }
 
-      console.log('Fetched order details:', order);
-      return order;
+      // Get client details
+      const { data: client, error: clientError } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('clientid', order.clientid)
+        .single();
+
+      // Get drug details
+      const { data: drug, error: drugError } = await supabase
+        .from('newdrugs')
+        .select('*')
+        .eq('drugid', order.drugid)
+        .single();
+
+      // Get drug details specifics
+      const { data: drugDetails, error: drugDetailsError } = await supabase
+        .from('newdrugdetails')
+        .select('*')
+        .eq('id', order.drugdetailid)
+        .single();
+
+      // Get comments
+      const { data: comments, error: commentsError } = await supabase
+        .from('ordercomments')
+        .select('*')
+        .eq('orderid', order.orderid)
+        .order('commentdate', { ascending: false });
+
+      // Get status text
+      const { data: statusData, error: statusError } = await supabase
+        .from('statuslist')
+        .select('status')
+        .eq('id', order.status)
+        .single();
+
+      console.log('Fetched data:', { order, client, drug, drugDetails, comments, statusData });
+
+      return {
+        ...order,
+        client,
+        drug,
+        drugDetails,
+        comments: comments || [],
+        statusText: statusData?.status || 'Unknown Status'
+      };
     },
   });
 
@@ -65,11 +105,15 @@ const OrderDetail = () => {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-2xl font-bold">Order #{orderId}</h1>
-          <Badge>{orderDetails.orderstatus}</Badge>
+          <Badge>{orderDetails.statusText}</Badge>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">Cancel Order</Button>
-          <Button>Save Changes</Button>
+          <Button variant="outline" onClick={() => {
+            toast.error("This feature is not implemented yet");
+          }}>Cancel Order</Button>
+          <Button onClick={() => {
+            toast.error("This feature is not implemented yet");
+          }}>Save Changes</Button>
         </div>
       </div>
 
@@ -80,16 +124,13 @@ const OrderDetail = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2">
               <div className="text-sm text-muted-foreground">Order Date</div>
-              <div>{format(new Date(orderDetails.orderdate), 'PPP')}</div>
+              <div>{orderDetails.orderdate ? format(new Date(orderDetails.orderdate), 'PPP') : 'N/A'}</div>
               
               <div className="text-sm text-muted-foreground">Status</div>
-              <div>{orderDetails.orderstatus}</div>
-              
-              <div className="text-sm text-muted-foreground">Payment Method</div>
-              <div>{orderDetails.payment || 'Not specified'}</div>
+              <div>{orderDetails.statusText}</div>
               
               <div className="text-sm text-muted-foreground">Total Sale</div>
-              <div>${orderDetails.totalsale}</div>
+              <div>${orderDetails.totalsale || 0}</div>
             </div>
           </div>
         </Card>
@@ -100,7 +141,12 @@ const OrderDetail = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2">
               <div className="text-sm text-muted-foreground">Client Name</div>
-              <div>{orderDetails.clients?.firstname} {orderDetails.clients?.lastname}</div>
+              <div>
+                {orderDetails.client ? 
+                  `${orderDetails.client.firstname || ''} ${orderDetails.client.lastname || ''}` : 
+                  'N/A'
+                }
+              </div>
               
               <div className="text-sm text-muted-foreground">Address</div>
               <div>
@@ -111,7 +157,7 @@ const OrderDetail = () => {
               </div>
               
               <div className="text-sm text-muted-foreground">Phone</div>
-              <div>{orderDetails.clients?.dayphone || 'Not provided'}</div>
+              <div>{orderDetails.client?.dayphone || 'Not provided'}</div>
             </div>
           </div>
         </Card>
@@ -128,16 +174,22 @@ const OrderDetail = () => {
             </div>
             <Separator />
             <div className="space-y-2">
-              {orderDetails.newdrugdetails && (
-                <div className="grid grid-cols-4 gap-4 text-sm">
-                  <div>{orderDetails.newdrugs?.nameus}</div>
-                  <div>{orderDetails.newdrugdetails.strength}</div>
-                  <div>{orderDetails.amount}</div>
-                  <div>${orderDetails.usprice}</div>
-                </div>
-              )}
+              <div className="grid grid-cols-4 gap-4 text-sm">
+                <div>{orderDetails.drug?.nameus || 'N/A'}</div>
+                <div>{orderDetails.drugDetails?.strength || 'N/A'}</div>
+                <div>{orderDetails.amount || 0}</div>
+                <div>${orderDetails.usprice || 0}</div>
+              </div>
             </div>
-            <Button variant="outline" className="w-full">Add Item</Button>
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => {
+                toast.error("This feature is not implemented yet");
+              }}
+            >
+              Add Item
+            </Button>
           </div>
         </Card>
 
@@ -145,12 +197,12 @@ const OrderDetail = () => {
         <Card className="p-6">
           <h2 className="text-lg font-semibold mb-4">Comments & Activity</h2>
           <ScrollArea className="h-[200px] rounded-md border p-4">
-            {orderDetails.ordercomments?.map((comment: any) => (
+            {orderDetails.comments?.map((comment: any) => (
               <div key={comment.id} className="mb-4">
                 <div className="flex justify-between text-sm">
                   <span className="font-medium">{comment.author}</span>
                   <span className="text-muted-foreground">
-                    {format(new Date(comment.commentdate), 'PPp')}
+                    {comment.commentdate ? format(new Date(comment.commentdate), 'PPp') : 'N/A'}
                   </span>
                 </div>
                 <p className="mt-1 text-sm">{comment.comment}</p>
