@@ -6,7 +6,7 @@ import { LogisticsTimeline } from "./LogisticsTimeline"
 import { FinancialDetailsCard } from "./FinancialDetailsCard"
 import { ClientDetailsCard } from "./ClientDetailsCard"
 import { Button } from "@/components/ui/button"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, ShieldCheck } from "lucide-react"
 import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
 import type { Database } from "@/integrations/supabase/types"
@@ -61,6 +61,30 @@ export const OrderDetailsContent = ({
     }
   }
 
+  const handleDeescalate = async () => {
+    if (!order?.orderid) return
+
+    try {
+      const { error: commentError } = await supabase
+        .from("ordercomments")
+        .insert({
+          id: Date.now(),
+          orderid: order.orderid,
+          comment: "Order has been de-escalated",
+          author: "Customer Service",
+          commentdate: new Date().toISOString(),
+          deleteable: true,
+          showonreadyshipping: false
+        })
+
+      if (commentError) throw commentError
+      toast.success("Order has been de-escalated")
+    } catch (error) {
+      console.error("Error de-escalating order:", error)
+      toast.error("Failed to de-escalate order")
+    }
+  }
+
   return (
     <div className="grid grid-cols-3 gap-4">
       {/* Left Column - Order Information */}
@@ -93,6 +117,15 @@ export const OrderDetailsContent = ({
             >
               <AlertCircle className="h-4 w-4 mr-2" />
               Escalate Order
+            </Button>
+            <Button
+              onClick={handleDeescalate}
+              variant="outline"
+              size="sm"
+              className="w-full text-green-600 hover:text-green-700 hover:bg-green-50"
+            >
+              <ShieldCheck className="h-4 w-4 mr-2" />
+              De-escalate Order
             </Button>
           </div>
         </div>
