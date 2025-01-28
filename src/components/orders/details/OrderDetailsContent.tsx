@@ -57,18 +57,25 @@ export const OrderDetailsContent = ({
   onMarkAsShipped,
   onMarkAsPaid,
 }: OrderDetailsContentProps) => {
-  // Load saved layouts from localStorage or use defaults
   const [layouts, setLayouts] = useState(() => {
     const savedLayouts = localStorage.getItem("orderDetailsLayouts")
     return savedLayouts ? JSON.parse(savedLayouts) : defaultLayouts
   })
 
   // Save layouts to localStorage whenever they change
-  const handleLayoutChange = (_, allLayouts: any) => {
+  const handleLayoutChange = (_: any, allLayouts: any) => {
     console.log("Layout changed:", allLayouts)
     setLayouts(allLayouts)
     localStorage.setItem("orderDetailsLayouts", JSON.stringify(allLayouts))
   }
+
+  // Load saved layouts when component mounts
+  useEffect(() => {
+    const savedLayouts = localStorage.getItem("orderDetailsLayouts")
+    if (savedLayouts) {
+      setLayouts(JSON.parse(savedLayouts))
+    }
+  }, [])
 
   return (
     <div className="p-0">
