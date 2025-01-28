@@ -41,17 +41,17 @@ export const ShippingAndLogisticsCard = ({ order, onMarkAsShipped }: ShippingAnd
             <Truck className="h-4 w-4" />
             Shipping & Logistics
           </CardTitle>
-          <div className="flex gap-2">
-            <Button onClick={handleChangeAddress} variant="outline" size="sm">
-              <MapPin className="h-4 w-4 mr-2" />
+          <div className="flex items-center gap-1.5">
+            <Button onClick={handleChangeAddress} variant="outline" size="xs">
+              <MapPin className="h-3.5 w-3.5 mr-1.5" />
               Change Address
             </Button>
-            <Button onClick={handleChangeShipper} variant="outline" size="sm">
-              <Truck className="h-4 w-4 mr-2" />
+            <Button onClick={handleChangeShipper} variant="outline" size="xs">
+              <Truck className="h-3.5 w-3.5 mr-1.5" />
               Change Shipper
             </Button>
-            <Button onClick={onMarkAsShipped} variant="outline" size="sm">
-              <Truck className="h-4 w-4 mr-2" />
+            <Button onClick={onMarkAsShipped} variant="outline" size="xs">
+              <Truck className="h-3.5 w-3.5 mr-1.5" />
               Mark as Shipped
             </Button>
           </div>
