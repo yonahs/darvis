@@ -13,12 +13,12 @@ export const OrderSummaryCard = ({ order }: OrderSummaryProps) => {
   if (!order) return null
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-[64px]">
+      <CardHeader className="p-4">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>Order #{order.orderid}</CardTitle>
-            <p className="text-sm text-muted-foreground">
+            <CardTitle className="text-lg">Order #{order.orderid}</CardTitle>
+            <p className="text-xs text-muted-foreground">
               {order.orderdate && format(new Date(order.orderdate), "PPP")}
             </p>
           </div>
