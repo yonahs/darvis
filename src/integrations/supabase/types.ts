@@ -13,6 +13,7 @@ export type Database = {
         Row: {
           autoid: number
           bsd_refnumber: string | null
+          courier_id: number | null
           last_modified: string | null
           masterboxes: number | null
           packages: number | null
@@ -23,6 +24,7 @@ export type Database = {
         Insert: {
           autoid: number
           bsd_refnumber?: string | null
+          courier_id?: number | null
           last_modified?: string | null
           masterboxes?: number | null
           packages?: number | null
@@ -33,6 +35,7 @@ export type Database = {
         Update: {
           autoid?: number
           bsd_refnumber?: string | null
+          courier_id?: number | null
           last_modified?: string | null
           masterboxes?: number | null
           packages?: number | null
@@ -40,7 +43,22 @@ export type Database = {
           totalsalevalue?: number | null
           weight?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bsd_packages_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["courierid"]
+          },
+          {
+            foreignKeyName: "fk_bsd_packages_courier"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["courierid"]
+          },
+        ]
       }
       clientrx: {
         Row: {

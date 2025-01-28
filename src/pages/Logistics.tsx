@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { formatDistanceToNow } from "date-fns"
 
 const Logistics = () => {
@@ -21,13 +21,7 @@ const Logistics = () => {
       try {
         const { data, error } = await supabase
           .from("bsd_packages")
-          .select(`
-            *,
-            couriers (
-              name,
-              displayname
-            )
-          `)
+          .select("*")
           .order("shipdate", { ascending: false })
           .range((page - 1) * pageSize, page * pageSize - 1)
 
@@ -115,7 +109,6 @@ const Logistics = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Reference</TableHead>
-                <TableHead>Courier</TableHead>
                 <TableHead>Weight</TableHead>
                 <TableHead>Value</TableHead>
                 <TableHead>Ship Date</TableHead>
@@ -127,7 +120,6 @@ const Logistics = () => {
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
                     <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
@@ -136,7 +128,7 @@ const Logistics = () => {
                 ))
               ) : packages?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="text-center text-muted-foreground">
                     No shipments found
                   </TableCell>
                 </TableRow>
@@ -144,11 +136,6 @@ const Logistics = () => {
                 packages?.map((pkg) => (
                   <TableRow key={pkg.autoid}>
                     <TableCell>{pkg.bsd_refnumber}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {pkg.couriers?.displayname || pkg.couriers?.name || "Unknown"}
-                      </Badge>
-                    </TableCell>
                     <TableCell>{pkg.weight ? `${pkg.weight.toFixed(2)} kg` : "-"}</TableCell>
                     <TableCell>${pkg.totalsalevalue?.toFixed(2) || "0.00"}</TableCell>
                     <TableCell>
