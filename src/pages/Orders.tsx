@@ -13,10 +13,18 @@ import { supabase } from "@/integrations/supabase/client"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
-import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, Search } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { useNavigate } from "react-router-dom"
 
 // Define the type for order details from the view
 type OrderDetails = {
@@ -33,19 +41,35 @@ type OrderDetails = {
 
 const Orders = () => {
   const [page, setPage] = useState(1)
+  const [search, setSearch] = useState("")
+  const [statusFilter, setStatusFilter] = useState<string>("")
+  const navigate = useNavigate()
   const pageSize = 10
-  const { toast } = useToast()
 
   const { data: orders, isLoading, error, isFetching } = useQuery<OrderDetails[]>({
-    queryKey: ["orders", page],
+    queryKey: ["orders", page, search, statusFilter],
     queryFn: async () => {
-      console.log("Fetching orders page:", page)
+      console.log("Fetching orders with params:", { page, search, statusFilter })
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from("vw_order_details")
           .select("orderid, orderdate, clientname, orderstatus, totalsale, payment, shipper, cancelled, orderbilled")
           .order("orderdate", { ascending: false })
-          .range((page - 1) * pageSize, page * pageSize - 1)
+
+        // Apply search filter if present
+        if (search) {
+          query = query.or(`clientname.ilike.%${search}%,orderid.eq.${!isNaN(parseInt(search)) ? search : 0}`)
+        }
+
+        // Apply status filter if present
+        if (statusFilter) {
+          query = query.eq("orderstatus", statusFilter)
+        }
+
+        // Apply pagination
+        query = query.range((page - 1) * pageSize, page * pageSize - 1)
+
+        const { data, error } = await query
 
         if (error) {
           console.error("Supabase error:", error)
@@ -65,6 +89,10 @@ const Orders = () => {
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage)
+  }
+
+  const handleViewDetails = (orderId: number) => {
+    navigate(`/orders/${orderId}`)
   }
 
   if (error) {
@@ -93,6 +121,31 @@ const Orders = () => {
           </p>
         </div>
 
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="relative w-full md:w-72">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by order # or client name"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full md:w-48">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Statuses</SelectItem>
+              <SelectItem value="New">New</SelectItem>
+              <SelectItem value="Processing">Processing</SelectItem>
+              <SelectItem value="Shipped">Shipped</SelectItem>
+              <SelectItem value="Delivered">Delivered</SelectItem>
+              <SelectItem value="Cancelled">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -103,7 +156,7 @@ const Orders = () => {
                 <TableHead>Status</TableHead>
                 <TableHead>Total</TableHead>
                 <TableHead>Payment</TableHead>
-                <TableHead>Shipping</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -164,7 +217,15 @@ const Orders = () => {
                     </TableCell>
                     <TableCell>{formatCurrency(order.totalsale)}</TableCell>
                     <TableCell>{order.payment}</TableCell>
-                    <TableCell>{order.shipper}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewDetails(order.orderid)}
+                      >
+                        View Details
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
