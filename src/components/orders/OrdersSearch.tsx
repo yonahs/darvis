@@ -51,11 +51,6 @@ export const OrdersSearch = ({
 }: OrdersSearchProps) => {
   const [openStatus, setOpenStatus] = React.useState(false)
   const [openShipper, setOpenShipper] = React.useState(false)
-  const [mounted, setMounted] = React.useState(false)
-
-  React.useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const { data: shippers = [] } = useQuery({
     queryKey: ["shippers"],
@@ -77,25 +72,25 @@ export const OrdersSearch = ({
   })
 
   const toggleStatus = (status: string) => {
-    const currentFilters = statusFilter || []
-    if (currentFilters.includes(status)) {
-      onStatusFilterChange(currentFilters.filter(s => s !== status))
+    const currentFilters = [...(statusFilter || [])]
+    const index = currentFilters.indexOf(status)
+    if (index > -1) {
+      currentFilters.splice(index, 1)
     } else {
-      onStatusFilterChange([...currentFilters, status])
+      currentFilters.push(status)
     }
+    onStatusFilterChange(currentFilters)
   }
 
   const toggleShipper = (shipperId: string) => {
-    const currentFilters = shipperFilter || []
-    if (currentFilters.includes(shipperId)) {
-      onShipperFilterChange(currentFilters.filter(s => s !== shipperId))
+    const currentFilters = [...(shipperFilter || [])]
+    const index = currentFilters.indexOf(shipperId)
+    if (index > -1) {
+      currentFilters.splice(index, 1)
     } else {
-      onShipperFilterChange([...currentFilters, shipperId])
+      currentFilters.push(shipperId)
     }
-  }
-
-  if (!mounted) {
-    return null
+    onShipperFilterChange(currentFilters)
   }
 
   return (
@@ -124,7 +119,7 @@ export const OrdersSearch = ({
                 aria-expanded={openShipper}
                 className="min-w-[200px] justify-between"
               >
-                {(shipperFilter || []).length === 0
+                {shipperFilter.length === 0
                   ? "Filter by shipper"
                   : `${shipperFilter.length} shipper${shipperFilter.length > 1 ? 's' : ''} selected`}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -135,7 +130,7 @@ export const OrdersSearch = ({
                 <CommandInput placeholder="Search shippers..." />
                 <CommandEmpty>No shipper found.</CommandEmpty>
                 <CommandGroup>
-                  {(shippers || []).map((shipper) => (
+                  {shippers.map((shipper) => (
                     <CommandItem
                       key={shipper.shipperid}
                       value={shipper.display_name}
@@ -144,7 +139,7 @@ export const OrdersSearch = ({
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          (shipperFilter || []).includes(shipper.shipperid.toString()) ? "opacity-100" : "opacity-0"
+                          shipperFilter.includes(shipper.shipperid.toString()) ? "opacity-100" : "opacity-0"
                         )}
                       />
                       {shipper.display_name}
@@ -163,7 +158,7 @@ export const OrdersSearch = ({
                 aria-expanded={openStatus}
                 className="min-w-[200px] justify-between"
               >
-                {(statusFilter || []).length === 0
+                {statusFilter.length === 0
                   ? "Filter by status"
                   : `${statusFilter.length} status${statusFilter.length > 1 ? 'es' : ''} selected`}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -183,7 +178,7 @@ export const OrdersSearch = ({
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          (statusFilter || []).includes(status) ? "opacity-100" : "opacity-0"
+                          statusFilter.includes(status) ? "opacity-100" : "opacity-0"
                         )}
                       />
                       {status}
