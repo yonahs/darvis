@@ -13,7 +13,7 @@ export const OrderSummaryCard = ({ order }: OrderSummaryProps) => {
   if (!order) return null
 
   return (
-    <Card className="h-[64px]">
+    <Card className="h-[64px] border-0">
       <CardHeader className="p-4">
         <div className="flex justify-between items-center">
           <div>
