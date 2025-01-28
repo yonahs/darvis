@@ -53,15 +53,19 @@ export const OrdersTable = ({
   const getShipperColor = (shipper: string | null) => {
     if (!shipper) return "bg-gray-100 text-gray-600"
     
-    // Map shippers to specific colors using a consistent hash
+    // Map shippers to specific colors with higher contrast
     const shipperColors: { [key: string]: string } = {
-      "FedEx": "bg-[#F2FCE2] text-green-700",
-      "UPS": "bg-[#FEF7CD] text-yellow-700",
-      "DHL": "bg-[#FEC6A1] text-orange-700",
-      "USPS": "bg-[#E5DEFF] text-purple-700",
-      "EMS": "bg-[#D3E4FD] text-blue-700",
-      "TNT": "bg-[#FFDEE2] text-pink-700",
-      "Aramex": "bg-[#FDE1D3] text-red-700",
+      "Pharma Shaul": "bg-[#E5DEFF] text-[#5B21B6]", // Deep purple theme
+      "Leading Up": "bg-[#FEF3C7] text-[#92400E]",   // Warm amber theme
+      "SUBS 2": "bg-[#DBEAFE] text-[#1E40AF]",      // Royal blue theme
+      "Aktive": "bg-[#FCE7F3] text-[#9D174D]",      // Pink theme
+      "FedEx": "bg-[#ECFCCB] text-[#3F6212]",       // Lime green theme
+      "UPS": "bg-[#FEF9C3] text-[#854D0E]",         // Yellow theme
+      "DHL": "bg-[#FFEDD5] text-[#9A3412]",         // Orange theme
+      "USPS": "bg-[#F3E8FF] text-[#6B21A8]",        // Purple theme
+      "EMS": "bg-[#DBEAFE] text-[#1E40AF]",         // Blue theme
+      "TNT": "bg-[#FEE2E2] text-[#991B1B]",         // Red theme
+      "Aramex": "bg-[#FFE4E6] text-[#9F1239]",      // Rose theme
     }
 
     return shipperColors[shipper] || "bg-[#F1F0FB] text-gray-700"
