@@ -16,7 +16,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -43,30 +42,41 @@ const statuses = [
 export const OrdersSearch = ({
   search,
   onSearchChange,
-  statusFilter,
+  statusFilter = [],
   onStatusFilterChange,
   dateRange,
   onDateRangeChange,
-  shipperFilter,
+  shipperFilter = [],
   onShipperFilterChange,
 }: OrdersSearchProps) => {
   const [openStatus, setOpenStatus] = React.useState(false)
   const [openShipper, setOpenShipper] = React.useState(false)
 
-  const { data: shippers } = useQuery({
+  const { data: shippers = [] } = useQuery({
     queryKey: ["shippers"],
     queryFn: async () => {
+      console.log("Fetching shippers...")
       const { data, error } = await supabase
         .from("shippers")
         .select("shipperid, display_name")
         .order("display_name")
 
-      if (error) throw error
-      return data
+      if (error) {
+        console.error("Error fetching shippers:", error)
+        throw error
+      }
+      
+      console.log("Fetched shippers:", data)
+      return data || []
     },
   })
 
   const toggleStatus = (status: string) => {
+    if (!statusFilter) {
+      onStatusFilterChange([status])
+      return
+    }
+    
     if (statusFilter.includes(status)) {
       onStatusFilterChange(statusFilter.filter(s => s !== status))
     } else {
@@ -75,6 +85,11 @@ export const OrdersSearch = ({
   }
 
   const toggleShipper = (shipperId: string) => {
+    if (!shipperFilter) {
+      onShipperFilterChange([shipperId])
+      return
+    }
+
     if (shipperFilter.includes(shipperId)) {
       onShipperFilterChange(shipperFilter.filter(s => s !== shipperId))
     } else {
@@ -108,7 +123,7 @@ export const OrdersSearch = ({
                 aria-expanded={openShipper}
                 className="min-w-[200px] justify-between"
               >
-                {shipperFilter.length === 0
+                {!shipperFilter?.length
                   ? "Filter by shipper"
                   : `${shipperFilter.length} shipper${shipperFilter.length > 1 ? 's' : ''} selected`}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -119,7 +134,7 @@ export const OrdersSearch = ({
                 <CommandInput placeholder="Search shippers..." />
                 <CommandEmpty>No shipper found.</CommandEmpty>
                 <CommandGroup>
-                  {shippers?.map((shipper) => (
+                  {shippers.map((shipper) => (
                     <CommandItem
                       key={shipper.shipperid}
                       value={shipper.display_name}
@@ -128,7 +143,7 @@ export const OrdersSearch = ({
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          shipperFilter.includes(shipper.shipperid.toString()) ? "opacity-100" : "opacity-0"
+                          shipperFilter?.includes(shipper.shipperid.toString()) ? "opacity-100" : "opacity-0"
                         )}
                       />
                       {shipper.display_name}
@@ -147,7 +162,7 @@ export const OrdersSearch = ({
                 aria-expanded={openStatus}
                 className="min-w-[200px] justify-between"
               >
-                {statusFilter.length === 0
+                {!statusFilter?.length
                   ? "Filter by status"
                   : `${statusFilter.length} status${statusFilter.length > 1 ? 'es' : ''} selected`}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -167,7 +182,7 @@ export const OrdersSearch = ({
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          statusFilter.includes(status) ? "opacity-100" : "opacity-0"
+                          statusFilter?.includes(status) ? "opacity-100" : "opacity-0"
                         )}
                       />
                       {status}
