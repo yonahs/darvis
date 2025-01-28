@@ -1,4 +1,4 @@
-import { Truck, Package, Check, ArrowRight } from "lucide-react"
+import { Truck, Package, Check, ArrowRight, MapPin } from "lucide-react"
 import { format } from "date-fns"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,16 @@ interface ShippingAndLogisticsProps {
 
 export const ShippingAndLogisticsCard = ({ order, onMarkAsShipped }: ShippingAndLogisticsProps) => {
   if (!order) return null
+
+  const handleChangeAddress = () => {
+    console.log("Change shipping address clicked for order:", order.orderid)
+    // TODO: Implement change address functionality
+  }
+
+  const handleChangeShipper = () => {
+    console.log("Change shipper clicked for order:", order.orderid)
+    // TODO: Implement change shipper functionality
+  }
 
   const steps = [
     { id: 1, label: "Order Placed", icon: Package },
@@ -31,10 +41,20 @@ export const ShippingAndLogisticsCard = ({ order, onMarkAsShipped }: ShippingAnd
             <Truck className="h-4 w-4" />
             Shipping & Logistics
           </CardTitle>
-          <Button onClick={onMarkAsShipped} variant="outline" size="sm">
-            <Truck className="h-4 w-4 mr-2" />
-            Mark as Shipped
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleChangeAddress} variant="outline" size="sm">
+              <MapPin className="h-4 w-4 mr-2" />
+              Change Address
+            </Button>
+            <Button onClick={handleChangeShipper} variant="outline" size="sm">
+              <Truck className="h-4 w-4 mr-2" />
+              Change Shipper
+            </Button>
+            <Button onClick={onMarkAsShipped} variant="outline" size="sm">
+              <Truck className="h-4 w-4 mr-2" />
+              Mark as Shipped
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
