@@ -17,8 +17,8 @@ export const OrderSummaryCard = ({ order }: OrderSummaryProps) => {
       <CardHeader className="p-4">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle className="text-lg">Order #{order.orderid}</CardTitle>
-            <p className="text-xs text-muted-foreground">
+            <CardTitle className="text-base font-medium text-primary">Order #{order.orderid}</CardTitle>
+            <p className="text-xs text-muted-foreground/80">
               {order.orderdate && format(new Date(order.orderdate), "PPP")}
             </p>
           </div>

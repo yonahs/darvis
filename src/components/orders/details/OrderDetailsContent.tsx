@@ -65,7 +65,7 @@ export const OrderDetailsContent = ({
         onLayoutChange={handleLayoutChange}
         isDraggable
         isResizable
-        margin={[16, 16]}
+        margin={[8, 8]}
       >
         <div key="orderItems" className="shadow rounded-lg overflow-auto">
           <OrderItemsCard drugDetails={drugDetails} />

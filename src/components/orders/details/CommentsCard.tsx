@@ -12,9 +12,9 @@ export const CommentsCard = ({ comments }: CommentsCardProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Comments</CardTitle>
+        <CardTitle className="text-sm font-medium text-primary/80">Comments</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-2">
         {comments?.map((comment) => (
           <div key={comment.id} className="p-3 bg-muted rounded-lg">
             <div className="flex justify-between text-sm">

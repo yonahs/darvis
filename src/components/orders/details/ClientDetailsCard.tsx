@@ -14,9 +14,9 @@ export const ClientDetailsCard = ({ client }: ClientDetailsProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Client Details</CardTitle>
+        <CardTitle className="text-sm font-medium text-primary/80">Client Details</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="space-y-1 text-sm">
         <p>
           {client.firstname} {client.lastname}
         </p>

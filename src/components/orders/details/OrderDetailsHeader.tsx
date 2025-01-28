@@ -112,7 +112,7 @@ export const OrderDetailsHeader = ({ order, onEscalate }: OrderDetailsHeaderProp
             </div>
             
             <div className="flex-grow">
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1">
                 <Button
                   onClick={handleEscalate}
                   variant="outline"

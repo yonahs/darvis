@@ -37,8 +37,8 @@ export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle>Order Items</CardTitle>
-          <Button variant="outline" size="sm">
+          <CardTitle className="text-sm font-medium text-primary/80">Order Items</CardTitle>
+          <Button variant="outline" size="xs">
             <Plus className="h-4 w-4 mr-2" />
             Add Item
           </Button>
