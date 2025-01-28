@@ -13,14 +13,24 @@ import { supabase } from "@/integrations/supabase/client"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
+import { AlertCircle } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const Orders = () => {
-  const [page] = useState(1)
+  const [page, setPage] = useState(1)
   const pageSize = 10
   const { toast } = useToast()
 
-  const { data: orders, isLoading, error } = useQuery({
+  const { data: orders, isLoading, error, isFetching } = useQuery({
     queryKey: ["orders", page],
     queryFn: async () => {
       console.log("Fetching orders page:", page)
@@ -40,24 +50,28 @@ const Orders = () => {
         return data
       } catch (err) {
         console.error("Failed to fetch orders:", err)
-        toast({
-          title: "Error",
-          description: "Failed to fetch orders. Please try again later.",
-          variant: "destructive",
-        })
         throw err
       }
     },
+    retry: 1,
+    staleTime: 30000, // Cache data for 30 seconds
   })
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
+  }
 
   if (error) {
     return (
       <DashboardLayout>
         <div className="p-4">
-          <div className="rounded-md bg-destructive/15 p-4">
-            <h2 className="text-lg font-semibold text-destructive">Error Loading Orders</h2>
-            <p className="text-sm text-destructive">Please try again later or contact support if the problem persists.</p>
-          </div>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              Failed to load orders. Please try refreshing the page or contact support if the problem persists.
+            </AlertDescription>
+          </Alert>
         </div>
       </DashboardLayout>
     )
@@ -87,7 +101,7 @@ const Orders = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? (
+              {(isLoading || isFetching) ? (
                 Array.from({ length: pageSize }).map((_, i) => (
                   <TableRow key={i}>
                     <TableCell>
@@ -113,6 +127,12 @@ const Orders = () => {
                     </TableCell>
                   </TableRow>
                 ))
+              ) : orders?.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8">
+                    No orders found
+                  </TableCell>
+                </TableRow>
               ) : (
                 orders?.map((order) => (
                   <TableRow key={order.orderid}>
@@ -145,6 +165,26 @@ const Orders = () => {
             </TableBody>
           </Table>
         </div>
+
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious 
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1 || isLoading}
+              />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLink>{page}</PaginationLink>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => handlePageChange(page + 1)}
+                disabled={!orders?.length || orders.length < pageSize || isLoading}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </DashboardLayout>
   )
