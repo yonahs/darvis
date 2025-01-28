@@ -6,7 +6,17 @@ import { LogisticsTimeline } from "./LogisticsTimeline"
 import { FinancialDetailsCard } from "./FinancialDetailsCard"
 import { ClientDetailsCard } from "./ClientDetailsCard"
 import { Button } from "@/components/ui/button"
-import { AlertCircle, ShieldCheck } from "lucide-react"
+import { 
+  AlertCircle, 
+  ShieldCheck, 
+  ArrowUp, 
+  Percent, 
+  Plus,
+  Truck,
+  Signature,
+  Calendar,
+  Combine
+} from "lucide-react"
 import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
 import type { Database } from "@/integrations/supabase/types"
@@ -85,6 +95,34 @@ export const OrderDetailsContent = ({
     }
   }
 
+  const handleRushOrder = () => {
+    toast.info("Order marked as rush order")
+  }
+
+  const handleDiscount = () => {
+    toast.info("Add discount functionality coming soon")
+  }
+
+  const handleExtraCharge = () => {
+    toast.info("Add extra charge functionality coming soon")
+  }
+
+  const handleChangeShipper = () => {
+    toast.info("Change shipper functionality coming soon")
+  }
+
+  const handleSignatureRequired = () => {
+    toast.info("Signature requirement updated")
+  }
+
+  const handleDelayShipDate = () => {
+    toast.info("Delay ship date functionality coming soon")
+  }
+
+  const handleCombineOrder = () => {
+    toast.info("Combine order functionality coming soon")
+  }
+
   return (
     <div className="grid grid-cols-3 gap-4">
       {/* Left Column - Order Information */}
@@ -126,6 +164,69 @@ export const OrderDetailsContent = ({
             >
               <ShieldCheck className="h-4 w-4 mr-2" />
               De-escalate Order
+            </Button>
+            <Button
+              onClick={handleRushOrder}
+              variant="outline"
+              size="sm"
+              className="w-full"
+            >
+              <ArrowUp className="h-4 w-4 mr-2" />
+              Rush Order
+            </Button>
+            <Button
+              onClick={handleDiscount}
+              variant="outline"
+              size="sm"
+              className="w-full"
+            >
+              <Percent className="h-4 w-4 mr-2" />
+              Add Discount
+            </Button>
+            <Button
+              onClick={handleExtraCharge}
+              variant="outline"
+              size="sm"
+              className="w-full"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Extra Charge
+            </Button>
+            <Button
+              onClick={handleChangeShipper}
+              variant="outline"
+              size="sm"
+              className="w-full"
+            >
+              <Truck className="h-4 w-4 mr-2" />
+              Change Shipper
+            </Button>
+            <Button
+              onClick={handleSignatureRequired}
+              variant="outline"
+              size="sm"
+              className="w-full"
+            >
+              <Signature className="h-4 w-4 mr-2" />
+              Signature Required
+            </Button>
+            <Button
+              onClick={handleDelayShipDate}
+              variant="outline"
+              size="sm"
+              className="w-full"
+            >
+              <Calendar className="h-4 w-4 mr-2" />
+              Delay Ship Date
+            </Button>
+            <Button
+              onClick={handleCombineOrder}
+              variant="outline"
+              size="sm"
+              className="w-full"
+            >
+              <Combine className="h-4 w-4 mr-2" />
+              Combine Order
             </Button>
           </div>
         </div>
