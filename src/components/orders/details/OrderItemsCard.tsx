@@ -1,4 +1,4 @@
-import { Plus, Upload, Eye, BellDot, Pill } from "lucide-react"
+import { Plus, Upload, Eye, Pill } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -65,6 +65,7 @@ export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
             <TableRow>
               <TableHead>Drug</TableHead>
               <TableHead>Prescription</TableHead>
+              <TableHead>Refills</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Price</TableHead>
             </TableRow>
@@ -81,18 +82,18 @@ export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="space-y-2">
-                    <Badge className="rounded" variant={drugDetails.otc ? "secondary" : "default"}>
-                      {drugDetails.otc ? "OTC" : "Rx"}
-                    </Badge>
-                    
-                    {drugDetails.prescriptionDetails && (
-                      <Badge className="rounded flex items-center gap-1 w-fit" variant="secondary">
-                        <BellDot className="h-3 w-3" />
-                        {drugDetails.prescriptionDetails.filled || 0}/{drugDetails.prescriptionDetails.refills || 0} Refills
-                      </Badge>
-                    )}
-                  </div>
+                  <Badge className="rounded" variant={drugDetails.otc ? "secondary" : "default"}>
+                    {drugDetails.otc ? "OTC" : "Rx"}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  {drugDetails.prescriptionDetails ? (
+                    <span className="text-sm">
+                      {drugDetails.prescriptionDetails.filled || 0}/{drugDetails.prescriptionDetails.refills || 0}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">-</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   {getStockStatusBadge(drugDetails.available)}
