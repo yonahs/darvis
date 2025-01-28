@@ -37,31 +37,31 @@ export const OrderDetailsContent = ({
 }: OrderDetailsContentProps) => {
   const [layouts] = useState({
     lg: [
-      { i: "client", x: 0, y: 0, w: 4, h: 3 },
-      { i: "shipping", x: 4, y: 0, w: 4, h: 3 },
-      { i: "financial", x: 8, y: 0, w: 4, h: 3 },
-      { i: "orderItems", x: 0, y: 3, w: 4, h: 4 },
-      { i: "logistics", x: 4, y: 3, w: 4, h: 4 },
-      { i: "serviceNotes", x: 8, y: 3, w: 4, h: 4 },
-      { i: "comments", x: 0, y: 7, w: 12, h: 4 },
+      { i: "client", x: 0, y: 0, w: 4, h: 2 },
+      { i: "shipping", x: 4, y: 0, w: 4, h: 2 },
+      { i: "financial", x: 8, y: 0, w: 4, h: 2 },
+      { i: "orderItems", x: 0, y: 2, w: 4, h: 3 },
+      { i: "logistics", x: 4, y: 2, w: 4, h: 3 },
+      { i: "serviceNotes", x: 8, y: 2, w: 4, h: 3 },
+      { i: "comments", x: 0, y: 5, w: 12, h: 3 },
     ],
     md: [
-      { i: "client", x: 0, y: 0, w: 4, h: 3 },
-      { i: "shipping", x: 4, y: 0, w: 4, h: 3 },
-      { i: "financial", x: 8, y: 0, w: 4, h: 3 },
-      { i: "orderItems", x: 0, y: 3, w: 4, h: 4 },
-      { i: "logistics", x: 4, y: 3, w: 4, h: 4 },
-      { i: "serviceNotes", x: 8, y: 3, w: 4, h: 4 },
-      { i: "comments", x: 0, y: 7, w: 12, h: 4 },
+      { i: "client", x: 0, y: 0, w: 4, h: 2 },
+      { i: "shipping", x: 4, y: 0, w: 4, h: 2 },
+      { i: "financial", x: 8, y: 0, w: 4, h: 2 },
+      { i: "orderItems", x: 0, y: 2, w: 4, h: 3 },
+      { i: "logistics", x: 4, y: 2, w: 4, h: 3 },
+      { i: "serviceNotes", x: 8, y: 2, w: 4, h: 3 },
+      { i: "comments", x: 0, y: 5, w: 12, h: 3 },
     ],
     sm: [
-      { i: "client", x: 0, y: 0, w: 6, h: 3 },
-      { i: "shipping", x: 0, y: 3, w: 6, h: 3 },
-      { i: "financial", x: 0, y: 6, w: 6, h: 3 },
-      { i: "orderItems", x: 0, y: 9, w: 6, h: 4 },
-      { i: "logistics", x: 0, y: 13, w: 6, h: 4 },
-      { i: "serviceNotes", x: 0, y: 17, w: 6, h: 4 },
-      { i: "comments", x: 0, y: 21, w: 6, h: 4 },
+      { i: "client", x: 0, y: 0, w: 6, h: 2 },
+      { i: "shipping", x: 0, y: 2, w: 6, h: 2 },
+      { i: "financial", x: 0, y: 4, w: 6, h: 2 },
+      { i: "orderItems", x: 0, y: 6, w: 6, h: 3 },
+      { i: "logistics", x: 0, y: 9, w: 6, h: 3 },
+      { i: "serviceNotes", x: 0, y: 12, w: 6, h: 3 },
+      { i: "comments", x: 0, y: 15, w: 6, h: 3 },
     ],
   })
 
@@ -72,7 +72,7 @@ export const OrderDetailsContent = ({
         layouts={layouts}
         breakpoints={{ lg: 1200, md: 996, sm: 768 }}
         cols={{ lg: 12, md: 12, sm: 6 }}
-        rowHeight={100}
+        rowHeight={80}
         margin={[8, 8]}
         containerPadding={[0, 0]}
         isDraggable
