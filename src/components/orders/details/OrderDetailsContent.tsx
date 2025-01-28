@@ -37,22 +37,22 @@ export const OrderDetailsContent = ({
 }: OrderDetailsContentProps) => {
   const [layouts] = useState({
     lg: [
-      // Top section - 2 columns
+      // First row - Order Items spans 2 columns
       { i: "orderItems", x: 0, y: 0, w: 8, h: 4 },
-      { i: "logistics", x: 8, y: 0, w: 4, h: 3 },
+      { i: "logistics", x: 8, y: 0, w: 4, h: 4 },
       
-      // Middle section - 3 columns
+      // Second row - 3 equal columns
       { i: "client", x: 0, y: 4, w: 4, h: 3 },
       { i: "shipping", x: 4, y: 4, w: 4, h: 3 },
       { i: "financial", x: 8, y: 4, w: 4, h: 3 },
       
-      // Bottom section - 2 columns
-      { i: "serviceNotes", x: 0, y: 7, w: 4, h: 4 },
-      { i: "comments", x: 4, y: 7, w: 8, h: 4 },
+      // Third row - Service Notes and Comments
+      { i: "serviceNotes", x: 0, y: 7, w: 6, h: 4 },
+      { i: "comments", x: 6, y: 7, w: 6, h: 4 },
     ],
     md: [
       { i: "orderItems", x: 0, y: 0, w: 8, h: 4 },
-      { i: "logistics", x: 8, y: 0, w: 4, h: 3 },
+      { i: "logistics", x: 8, y: 0, w: 4, h: 4 },
       { i: "client", x: 0, y: 4, w: 4, h: 3 },
       { i: "shipping", x: 4, y: 4, w: 4, h: 3 },
       { i: "financial", x: 8, y: 4, w: 4, h: 3 },
@@ -61,12 +61,12 @@ export const OrderDetailsContent = ({
     ],
     sm: [
       { i: "orderItems", x: 0, y: 0, w: 6, h: 4 },
-      { i: "logistics", x: 0, y: 4, w: 6, h: 3 },
-      { i: "client", x: 0, y: 7, w: 6, h: 3 },
-      { i: "shipping", x: 0, y: 10, w: 6, h: 3 },
-      { i: "financial", x: 0, y: 13, w: 6, h: 3 },
-      { i: "serviceNotes", x: 0, y: 16, w: 6, h: 4 },
-      { i: "comments", x: 0, y: 20, w: 6, h: 4 },
+      { i: "logistics", x: 0, y: 4, w: 6, h: 4 },
+      { i: "client", x: 0, y: 8, w: 6, h: 3 },
+      { i: "shipping", x: 0, y: 11, w: 6, h: 3 },
+      { i: "financial", x: 0, y: 14, w: 6, h: 3 },
+      { i: "serviceNotes", x: 0, y: 17, w: 6, h: 4 },
+      { i: "comments", x: 0, y: 21, w: 6, h: 4 },
     ],
   })
 
@@ -77,20 +77,20 @@ export const OrderDetailsContent = ({
         layouts={layouts}
         breakpoints={{ lg: 1200, md: 996, sm: 768 }}
         cols={{ lg: 12, md: 12, sm: 6 }}
-        rowHeight={60}
+        rowHeight={100}
         margin={[16, 16]}
         containerPadding={[16, 16]}
         isDraggable
         isResizable
-        compactType="vertical"
+        compactType={null}
         preventCollision={false}
         useCSSTransforms
       >
-        <div key="orderItems" className="bg-white rounded-lg shadow-sm overflow-auto p-4">
+        <div key="orderItems" className="bg-white rounded-lg shadow-sm overflow-auto">
           <OrderItemsCard drugDetails={drugDetails} />
         </div>
         
-        <div key="logistics" className="bg-white rounded-lg shadow-sm overflow-auto p-4">
+        <div key="logistics" className="bg-white rounded-lg shadow-sm overflow-auto">
           <LogisticsTimeline 
             status={{ id: order?.shipstatus || 1, shipstatus: order?.shipstatus ? String(order.shipstatus) : "Not shipped" }}
             lastUpdate={order?.sentdate}
@@ -98,23 +98,23 @@ export const OrderDetailsContent = ({
           />
         </div>
         
-        <div key="client" className="bg-white rounded-lg shadow-sm overflow-auto p-4">
+        <div key="client" className="bg-white rounded-lg shadow-sm overflow-auto">
           <ClientDetailsCard client={client} />
         </div>
         
-        <div key="shipping" className="bg-white rounded-lg shadow-sm overflow-auto p-4">
+        <div key="shipping" className="bg-white rounded-lg shadow-sm overflow-auto">
           <ShippingDetailsCard order={order} onMarkAsShipped={onMarkAsShipped} />
         </div>
         
-        <div key="financial" className="bg-white rounded-lg shadow-sm overflow-auto p-4">
+        <div key="financial" className="bg-white rounded-lg shadow-sm overflow-auto">
           <FinancialDetailsCard order={order} onMarkAsPaid={onMarkAsPaid} />
         </div>
         
-        <div key="serviceNotes" className="bg-white rounded-lg shadow-sm overflow-auto p-4">
+        <div key="serviceNotes" className="bg-white rounded-lg shadow-sm overflow-auto">
           <ServiceNotes orderId={order?.orderid || 0} />
         </div>
         
-        <div key="comments" className="bg-white rounded-lg shadow-sm overflow-auto p-4">
+        <div key="comments" className="bg-white rounded-lg shadow-sm overflow-auto">
           <CommentsCard comments={comments} />
         </div>
       </ResponsiveGridLayout>
