@@ -1,4 +1,5 @@
 import { format } from "date-fns"
+import { User } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { Database } from "@/integrations/supabase/types"
 
@@ -14,7 +15,10 @@ export const ClientDetailsCard = ({ client }: ClientDetailsProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-medium text-primary/80">Client Details</CardTitle>
+        <CardTitle className="text-sm font-medium text-primary/80 flex items-center gap-2">
+          <User className="h-4 w-4" />
+          Client Details
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-1 text-sm">
         <p>

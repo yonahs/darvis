@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react"
+import { Plus, Upload, Eye, BellDot, Pill } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -27,21 +27,47 @@ export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
   const getPrescriptionBadge = (otc: boolean | null) => {
     if (otc === null) return <Badge variant="outline">Status Unknown</Badge>
     return !otc ? (
-      <Badge variant="default">Prescription Required</Badge>
+      <Badge variant="default" className="flex items-center gap-1">
+        <Pill className="h-3 w-3" />
+        Prescription Required
+      </Badge>
     ) : (
       <Badge variant="secondary">Over The Counter</Badge>
     )
+  }
+
+  const handleUploadRx = () => {
+    // Implement prescription upload logic
+    console.log("Upload Rx clicked")
+  }
+
+  const handleViewRx = () => {
+    // Implement prescription view logic
+    console.log("View Rx clicked")
   }
 
   return (
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="text-sm font-medium text-primary/80">Order Items</CardTitle>
-          <Button variant="outline" size="xs">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Item
-          </Button>
+          <CardTitle className="text-sm font-medium text-primary/80 flex items-center gap-2">
+            <Pill className="h-4 w-4" />
+            Order Items
+          </CardTitle>
+          <div className="flex gap-2">
+            <Button variant="outline" size="xs" onClick={handleUploadRx}>
+              <Upload className="h-4 w-4 mr-2" />
+              Upload Rx
+            </Button>
+            <Button variant="outline" size="xs" onClick={handleViewRx}>
+              <Eye className="h-4 w-4 mr-2" />
+              View Rx
+            </Button>
+            <Button variant="outline" size="xs">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Item
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -57,13 +83,16 @@ export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
           <TableBody>
             {drugDetails && (
               <TableRow>
-                <TableCell className="font-medium">{drugDetails.nameil}</TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2">
+                    {drugDetails.nameil}
+                    <BellDot className="h-4 w-4 text-amber-500" title="Refills available" />
+                  </div>
+                </TableCell>
                 <TableCell>
                   <div className="space-y-1">
                     <div>{drugDetails.strength} - {drugDetails.packsize}</div>
-                    <div className="flex gap-2">
-                      {getPrescriptionBadge(drugDetails.otc)}
-                    </div>
+                    <div>{getPrescriptionBadge(drugDetails.otc)}</div>
                   </div>
                 </TableCell>
                 <TableCell>

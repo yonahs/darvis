@@ -2,7 +2,7 @@ import { format } from "date-fns"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { MessageSquare } from "lucide-react"
+import { MessageSquare, Send } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
@@ -95,7 +95,7 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
             disabled={!note.trim()}
             className="self-end"
           >
-            Send
+            <Send className="h-4 w-4" />
           </Button>
         </div>
       </CardContent>

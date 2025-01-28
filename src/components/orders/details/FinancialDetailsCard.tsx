@@ -1,4 +1,4 @@
-import { CreditCard } from "lucide-react"
+import { CreditCard, DollarSign } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { formatCurrency } from "@/lib/utils"
@@ -18,7 +18,10 @@ export const FinancialDetailsCard = ({ order, onMarkAsPaid }: FinancialDetailsPr
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="text-sm font-medium text-primary/80">Financial Details</CardTitle>
+          <CardTitle className="text-sm font-medium text-primary/80 flex items-center gap-2">
+            <DollarSign className="h-4 w-4" />
+            Financial Details
+          </CardTitle>
           <Button onClick={onMarkAsPaid} variant="outline" size="xs">
             <CreditCard className="h-4 w-4 mr-2" />
             Mark as Paid
