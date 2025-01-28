@@ -7,13 +7,22 @@ interface UseOrdersProps {
   pageSize: number
   search: string
   statusFilter: string
+  dateRange: { from: Date | undefined; to: Date | undefined }
+  shipperFilter: string
 }
 
-export const useOrders = ({ page, pageSize, search, statusFilter }: UseOrdersProps) => {
+export const useOrders = ({ 
+  page, 
+  pageSize, 
+  search, 
+  statusFilter,
+  dateRange,
+  shipperFilter,
+}: UseOrdersProps) => {
   return useQuery<OrderDetails[]>({
-    queryKey: ["orders", page, search, statusFilter],
+    queryKey: ["orders", page, search, statusFilter, dateRange, shipperFilter],
     queryFn: async () => {
-      console.log("Fetching orders with params:", { page, search, statusFilter })
+      console.log("Fetching orders with params:", { page, search, statusFilter, dateRange, shipperFilter })
       try {
         let query = supabase
           .from("vw_order_details")
@@ -26,6 +35,18 @@ export const useOrders = ({ page, pageSize, search, statusFilter }: UseOrdersPro
 
         if (statusFilter && statusFilter !== "all") {
           query = query.eq("orderstatus", statusFilter)
+        }
+
+        if (dateRange.from) {
+          query = query.gte("orderdate", dateRange.from.toISOString())
+        }
+
+        if (dateRange.to) {
+          query = query.lte("orderdate", dateRange.to.toISOString())
+        }
+
+        if (shipperFilter && shipperFilter !== "all") {
+          query = query.eq("shipper", shipperFilter)
         }
 
         const from = (page - 1) * pageSize
@@ -46,7 +67,7 @@ export const useOrders = ({ page, pageSize, search, statusFilter }: UseOrdersPro
         throw err
       }
     },
-    staleTime: 30000, // Consider data fresh for 30 seconds
-    refetchInterval: 60000, // Refetch every minute to ensure materialized view data is current
+    staleTime: 30000,
+    refetchInterval: 60000,
   })
 }

@@ -12,6 +12,11 @@ const Orders = () => {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  })
+  const [shipperFilter, setShipperFilter] = useState<string>("all")
   const navigate = useNavigate()
   const pageSize = 10
 
@@ -20,6 +25,8 @@ const Orders = () => {
     pageSize,
     search,
     statusFilter,
+    dateRange,
+    shipperFilter,
   })
 
   const handlePageChange = (newPage: number) => {
@@ -52,6 +59,10 @@ const Orders = () => {
         onSearchChange={setSearch}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+        shipperFilter={shipperFilter}
+        onShipperFilterChange={setShipperFilter}
       />
       <div className="rounded-md border">
         <OrdersTable
