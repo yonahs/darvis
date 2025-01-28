@@ -51,6 +51,11 @@ export const OrdersSearch = ({
 }: OrdersSearchProps) => {
   const [openStatus, setOpenStatus] = React.useState(false)
   const [openShipper, setOpenShipper] = React.useState(false)
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const { data: shippers = [] } = useQuery({
     queryKey: ["shippers"],
@@ -87,6 +92,10 @@ export const OrdersSearch = ({
     } else {
       onShipperFilterChange([...currentFilters, shipperId])
     }
+  }
+
+  if (!mounted) {
+    return null
   }
 
   return (
