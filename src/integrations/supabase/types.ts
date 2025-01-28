@@ -121,7 +121,15 @@ export type Database = {
           totalboxesallowed?: number | null
           yarpadate?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_clientrx"
+            columns: ["rxid"]
+            isOneToOne: false
+            referencedRelation: "clientrx"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       clients: {
         Row: {
