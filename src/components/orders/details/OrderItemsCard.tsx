@@ -1,4 +1,4 @@
-import { Plus, Upload, Eye, Pill } from "lucide-react"
+import { Plus, Upload, Eye, Pill, RefreshCw } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -15,7 +15,19 @@ interface OrderItemsProps {
 }
 
 export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
-  console.log("Drug Details received:", drugDetails) // Debug log
+  console.log("Drug Details received:", drugDetails)
+
+  const handleUploadRx = () => {
+    console.log("Upload Rx clicked")
+  }
+
+  const handleViewRx = () => {
+    console.log("View Rx clicked")
+  }
+
+  const handleUpdateRefills = () => {
+    console.log("Update refills clicked for drug:", drugDetails?.nameil)
+  }
 
   // Helper function to determine stock status badge
   const getStockStatusBadge = (available: boolean | null) => {
@@ -25,14 +37,6 @@ export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
     ) : (
       <Badge className="rounded" variant="destructive">Out of Stock</Badge>
     )
-  }
-
-  const handleUploadRx = () => {
-    console.log("Upload Rx clicked")
-  }
-
-  const handleViewRx = () => {
-    console.log("View Rx clicked")
   }
 
   return (
@@ -51,6 +55,10 @@ export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
             <Button variant="outline" size="xs" onClick={handleViewRx}>
               <Eye className="h-4 w-4 mr-2" />
               View Rx
+            </Button>
+            <Button variant="outline" size="xs" onClick={handleUpdateRefills}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Update Refills
             </Button>
             <Button variant="outline" size="xs">
               <Plus className="h-4 w-4 mr-2" />
