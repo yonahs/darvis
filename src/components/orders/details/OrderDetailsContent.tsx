@@ -3,10 +3,9 @@ import { Responsive, WidthProvider } from "react-grid-layout"
 import "react-grid-layout/css/styles.css"
 import "react-resizable/css/styles.css"
 import { OrderItemsCard } from "./OrderItemsCard"
-import { ShippingDetailsCard } from "./ShippingDetailsCard"
+import { ShippingAndLogisticsCard } from "./ShippingAndLogisticsCard"
 import { CommentsCard } from "./CommentsCard"
 import { ServiceNotes } from "./ServiceNotes"
-import { LogisticsTimeline } from "./LogisticsTimeline"
 import { FinancialDetailsCard } from "./FinancialDetailsCard"
 import { ClientDetailsCard } from "./ClientDetailsCard"
 import type { Database } from "@/integrations/supabase/types"
@@ -38,30 +37,27 @@ export const OrderDetailsContent = ({
   const [layouts] = useState({
     lg: [
       { i: "client", x: 0, y: 0, w: 4, h: 2 },
-      { i: "shipping", x: 4, y: 0, w: 4, h: 2 },
+      { i: "shipping", x: 4, y: 0, w: 4, h: 3 },
       { i: "financial", x: 8, y: 0, w: 4, h: 2 },
       { i: "orderItems", x: 0, y: 2, w: 4, h: 3 },
-      { i: "logistics", x: 4, y: 2, w: 4, h: 3 },
       { i: "serviceNotes", x: 8, y: 2, w: 4, h: 3 },
       { i: "comments", x: 0, y: 5, w: 12, h: 3 },
     ],
     md: [
       { i: "client", x: 0, y: 0, w: 4, h: 2 },
-      { i: "shipping", x: 4, y: 0, w: 4, h: 2 },
+      { i: "shipping", x: 4, y: 0, w: 4, h: 3 },
       { i: "financial", x: 8, y: 0, w: 4, h: 2 },
       { i: "orderItems", x: 0, y: 2, w: 4, h: 3 },
-      { i: "logistics", x: 4, y: 2, w: 4, h: 3 },
       { i: "serviceNotes", x: 8, y: 2, w: 4, h: 3 },
       { i: "comments", x: 0, y: 5, w: 12, h: 3 },
     ],
     sm: [
       { i: "client", x: 0, y: 0, w: 6, h: 2 },
-      { i: "shipping", x: 0, y: 2, w: 6, h: 2 },
-      { i: "financial", x: 0, y: 4, w: 6, h: 2 },
-      { i: "orderItems", x: 0, y: 6, w: 6, h: 3 },
-      { i: "logistics", x: 0, y: 9, w: 6, h: 3 },
-      { i: "serviceNotes", x: 0, y: 12, w: 6, h: 3 },
-      { i: "comments", x: 0, y: 15, w: 6, h: 3 },
+      { i: "shipping", x: 0, y: 2, w: 6, h: 3 },
+      { i: "financial", x: 0, y: 5, w: 6, h: 2 },
+      { i: "orderItems", x: 0, y: 7, w: 6, h: 3 },
+      { i: "serviceNotes", x: 0, y: 10, w: 6, h: 3 },
+      { i: "comments", x: 0, y: 13, w: 6, h: 3 },
     ],
   })
 
@@ -87,7 +83,7 @@ export const OrderDetailsContent = ({
         </div>
         
         <div key="shipping" className="bg-white rounded-lg shadow-sm overflow-auto">
-          <ShippingDetailsCard order={order} onMarkAsShipped={onMarkAsShipped} />
+          <ShippingAndLogisticsCard order={order} onMarkAsShipped={onMarkAsShipped} />
         </div>
         
         <div key="financial" className="bg-white rounded-lg shadow-sm overflow-auto">
@@ -98,14 +94,6 @@ export const OrderDetailsContent = ({
           <OrderItemsCard drugDetails={drugDetails} />
         </div>
         
-        <div key="logistics" className="bg-white rounded-lg shadow-sm overflow-auto">
-          <LogisticsTimeline 
-            status={{ id: order?.shipstatus || 1, shipstatus: order?.shipstatus ? String(order.shipstatus) : "Not shipped" }}
-            lastUpdate={order?.sentdate}
-            trackingNumber={order?.ups}
-          />
-        </div>
-
         <div key="serviceNotes" className="bg-white rounded-lg shadow-sm overflow-auto">
           <ServiceNotes orderId={order?.orderid || 0} />
         </div>
