@@ -1399,25 +1399,18 @@ export type Database = {
       vw_order_details: {
         Row: {
           cancelled: boolean | null
-          clientid: number | null
           clientname: string | null
           country: string | null
           delaydate: string | null
-          drugamounts: string | null
-          drugdetailids: string | null
-          drugnames: string | null
-          drugstrengths: string | null
           orderbilled: number | null
           orderdate: string | null
           orderid: number | null
           orderstatus: string | null
-          outofstock: number | null
           payment: string | null
           prioritize: number | null
           shipper: string | null
           state: string | null
           totalsale: number | null
-          uploaded: number | null
           website: string | null
         }
         Relationships: []

@@ -28,7 +28,9 @@ export const useOrders = ({ page, pageSize, search, statusFilter }: UseOrdersPro
           query = query.eq("orderstatus", statusFilter)
         }
 
-        query = query.range((page - 1) * pageSize, page * pageSize - 1)
+        const from = (page - 1) * pageSize
+        const to = from + pageSize - 1
+        query = query.range(from, to)
 
         const { data, error } = await query
 
@@ -44,7 +46,7 @@ export const useOrders = ({ page, pageSize, search, statusFilter }: UseOrdersPro
         throw err
       }
     },
-    retry: 1,
-    staleTime: 30000,
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    refetchInterval: 60000, // Refetch every minute to ensure materialized view data is current
   })
 }

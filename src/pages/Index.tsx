@@ -32,6 +32,8 @@ const Index = () => {
       console.log("Fetched orders:", data)
       return data as OrderDetails[]
     },
+    staleTime: 30000,
+    refetchInterval: 60000,
   })
 
   useEffect(() => {
@@ -57,6 +59,9 @@ const Index = () => {
             console.log("Invalid payload received:", payload)
             return
           }
+
+          // Wait briefly for the materialized view to refresh
+          await new Promise(resolve => setTimeout(resolve, 1000))
 
           // Fetch updated order details
           const { data: updatedOrder } = await supabase
