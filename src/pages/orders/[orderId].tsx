@@ -2,20 +2,20 @@ import { useParams } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
+import { Separator } from "@/components/ui/separator"
 import { 
   Card,
   CardContent,
   CardHeader,
-  CardFooter,
   CardTitle,
-  CardDescription 
 } from "@/components/ui/card"
-import { OrderSummaryCard } from "@/components/orders/details/OrderSummaryCard"
-import { ClientDetailsCard } from "@/components/orders/details/ClientDetailsCard"
 import { OrderItemsCard } from "@/components/orders/details/OrderItemsCard"
-import { FinancialDetailsCard } from "@/components/orders/details/FinancialDetailsCard"
 import { ShippingDetailsCard } from "@/components/orders/details/ShippingDetailsCard"
 import { CommentsCard } from "@/components/orders/details/CommentsCard"
+import { format } from "date-fns"
+import { CheckCircle, XCircle, CreditCard } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { formatCurrency } from "@/lib/utils"
 
 const OrderDetail = () => {
   const { orderId } = useParams()
@@ -119,7 +119,7 @@ const OrderDetail = () => {
     return (
       <div className="p-4">
         <div className="grid grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map((i) => (
+          {[1, 2, 3].map((i) => (
             <Card key={i}>
               <CardContent className="p-6">
                 <div className="h-24 animate-pulse bg-gray-200 rounded" />
@@ -136,14 +136,72 @@ const OrderDetail = () => {
       <div className="grid grid-cols-2 gap-4">
         {/* Left Column */}
         <div className="space-y-4">
-          <OrderSummaryCard order={orderData} />
-          <ClientDetailsCard client={clientData} />
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="text-lg">Order #{orderData?.orderid}</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    {orderData?.orderdate && format(new Date(orderData.orderdate), "PPP")}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {orderData?.cancelled ? (
+                    <XCircle className="h-5 w-5 text-red-500" />
+                  ) : (
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  )}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Client Details Section */}
+              <div>
+                <h3 className="text-md font-semibold mb-2">Client Details</h3>
+                {clientData && (
+                  <div className="space-y-1 text-sm">
+                    <p>{clientData.firstname} {clientData.lastname}</p>
+                    <p>DOB: {clientData.birthdate && format(new Date(clientData.birthdate), "PP")}</p>
+                    <p>ID: {clientData.personalid}</p>
+                    <p>Email: {clientData.email}</p>
+                  </div>
+                )}
+              </div>
+              
+              <Separator />
+              
+              {/* Financial Details Section */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-md font-semibold">Financial Details</h3>
+                  <Button onClick={handleMarkAsPaid} variant="outline" size="sm">
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Mark as Paid
+                  </Button>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span>{formatCurrency(orderData?.usprice || 0)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Shipping:</span>
+                    <span>{formatCurrency(orderData?.shippingprice || 0)}</span>
+                  </div>
+                  <div className="flex justify-between font-semibold">
+                    <span>Total:</span>
+                    <span>{formatCurrency(orderData?.totalsale || 0)}</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
           <OrderItemsCard drugDetails={drugDetails} />
         </div>
 
         {/* Right Column */}
         <div className="space-y-4">
-          <FinancialDetailsCard order={orderData} onMarkAsPaid={handleMarkAsPaid} />
           <ShippingDetailsCard order={orderData} onMarkAsShipped={handleMarkAsShipped} />
           <CommentsCard comments={comments} />
         </div>
