@@ -40,12 +40,10 @@ export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
   }
 
   const handleUploadRx = () => {
-    // Implement prescription upload logic
     console.log("Upload Rx clicked")
   }
 
   const handleViewRx = () => {
-    // Implement prescription view logic
     console.log("View Rx clicked")
   }
 
@@ -105,7 +103,9 @@ export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
                     </div>
                     {drugDetails.prescriptionDetails && (
                       <div className="text-sm text-muted-foreground">
-                        Refills: {drugDetails.prescriptionDetails.filled || 0} of {drugDetails.prescriptionDetails.refills || 0} used
+                        <Badge variant="secondary" className="mt-1">
+                          Refills: {drugDetails.prescriptionDetails.filled || 0} of {drugDetails.prescriptionDetails.refills || 0} used
+                        </Badge>
                       </div>
                     )}
                   </div>
