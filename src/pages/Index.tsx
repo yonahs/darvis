@@ -53,6 +53,11 @@ const Index = () => {
         async (payload) => {
           console.log("Received real-time update:", payload)
           
+          if (!payload.new || !('orderid' in payload.new)) {
+            console.log("Invalid payload received:", payload)
+            return
+          }
+
           // Fetch updated order details
           const { data: updatedOrder } = await supabase
             .from("vw_order_details")

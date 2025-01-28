@@ -4,6 +4,14 @@ import {
   Users,
   ShoppingCart,
   Settings,
+  Truck,
+  PlusCircle,
+  Percent,
+  Stethoscope,
+  MessageSquare,
+  BarChart3,
+  TestTube,
+  FileText,
 } from "lucide-react"
 import {
   Sidebar,
@@ -28,14 +36,49 @@ const menuItems = [
     href: "/orders",
   },
   {
-    title: "Clients",
-    icon: Users,
-    href: "/clients",
+    title: "Logistics",
+    icon: Truck,
+    href: "/logistics",
   },
   {
     title: "Products",
     icon: Package,
     href: "/products",
+  },
+  {
+    title: "Pharmacy",
+    icon: Stethoscope,
+    href: "/pharmacy",
+  },
+  {
+    title: "Create Order",
+    icon: PlusCircle,
+    href: "/create-order",
+  },
+  {
+    title: "Promotions",
+    icon: Percent,
+    href: "/promotions",
+  },
+  {
+    title: "Prescriptions",
+    icon: FileText,
+    href: "/prescriptions",
+  },
+  {
+    title: "IVF",
+    icon: TestTube,
+    href: "/ivf",
+  },
+  {
+    title: "Messages",
+    icon: MessageSquare,
+    href: "/messages",
+  },
+  {
+    title: "Analytics",
+    icon: BarChart3,
+    href: "/analytics",
   },
   {
     title: "Settings",
@@ -56,7 +99,7 @@ const DashboardSidebar = () => {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <a href={item.href}>
-                      <item.icon />
+                      <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </a>
                   </SidebarMenuButton>
