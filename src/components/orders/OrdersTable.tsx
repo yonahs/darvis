@@ -50,6 +50,23 @@ export const OrdersTable = ({
     return "hover:bg-gray-50/50"
   }
 
+  const getShipperColor = (shipper: string | null) => {
+    if (!shipper) return "bg-gray-100 text-gray-600"
+    
+    // Map shippers to specific colors using a consistent hash
+    const shipperColors: { [key: string]: string } = {
+      "FedEx": "bg-[#F2FCE2] text-green-700",
+      "UPS": "bg-[#FEF7CD] text-yellow-700",
+      "DHL": "bg-[#FEC6A1] text-orange-700",
+      "USPS": "bg-[#E5DEFF] text-purple-700",
+      "EMS": "bg-[#D3E4FD] text-blue-700",
+      "TNT": "bg-[#FFDEE2] text-pink-700",
+      "Aramex": "bg-[#FDE1D3] text-red-700",
+    }
+
+    return shipperColors[shipper] || "bg-[#F1F0FB] text-gray-700"
+  }
+
   if (isLoading || isFetching) {
     return (
       <Table>
@@ -140,7 +157,11 @@ export const OrdersTable = ({
             </TableCell>
             <TableCell>{formatCurrency(order.totalsale)}</TableCell>
             <TableCell>{order.payment}</TableCell>
-            <TableCell>{order.shipper || '-'}</TableCell>
+            <TableCell>
+              <span className={`px-2 py-1 rounded-md text-sm font-medium ${getShipperColor(order.shipper)}`}>
+                {order.shipper || '-'}
+              </span>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
