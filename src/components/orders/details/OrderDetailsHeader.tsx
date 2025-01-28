@@ -20,9 +20,10 @@ type Order = Database["public"]["Tables"]["orders"]["Row"]
 
 interface OrderDetailsHeaderProps {
   order: Order | null
+  onEscalate?: () => void
 }
 
-export const OrderDetailsHeader = ({ order }: OrderDetailsHeaderProps) => {
+export const OrderDetailsHeader = ({ order, onEscalate }: OrderDetailsHeaderProps) => {
   const handleEscalate = async () => {
     if (!order?.orderid) return
 
@@ -41,6 +42,7 @@ export const OrderDetailsHeader = ({ order }: OrderDetailsHeaderProps) => {
 
       if (commentError) throw commentError
       toast.warning("Order has been escalated to customer service")
+      if (onEscalate) onEscalate()
     } catch (error) {
       console.error("Error escalating order:", error)
       toast.error("Failed to escalate order")
@@ -103,7 +105,7 @@ export const OrderDetailsHeader = ({ order }: OrderDetailsHeaderProps) => {
     <div className="space-y-4">
       <div className="flex justify-between items-start">
         <OrderSummaryCard order={order} />
-        <OrderStatusBadge order={order} />
+        <OrderStatusBadge order={order} onEscalate={handleEscalate} />
       </div>
       <div className="bg-white p-4 rounded-lg border shadow-sm">
         <div className="flex flex-wrap gap-2">
