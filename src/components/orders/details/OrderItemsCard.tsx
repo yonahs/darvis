@@ -28,19 +28,6 @@ export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
     )
   }
 
-  // Helper function to determine prescription badge
-  const getPrescriptionBadge = (otc: boolean | null) => {
-    if (otc === null) return <Badge variant="outline">Status Unknown</Badge>
-    return !otc ? (
-      <Badge variant="default" className="flex items-center gap-1">
-        <Pill className="h-3 w-3" />
-        Prescription Required
-      </Badge>
-    ) : (
-      <Badge variant="secondary">Over The Counter</Badge>
-    )
-  }
-
   const handleUploadRx = () => {
     console.log("Upload Rx clicked")
   }
@@ -78,7 +65,7 @@ export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
           <TableHeader>
             <TableRow>
               <TableHead>Drug</TableHead>
-              <TableHead>Details</TableHead>
+              <TableHead>Prescription</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Price</TableHead>
             </TableRow>
@@ -88,40 +75,29 @@ export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
               <TableRow>
                 <TableCell className="font-medium">
                   <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      {drugDetails.nameil}
-                      {drugDetails.prescriptionDetails?.refills && (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <BellDot className="h-4 w-4 text-amber-500" />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Has prescription refills</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      )}
+                    <div>{drugDetails.nameil}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {drugDetails.strength} - {drugDetails.packsize}
                     </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="space-y-2">
+                    <Badge variant={drugDetails.otc ? "secondary" : "default"} className="flex items-center gap-1 w-fit">
+                      <Pill className="h-3 w-3" />
+                      {drugDetails.otc ? "Over The Counter" : "Prescription Required"}
+                    </Badge>
+                    
                     {drugDetails.prescriptionDetails && (
-                      <div className="text-sm text-muted-foreground">
-                        <Badge variant="secondary" className="mt-1">
-                          Refills: {drugDetails.prescriptionDetails.filled || 0} of {drugDetails.prescriptionDetails.refills || 0} used
-                        </Badge>
-                      </div>
+                      <Badge variant="secondary" className="flex items-center gap-1 w-fit">
+                        <BellDot className="h-3 w-3" />
+                        Refills: {drugDetails.prescriptionDetails.filled || 0} of {drugDetails.prescriptionDetails.refills || 0} used
+                      </Badge>
                     )}
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="space-y-1">
-                    <div>{drugDetails.strength} - {drugDetails.packsize}</div>
-                    <div>{getPrescriptionBadge(drugDetails.otc)}</div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="space-y-1">
-                    {getStockStatusBadge(drugDetails.available)}
-                  </div>
+                  {getStockStatusBadge(drugDetails.available)}
                 </TableCell>
                 <TableCell>{formatCurrency(drugDetails.saledollar)}</TableCell>
               </TableRow>
