@@ -7,17 +7,15 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { formatCurrency } from "@/lib/utils"
 import type { Database } from "@/integrations/supabase/types"
 
-type DrugDetails = Database["public"]["Tables"]["newdrugdetails"]["Row"]
+type DrugDetails = Database["public"]["Tables"]["newdrugdetails"]["Row"] & {
+  prescriptionDetails?: Database["public"]["Tables"]["clientrxdetails"]["Row"] | null
+}
 
 interface OrderItemsProps {
   drugDetails: DrugDetails | null
-  prescriptionDetails?: {
-    refills?: number | null
-    filled?: number | null
-  } | null
 }
 
-export const OrderItemsCard = ({ drugDetails, prescriptionDetails }: OrderItemsProps) => {
+export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
   // Helper function to determine stock status badge
   const getStockStatusBadge = (available: boolean | null) => {
     if (available === null) return <Badge variant="outline">Unknown</Badge>
@@ -49,13 +47,6 @@ export const OrderItemsCard = ({ drugDetails, prescriptionDetails }: OrderItemsP
   const handleViewRx = () => {
     // Implement prescription view logic
     console.log("View Rx clicked")
-  }
-
-  // Helper function to format refill information
-  const getRefillInfo = () => {
-    if (!prescriptionDetails?.refills) return "No refills information"
-    const remaining = (prescriptionDetails.refills || 0) - (prescriptionDetails.filled || 0)
-    return `${remaining} refills remaining (${prescriptionDetails.filled || 0} of ${prescriptionDetails.refills} used)`
   }
 
   return (
@@ -96,19 +87,26 @@ export const OrderItemsCard = ({ drugDetails, prescriptionDetails }: OrderItemsP
             {drugDetails && (
               <TableRow>
                 <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    {drugDetails.nameil}
-                    {prescriptionDetails?.refills && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <BellDot className="h-4 w-4 text-amber-500" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{getRefillInfo()}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      {drugDetails.nameil}
+                      {drugDetails.prescriptionDetails?.refills && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <BellDot className="h-4 w-4 text-amber-500" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Has prescription refills</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </div>
+                    {drugDetails.prescriptionDetails && (
+                      <div className="text-sm text-muted-foreground">
+                        Refills: {drugDetails.prescriptionDetails.filled || 0} of {drugDetails.prescriptionDetails.refills || 0} used
+                      </div>
                     )}
                   </div>
                 </TableCell>

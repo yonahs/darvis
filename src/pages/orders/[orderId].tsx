@@ -53,20 +53,45 @@ const OrderDetail = () => {
     },
   })
 
-  // Fetch drug details
+  // Fetch drug details and prescription details
   const { data: drugDetails } = useQuery({
     queryKey: ["drug", orderData?.drugdetailid],
     enabled: !!orderData?.drugdetailid,
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
+        // First fetch drug details
+        const { data: drug, error: drugError } = await supabase
           .from("newdrugdetails")
           .select("*")
           .eq("id", orderData.drugdetailid)
           .maybeSingle()
 
-        if (error) throw error
-        return data
+        if (drugError) throw drugError
+
+        // Then fetch prescription details if we have a client
+        if (orderData.clientid) {
+          const { data: rxDetails, error: rxError } = await supabase
+            .from("clientrxdetails")
+            .select("*")
+            .eq("drugdetailid", orderData.drugdetailid)
+            .order("rxdate", { ascending: false })
+            .maybeSingle()
+
+          if (rxError) {
+            console.error("Error fetching prescription details:", rxError)
+          }
+
+          // Return both drug and prescription details
+          return {
+            ...drug,
+            prescriptionDetails: rxDetails || null
+          }
+        }
+
+        return {
+          ...drug,
+          prescriptionDetails: null
+        }
       } catch (err) {
         console.error("Failed to fetch drug details:", err)
         return null
