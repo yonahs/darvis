@@ -27,7 +27,7 @@ export const ShippingAndLogisticsCard = ({ order, onMarkAsShipped }: ShippingAnd
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="text-base flex items-center gap-2">
             <Truck className="h-4 w-4" />
             Shipping & Logistics
           </CardTitle>
@@ -48,8 +48,8 @@ export const ShippingAndLogisticsCard = ({ order, onMarkAsShipped }: ShippingAnd
                   step.id <= currentStep ? "text-blue-600" : "text-gray-400"
                 }`}
               >
-                <step.icon className="h-5 w-5 mb-2" />
-                <span className="text-sm">{step.label}</span>
+                <step.icon className="h-4 w-4 mb-2" />
+                <span className="text-xs">{step.label}</span>
               </div>
             ))}
           </div>
@@ -66,27 +66,27 @@ export const ShippingAndLogisticsCard = ({ order, onMarkAsShipped }: ShippingAnd
         {/* Shipping Details */}
         <div className="space-y-2 pt-4 border-t">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Status</span>
-            <span className="font-medium">{order.shipstatus ? String(order.shipstatus) : "Not shipped"}</span>
+            <span className="text-muted-foreground text-sm">Status</span>
+            <span className="text-sm font-medium">{order.shipstatus ? String(order.shipstatus) : "Not shipped"}</span>
           </div>
           {order.sentdate && (
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Sent Date</span>
-              <span>{format(new Date(order.sentdate), "PPp")}</span>
+              <span className="text-muted-foreground text-sm">Sent Date</span>
+              <span className="text-sm">{format(new Date(order.sentdate), "PPp")}</span>
             </div>
           )}
           {order.ups && (
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Tracking #</span>
-              <span className="font-medium">{order.ups}</span>
+              <span className="text-muted-foreground text-sm">Tracking #</span>
+              <span className="text-sm font-medium">{order.ups}</span>
             </div>
           )}
         </div>
 
         {/* Address Details */}
-        <div className="space-y-1 pt-4 border-t text-sm">
-          <p className="font-medium">Shipping Address:</p>
-          <p>
+        <div className="space-y-1 pt-4 border-t">
+          <p className="text-sm font-medium">Shipping Address:</p>
+          <p className="text-sm text-muted-foreground">
             {order.address}
             {order.address2 && <br />}
             {order.address2}
