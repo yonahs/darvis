@@ -30,7 +30,7 @@ const Orders = () => {
       try {
         const { data, error } = await supabase
           .from("vw_order_details")
-          .select("orderid, orderdate, clientname, orderstatus, totalsale, payment, shipper")
+          .select("orderid, orderdate, clientname, orderstatus, totalsale, payment, shipper, cancelled, orderbilled")
           .order("orderdate", { ascending: false })
           .range((page - 1) * pageSize, page * pageSize - 1)
 
