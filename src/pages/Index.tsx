@@ -7,21 +7,14 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { formatDistanceToNow } from "date-fns"
 import { Badge } from "@/components/ui/badge"
 import { PackageSearch } from "lucide-react"
+import { Database } from "@/integrations/supabase/types"
 
-type Order = {
-  orderid: number
-  clientname: string | null
-  orderstatus: string | null
-  totalsale: number | null
-  orderdate: string | null
-  drugnames: string | null
-  website: string | null
-}
+type OrderDetails = Database["public"]["Views"]["vw_order_details"]["Row"]
 
 const Index = () => {
-  const [realtimeOrders, setRealtimeOrders] = useState<Order[]>([])
+  const [realtimeOrders, setRealtimeOrders] = useState<OrderDetails[]>([])
 
-  const { data: initialOrders, isLoading } = useQuery({
+  const { data: initialOrders, isLoading, error } = useQuery({
     queryKey: ["recent-orders"],
     queryFn: async () => {
       console.log("Fetching recent orders...")
@@ -37,7 +30,7 @@ const Index = () => {
       }
 
       console.log("Fetched orders:", data)
-      return data as Order[]
+      return data as OrderDetails[]
     },
   })
 
@@ -90,6 +83,20 @@ const Index = () => {
       supabase.removeChannel(channel)
     }
   }, [])
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="p-4">
+          <Card className="bg-destructive/10">
+            <CardContent className="pt-6">
+              <p className="text-destructive">Error loading orders. Please try again later.</p>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   return (
     <DashboardLayout>
