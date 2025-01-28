@@ -27,6 +27,11 @@ export const OrderDetailsContent = ({
       {/* Left Column */}
       <div className="space-y-4">
         <OrderItemsCard drugDetails={drugDetails} />
+        <LogisticsTimeline 
+          status={{ id: order?.shipstatus || 1, shipstatus: order?.shipstatus ? String(order.shipstatus) : "Not shipped" }}
+          lastUpdate={order?.sentdate}
+          trackingNumber={order?.ups}
+        />
       </div>
 
       {/* Right Column */}
