@@ -26,7 +26,6 @@ import {
 } from "@/components/ui/select"
 import { useNavigate } from "react-router-dom"
 
-// Define the type for order details from the view
 type OrderDetails = {
   orderid: number
   orderdate: string
@@ -42,7 +41,7 @@ type OrderDetails = {
 const Orders = () => {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all") // Changed initial value to "all"
+  const [statusFilter, setStatusFilter] = useState<string>("all")
   const navigate = useNavigate()
   const pageSize = 10
 
@@ -61,8 +60,8 @@ const Orders = () => {
           query = query.or(`clientname.ilike.%${search}%,orderid.eq.${!isNaN(parseInt(search)) ? search : 0}`)
         }
 
-        // Apply status filter if present
-        if (statusFilter) {
+        // Apply status filter if not "all"
+        if (statusFilter && statusFilter !== "all") {
           query = query.eq("orderstatus", statusFilter)
         }
 
@@ -84,7 +83,7 @@ const Orders = () => {
       }
     },
     retry: 1,
-    staleTime: 30000, // Cache data for 30 seconds
+    staleTime: 30000,
   })
 
   const handlePageChange = (newPage: number) => {
@@ -116,9 +115,9 @@ const Orders = () => {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-semibold">Orders</h2>
-          <p className="text-muted-foreground">
+          <div className="text-muted-foreground">
             View and manage customer orders
-          </p>
+          </div>
         </div>
 
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
