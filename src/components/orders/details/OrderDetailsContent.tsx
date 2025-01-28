@@ -5,7 +5,6 @@ import "react-resizable/css/styles.css"
 import { OrderItemsCard } from "./OrderItemsCard"
 import { ShippingAndLogisticsCard } from "./ShippingAndLogisticsCard"
 import { CommentsCard } from "./CommentsCard"
-import { ServiceNotes } from "./ServiceNotes"
 import { FinancialDetailsCard } from "./FinancialDetailsCard"
 import { ClientDetailsCard } from "./ClientDetailsCard"
 import type { Database } from "@/integrations/supabase/types"
@@ -40,24 +39,21 @@ export const OrderDetailsContent = ({
       { i: "shipping", x: 4, y: 0, w: 4, h: 3 },
       { i: "financial", x: 8, y: 0, w: 4, h: 2 },
       { i: "orderItems", x: 0, y: 2, w: 4, h: 3 },
-      { i: "serviceNotes", x: 8, y: 2, w: 4, h: 3 },
-      { i: "comments", x: 0, y: 5, w: 12, h: 3 },
+      { i: "comments", x: 4, y: 3, w: 8, h: 3 },
     ],
     md: [
       { i: "client", x: 0, y: 0, w: 4, h: 2 },
       { i: "shipping", x: 4, y: 0, w: 4, h: 3 },
       { i: "financial", x: 8, y: 0, w: 4, h: 2 },
       { i: "orderItems", x: 0, y: 2, w: 4, h: 3 },
-      { i: "serviceNotes", x: 8, y: 2, w: 4, h: 3 },
-      { i: "comments", x: 0, y: 5, w: 12, h: 3 },
+      { i: "comments", x: 4, y: 3, w: 8, h: 3 },
     ],
     sm: [
       { i: "client", x: 0, y: 0, w: 6, h: 2 },
       { i: "shipping", x: 0, y: 2, w: 6, h: 3 },
       { i: "financial", x: 0, y: 5, w: 6, h: 2 },
       { i: "orderItems", x: 0, y: 7, w: 6, h: 3 },
-      { i: "serviceNotes", x: 0, y: 10, w: 6, h: 3 },
-      { i: "comments", x: 0, y: 13, w: 6, h: 3 },
+      { i: "comments", x: 0, y: 10, w: 6, h: 3 },
     ],
   })
 
@@ -94,12 +90,8 @@ export const OrderDetailsContent = ({
           <OrderItemsCard drugDetails={drugDetails} />
         </div>
         
-        <div key="serviceNotes" className="bg-white rounded-lg shadow-sm overflow-auto">
-          <ServiceNotes orderId={order?.orderid || 0} />
-        </div>
-        
         <div key="comments" className="bg-white rounded-lg shadow-sm overflow-auto">
-          <CommentsCard comments={comments} />
+          <CommentsCard comments={comments} orderId={order?.orderid || 0} />
         </div>
       </ResponsiveGridLayout>
     </div>
