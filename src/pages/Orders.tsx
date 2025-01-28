@@ -18,12 +18,25 @@ import { Button } from "@/components/ui/button"
 import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
+// Define the type for order details from the view
+type OrderDetails = {
+  orderid: number
+  orderdate: string
+  clientname: string
+  orderstatus: string
+  totalsale: number
+  payment: string
+  shipper: string
+  cancelled: boolean
+  orderbilled: number
+}
+
 const Orders = () => {
   const [page, setPage] = useState(1)
   const pageSize = 10
   const { toast } = useToast()
 
-  const { data: orders, isLoading, error, isFetching } = useQuery({
+  const { data: orders, isLoading, error, isFetching } = useQuery<OrderDetails[]>({
     queryKey: ["orders", page],
     queryFn: async () => {
       console.log("Fetching orders page:", page)
@@ -161,7 +174,6 @@ const Orders = () => {
 
         <div className="flex justify-center gap-2">
           <Button
-            variant="outline"
             onClick={() => handlePageChange(page - 1)}
             disabled={page === 1 || isLoading}
           >
@@ -171,7 +183,6 @@ const Orders = () => {
             Page {page}
           </Button>
           <Button
-            variant="outline"
             onClick={() => handlePageChange(page + 1)}
             disabled={!orders?.length || orders.length < pageSize || isLoading}
           >
