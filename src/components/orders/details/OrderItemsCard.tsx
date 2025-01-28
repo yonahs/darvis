@@ -16,6 +16,8 @@ interface OrderItemsProps {
 }
 
 export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
+  console.log("Drug Details received:", drugDetails) // Debug log
+
   // Helper function to determine stock status badge
   const getStockStatusBadge = (available: boolean | null) => {
     if (available === null) return <Badge variant="outline">Unknown</Badge>
