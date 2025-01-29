@@ -30,13 +30,17 @@ const Logistics = () => {
         
         if (shipperError) throw shipperError
 
-        // Fetch orders to get counts
+        // Fetch orders with specific conditions
         const { data: orders, error: ordersError } = await supabase
           .from("orders")
           .select("shipperid, shipstatus")
           .not('shipperid', 'is', null)
+          .not('cancelled', 'eq', true)  // Exclude cancelled orders
+          .gte('orderdate', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) // Last 30 days
 
         if (ordersError) throw ordersError
+
+        console.log("Fetched orders:", orders?.length)
 
         // Calculate stats for each shipper
         const shippersWithStats: ShipperStats[] = shipperData?.map(shipper => {
@@ -53,7 +57,7 @@ const Logistics = () => {
           }
         }) || []
 
-        console.log("Fetched shippers with stats:", shippersWithStats)
+        console.log("Calculated shipper stats:", shippersWithStats)
         return shippersWithStats
       } catch (err) {
         console.error("Error fetching logistics data:", err)
