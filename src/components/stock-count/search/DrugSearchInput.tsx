@@ -76,8 +76,20 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
           }]
         );
 
-        console.log("Transformed drug data:", transformedData);
-        return transformedData as DrugOption[];
+        // Remove duplicates based on drugid and strength combination
+        const uniqueDrugs = transformedData.reduce((acc: DrugOption[], current) => {
+          const isDuplicate = acc.some(item => 
+            item.drugid === current.drugid && item.strength === current.strength
+          );
+          
+          if (!isDuplicate) {
+            acc.push(current);
+          }
+          return acc;
+        }, []);
+
+        console.log("Transformed and deduplicated drug data:", uniqueDrugs);
+        return uniqueDrugs;
       } catch (err) {
         console.error("Error in drug search query:", err);
         toast.error("Error loading medications. Please try again.");
@@ -123,26 +135,29 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
           ) : drugs.length === 0 ? (
             <CommandEmpty>No medications found.</CommandEmpty>
           ) : (
-            drugs.map((drug) => (
-              <CommandItem
-                key={`${drug.drugid}-${drug.strength}`}
-                value={`${drug.nameus} ${drug.strength || ''}`}
-                onSelect={() => {
-                  console.log("Selected drug:", drug);
-                  onSelectDrug(drug.drugid.toString());
-                }}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    selectedDrug === drug.drugid.toString()
-                      ? "opacity-100"
-                      : "opacity-0"
-                  )}
-                />
-                {drug.nameus} {drug.strength && `(${drug.strength})`} {drug.chemical && `- ${drug.chemical}`}
-              </CommandItem>
-            ))
+            drugs.map((drug) => {
+              const displayName = `${drug.nameus}${drug.strength ? ` (${drug.strength})` : ''}`;
+              return (
+                <CommandItem
+                  key={`${drug.drugid}-${drug.strength}`}
+                  value={displayName}
+                  onSelect={() => {
+                    console.log("Selected drug:", drug);
+                    onSelectDrug(drug.drugid.toString());
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      selectedDrug === drug.drugid.toString()
+                        ? "opacity-100"
+                        : "opacity-0"
+                    )}
+                  />
+                  {displayName} {drug.chemical && `- ${drug.chemical}`}
+                </CommandItem>
+              );
+            })
           )}
         </CommandGroup>
       </CommandList>
