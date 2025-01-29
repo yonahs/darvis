@@ -9,6 +9,7 @@ interface ShipperStats {
   totalOrders: number
   uploaded: number
   notUploaded: number
+  shipperid: number
 }
 
 const Logistics = () => {
@@ -17,19 +18,36 @@ const Logistics = () => {
     queryFn: async () => {
       console.log("Fetching logistics statistics...")
       try {
+        // Fetch shippers
         const { data: shipperData, error: shipperError } = await supabase
           .from("shippers")
           .select("*")
-          
+          .order('display_name')
+        
         if (shipperError) throw shipperError
 
-        // For now, we'll mock the order counts until we implement the actual counts
-        const shippersWithStats: ShipperStats[] = shipperData?.map(shipper => ({
-          name: shipper.display_name || "Unnamed Shipper",
-          totalOrders: Math.floor(Math.random() * 50), // Mock data
-          uploaded: 0,
-          notUploaded: 0
-        })) || []
+        // Fetch orders to get counts
+        const { data: orders, error: ordersError } = await supabase
+          .from("orders")
+          .select("shipperid, shipstatus")
+          .not('shipperid', 'is', null)
+
+        if (ordersError) throw ordersError
+
+        // Calculate stats for each shipper
+        const shippersWithStats: ShipperStats[] = shipperData?.map(shipper => {
+          const shipperOrders = orders?.filter(order => order.shipperid === shipper.shipperid) || []
+          const uploaded = shipperOrders.filter(order => order.shipstatus === 2).length
+          const total = shipperOrders.length
+
+          return {
+            shipperid: shipper.shipperid,
+            name: shipper.display_name || shipper.company_name || "Unnamed Shipper",
+            totalOrders: total,
+            uploaded: uploaded,
+            notUploaded: total - uploaded
+          }
+        }) || []
 
         console.log("Fetched shippers with stats:", shippersWithStats)
         return shippersWithStats
@@ -44,10 +62,10 @@ const Logistics = () => {
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Logistics Manager</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {isLoading ? (
           // Loading skeletons
-          Array.from({ length: 6 }).map((_, i) => (
+          Array.from({ length: 8 }).map((_, i) => (
             <Card key={i} className="shadow-sm">
               <CardHeader className="space-y-2">
                 <Skeleton className="h-4 w-1/3" />
@@ -67,19 +85,15 @@ const Logistics = () => {
             <Card key={index} className="shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div>
-                  <CardTitle className="text-xl font-bold">{shipper.name}</CardTitle>
+                  <CardTitle className="text-lg font-bold">{shipper.name}</CardTitle>
                   <p className="text-sm text-muted-foreground">
                     {shipper.totalOrders} orders total
                   </p>
                 </div>
-                <Button variant="outline" size="sm">View All</Button>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <h3 className="text-lg font-semibold">Total Orders</h3>
-                  <p className="text-3xl font-bold">{shipper.totalOrders}</p>
-                  
-                  <div className="flex justify-between items-center mt-4 text-sm">
+                  <div className="flex justify-between items-center text-sm">
                     <div>
                       <span className="text-muted-foreground">Uploaded</span>
                       <span className="ml-2 text-green-600">{shipper.uploaded}</span>
@@ -90,18 +104,18 @@ const Logistics = () => {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-2 mt-4">
+                  <div className="grid grid-cols-2 gap-1.5 mt-3">
                     <Button 
                       variant="secondary" 
                       size="sm" 
-                      className="w-full bg-blue-50 hover:bg-blue-100"
+                      className="w-full bg-blue-50 hover:bg-blue-100 text-xs"
                     >
                       View Uploaded
                     </Button>
                     <Button 
                       variant="secondary" 
                       size="sm" 
-                      className="w-full bg-blue-50 hover:bg-blue-100"
+                      className="w-full bg-blue-50 hover:bg-blue-100 text-xs"
                     >
                       View Pending
                     </Button>
