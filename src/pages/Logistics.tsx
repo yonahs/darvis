@@ -1,155 +1,118 @@
-import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
-import DashboardLayout from "@/components/dashboard/DashboardLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useToast } from "@/hooks/use-toast"
-import { formatDistanceToNow } from "date-fns"
+
+interface ShipperStats {
+  name: string
+  totalOrders: number
+  uploaded: number
+  notUploaded: number
+}
 
 const Logistics = () => {
-  const { toast } = useToast()
-  const [page] = useState(1)
-  const pageSize = 10
-
-  const { data: packages, isLoading, error } = useQuery({
-    queryKey: ["bsd-packages", page],
+  const { data: shippers, isLoading } = useQuery({
+    queryKey: ["logistics-stats"],
     queryFn: async () => {
-      console.log("Fetching BSD packages page:", page)
+      console.log("Fetching logistics statistics...")
       try {
-        const { data, error } = await supabase
-          .from("bsd_packages")
+        const { data: shipperData, error: shipperError } = await supabase
+          .from("shippers")
           .select("*")
-          .order("shipdate", { ascending: false })
-          .range((page - 1) * pageSize, page * pageSize - 1)
+          
+        if (shipperError) throw shipperError
 
-        if (error) {
-          console.error("Supabase error:", error)
-          throw error
-        }
+        // For now, we'll mock the order counts until we implement the actual counts
+        const shippersWithStats: ShipperStats[] = shipperData?.map(shipper => ({
+          name: shipper.display_name || "Unnamed Shipper",
+          totalOrders: Math.floor(Math.random() * 50), // Mock data
+          uploaded: 0,
+          notUploaded: 0
+        })) || []
 
-        console.log("Successfully fetched packages:", data)
-        return data
+        console.log("Fetched shippers with stats:", shippersWithStats)
+        return shippersWithStats
       } catch (err) {
-        console.error("Failed to fetch packages:", err)
-        toast({
-          title: "Error",
-          description: "Failed to fetch logistics data. Please try again later.",
-          variant: "destructive",
-        })
+        console.error("Error fetching logistics data:", err)
         throw err
       }
-    },
+    }
   })
 
-  if (error) {
-    return (
-      <DashboardLayout>
-        <div className="p-4">
-          <div className="rounded-md bg-destructive/15 p-4">
-            <h2 className="text-lg font-semibold text-destructive">Error Loading Logistics Data</h2>
-            <p className="text-sm text-destructive">Please try again later or contact support if the problem persists.</p>
-          </div>
-        </div>
-      </DashboardLayout>
-    )
-  }
-
   return (
-    <DashboardLayout>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Packages</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {isLoading ? <Skeleton className="h-8 w-20" /> : packages?.length || 0}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Weight</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {isLoading ? (
-                <Skeleton className="h-8 w-20" />
-              ) : (
-                `${packages?.reduce((acc, pkg) => acc + (pkg.weight || 0), 0).toFixed(2)} kg`
-              )}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Value</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {isLoading ? (
-                <Skeleton className="h-8 w-20" />
-              ) : (
-                `$${packages?.reduce((acc, pkg) => acc + (pkg.totalsalevalue || 0), 0).toFixed(2)}`
-              )}
-            </div>
-          </CardContent>
-        </Card>
+    <div className="container mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">Logistics Manager</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {isLoading ? (
+          // Loading skeletons
+          Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="shadow-sm">
+              <CardHeader className="space-y-2">
+                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-3 w-1/4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-16 mb-4" />
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-full" />
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          shippers?.map((shipper, index) => (
+            <Card key={index} className="shadow-sm">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div>
+                  <CardTitle className="text-xl font-bold">{shipper.name}</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    {shipper.totalOrders} orders total
+                  </p>
+                </div>
+                <Button variant="outline" size="sm">View All</Button>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">Total Orders</h3>
+                  <p className="text-3xl font-bold">{shipper.totalOrders}</p>
+                  
+                  <div className="flex justify-between items-center mt-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Uploaded</span>
+                      <span className="ml-2 text-green-600">{shipper.uploaded}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Not Uploaded</span>
+                      <span className="ml-2 text-orange-600">{shipper.notUploaded}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2 mt-4">
+                    <Button 
+                      variant="secondary" 
+                      size="sm" 
+                      className="w-full bg-blue-50 hover:bg-blue-100"
+                    >
+                      View Uploaded
+                    </Button>
+                    <Button 
+                      variant="secondary" 
+                      size="sm" 
+                      className="w-full bg-blue-50 hover:bg-blue-100"
+                    >
+                      View Pending
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
-
-      <Card className="mt-4">
-        <CardHeader>
-          <CardTitle>Recent Shipments</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Reference</TableHead>
-                <TableHead>Weight</TableHead>
-                <TableHead>Value</TableHead>
-                <TableHead>Ship Date</TableHead>
-                <TableHead>Packages</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[60px]" /></TableCell>
-                  </TableRow>
-                ))
-              ) : packages?.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    No shipments found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                packages?.map((pkg) => (
-                  <TableRow key={pkg.autoid}>
-                    <TableCell>{pkg.bsd_refnumber}</TableCell>
-                    <TableCell>{pkg.weight ? `${pkg.weight.toFixed(2)} kg` : "-"}</TableCell>
-                    <TableCell>${pkg.totalsalevalue?.toFixed(2) || "0.00"}</TableCell>
-                    <TableCell>
-                      {pkg.shipdate ? formatDistanceToNow(new Date(pkg.shipdate), { addSuffix: true }) : "-"}
-                    </TableCell>
-                    <TableCell>{pkg.packages || 0}</TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </DashboardLayout>
+    </div>
   )
 }
 
