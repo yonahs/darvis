@@ -8,23 +8,34 @@ import { OrderDetailsContent } from "@/components/orders/details/OrderDetailsCon
 const OrderDetail = () => {
   const { orderId } = useParams()
 
-  // Fetch order details
+  // Fetch order details - now handling split orders
   const { data: orderData, isLoading: orderLoading } = useQuery({
     queryKey: ["order", orderId],
     queryFn: async () => {
       console.log("Fetching order details for ID:", orderId)
       try {
-        const { data: order, error } = await supabase
+        const { data: orders, error } = await supabase
           .from("orders")
           .select("*")
           .eq("orderid", parseInt(orderId || "0"))
-          .maybeSingle()
 
         if (error) throw error
-        if (!order) throw new Error("Order not found")
+        if (!orders?.length) throw new Error("Order not found")
         
-        console.log("Order fetched:", order)
-        return order
+        // Combine split order information
+        const combinedOrder = orders.reduce((acc, curr) => {
+          return {
+            ...curr,
+            totalsale: (acc.totalsale || 0) + (curr.totalsale || 0),
+            // Keep track of multiple shippers
+            shippers: [...(acc.shippers || []), curr.shipperid].filter(Boolean),
+            // Combine shipping tracking numbers
+            trackingNumbers: [...(acc.trackingNumbers || []), curr.ups].filter(Boolean),
+          }
+        }, { shippers: [], trackingNumbers: [] })
+
+        console.log("Combined order data:", combinedOrder)
+        return combinedOrder
       } catch (err) {
         console.error("Failed to fetch order:", err)
         throw err
@@ -81,7 +92,6 @@ const OrderDetail = () => {
             console.error("Error fetching prescription details:", rxError)
           }
 
-          // Return both drug and prescription details
           return {
             ...drug,
             prescriptionDetails: rxDetails || null
