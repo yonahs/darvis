@@ -11,6 +11,7 @@ import {
 import { Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useState } from "react";
 
 interface DrugSearchInputProps {
   selectedDrug: string;
@@ -24,16 +25,24 @@ interface DrugOption {
 }
 
 export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+
   const { data: drugs = [], isLoading, error } = useQuery({
-    queryKey: ["drugs"],
+    queryKey: ["drugs", searchTerm],
     queryFn: async () => {
-      console.log("Starting drug search query...");
+      console.log("Searching drugs with term:", searchTerm);
       try {
-        const { data: drugsData, error: drugsError } = await supabase
+        const query = supabase
           .from("newdrugs")
           .select("drugid, nameus, chemical")
-          .ilike("nameus", '%semaglutide%')
           .order("nameus");
+
+        // Only apply search filter if there's a search term
+        if (searchTerm) {
+          query.ilike("nameus", `%${searchTerm}%`);
+        }
+
+        const { data: drugsData, error: drugsError } = await query;
 
         if (drugsError) {
           console.error("Error fetching drugs:", drugsError);
@@ -57,6 +66,8 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
         <CommandInput 
           placeholder="Type to search medications..." 
           className="h-9"
+          value={searchTerm}
+          onValueChange={setSearchTerm}
         />
         <CommandList>
           <CommandEmpty>No medications found.</CommandEmpty>
@@ -70,6 +81,8 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
       <CommandInput 
         placeholder="Type to search medications..." 
         className="h-9"
+        value={searchTerm}
+        onValueChange={setSearchTerm}
       />
       <CommandList>
         <CommandGroup className="max-h-[200px] overflow-y-auto">
