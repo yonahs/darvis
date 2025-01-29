@@ -52,7 +52,7 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
         throw error;
       }
 
-      return data;
+      return data || []; // Ensure we always return an array
     },
   });
 
@@ -78,6 +78,10 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
   const selectedDrugName = drugs?.find(
     (drug) => drug.drugid.toString() === selectedDrug
   )?.nameus;
+
+  if (error) {
+    console.error("Error loading medications:", error);
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -114,28 +118,30 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
                 <Command>
                   <CommandInput placeholder="Search medications..." />
                   <CommandEmpty>No medication found.</CommandEmpty>
-                  <CommandGroup className="max-h-[300px] overflow-y-auto">
-                    {drugs?.map((drug) => (
-                      <CommandItem
-                        key={drug.drugid}
-                        value={`${drug.nameus} ${drug.chemical}`}
-                        onSelect={() => {
-                          setSelectedDrug(drug.drugid.toString());
-                          setOpen(false);
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            selectedDrug === drug.drugid.toString()
-                              ? "opacity-100"
-                              : "opacity-0"
-                          )}
-                        />
-                        {drug.nameus} ({drug.chemical})
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
+                  {!isLoading && drugs && (
+                    <CommandGroup className="max-h-[300px] overflow-y-auto">
+                      {drugs.map((drug) => (
+                        <CommandItem
+                          key={drug.drugid}
+                          value={`${drug.nameus} ${drug.chemical}`}
+                          onSelect={() => {
+                            setSelectedDrug(drug.drugid.toString());
+                            setOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedDrug === drug.drugid.toString()
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          {drug.nameus} ({drug.chemical})
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )}
                 </Command>
               </PopoverContent>
             </Popover>
