@@ -2,7 +2,7 @@ import { format } from "date-fns"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { MessageSquare, Send, Plus } from "lucide-react"
+import { MessageSquare, Send, Plus, User } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
@@ -56,12 +56,12 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
             Comments & Service Notes
           </div>
           <Button 
-            variant="ghost" 
+            variant="outline" 
             size="sm" 
-            className="h-8 hover:bg-primary/5"
+            className="h-8 hover:bg-primary/5 gap-1"
             onClick={() => setIsExpanded(!isExpanded)}
           >
-            <Plus className="h-4 w-4 mr-1" />
+            <Plus className="h-3.5 w-3.5" />
             Add Comment
           </Button>
         </CardTitle>
@@ -72,7 +72,7 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
             <Textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Add a note about this order..."
+              placeholder="Type your message here..."
               className="min-h-[100px] resize-none bg-background"
             />
             <div className="flex justify-end gap-2">
@@ -87,31 +87,35 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
                 onClick={handleAddNote} 
                 disabled={!note.trim()}
                 size="sm"
-                className="gap-1"
+                className="gap-1.5"
               >
                 <Send className="h-3 w-3" />
-                Send
+                Send Message
               </Button>
             </div>
           </div>
         )}
         
-        <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-3 relative before:absolute before:left-3 before:top-2 before:h-[calc(100%-16px)] before:w-[2px] before:bg-border">
+        <ScrollArea className="flex-1">
+          <div className="space-y-4 px-1">
             {comments?.map((comment) => (
               <div
                 key={comment.id}
-                className="relative pl-8 animate-in fade-in duration-200"
+                className="group flex items-start gap-3 hover:bg-muted/30 p-2 -mx-2 rounded-lg transition-colors"
               >
-                <div className="absolute left-2 top-2 h-2.5 w-2.5 rounded-full bg-primary/20 border-2 border-primary" />
-                <div className="bg-card rounded-lg p-3 shadow-sm border border-border/50">
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="font-medium text-primary/80">{comment.author}</span>
-                    <span className="text-muted-foreground">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-primary">
+                  <User className="h-4 w-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="font-medium text-sm">{comment.author}</span>
+                    <span className="text-xs text-muted-foreground">
                       {comment.commentdate && format(new Date(comment.commentdate), "MMM d, h:mm a")}
                     </span>
                   </div>
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{comment.comment}</p>
+                  <div className="text-sm whitespace-pre-wrap leading-relaxed break-words">
+                    {comment.comment}
+                  </div>
                 </div>
               </div>
             ))}
