@@ -94,57 +94,23 @@ export const OrderItemsCard = ({ drugDetails, order, allOrderItems }: OrderItems
             </TableRow>
           </TableHeader>
           <TableBody>
-            {allOrderItems ? (
-              allOrderItems.map((item, index) => (
-                <TableRow key={`${item.orderid}-${index}`}>
-                  <TableCell className="py-2">
-                    <div className="space-y-0.5">
-                      <div className="text-xs font-medium">{drugDetails?.nameil}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {drugDetails?.strength} - {drugDetails?.packsize} units
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-2">
-                    <Badge className="rounded text-xs" variant={drugDetails?.otc ? "secondary" : "default"}>
-                      {drugDetails?.otc ? "OTC" : "Rx"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="py-2">
-                    {drugDetails?.prescriptionDetails ? (
-                      <span className="text-xs">
-                        {drugDetails.prescriptionDetails.filled || 0}/{drugDetails.prescriptionDetails.refills || 0}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="py-2">
-                    {getStockStatusBadge(drugDetails?.available)}
-                  </TableCell>
-                  <TableCell className="py-2 text-xs">{formatCurrency(item.totalsale || 0)}</TableCell>
-                  <TableCell className="py-2">
-                    {getShipperBadge(item.shipperid)}
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : drugDetails && (
-              <TableRow>
+            {allOrderItems?.map((item, index) => (
+              <TableRow key={`${item.orderid}-${index}`}>
                 <TableCell className="py-2">
                   <div className="space-y-0.5">
-                    <div className="text-xs font-medium">{drugDetails.nameil}</div>
+                    <div className="text-xs font-medium">{drugDetails?.nameil}</div>
                     <div className="text-xs text-muted-foreground">
-                      {drugDetails.strength} - {drugDetails.packsize} units
+                      {drugDetails?.strength} - {item.amount} units
                     </div>
                   </div>
                 </TableCell>
                 <TableCell className="py-2">
-                  <Badge className="rounded text-xs" variant={drugDetails.otc ? "secondary" : "default"}>
-                    {drugDetails.otc ? "OTC" : "Rx"}
+                  <Badge className="rounded text-xs" variant={drugDetails?.otc ? "secondary" : "default"}>
+                    {drugDetails?.otc ? "OTC" : "Rx"}
                   </Badge>
                 </TableCell>
                 <TableCell className="py-2">
-                  {drugDetails.prescriptionDetails ? (
+                  {drugDetails?.prescriptionDetails ? (
                     <span className="text-xs">
                       {drugDetails.prescriptionDetails.filled || 0}/{drugDetails.prescriptionDetails.refills || 0}
                     </span>
@@ -153,14 +119,14 @@ export const OrderItemsCard = ({ drugDetails, order, allOrderItems }: OrderItems
                   )}
                 </TableCell>
                 <TableCell className="py-2">
-                  {getStockStatusBadge(drugDetails.available)}
+                  {getStockStatusBadge(drugDetails?.available)}
                 </TableCell>
-                <TableCell className="py-2 text-xs">{formatCurrency(order?.totalsale || 0)}</TableCell>
+                <TableCell className="py-2 text-xs">{formatCurrency(item.totalsale || 0)}</TableCell>
                 <TableCell className="py-2">
-                  {getShipperBadge(order?.shipperid)}
+                  {getShipperBadge(item.shipperid)}
                 </TableCell>
               </TableRow>
-            )}
+            ))}
           </TableBody>
         </Table>
       </CardContent>
