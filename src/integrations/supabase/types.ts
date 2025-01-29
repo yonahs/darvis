@@ -1487,6 +1487,10 @@ export type Database = {
       }
     }
     Functions: {
+      is_saul: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       postgres_fdw_disconnect: {
         Args: {
           "": string
