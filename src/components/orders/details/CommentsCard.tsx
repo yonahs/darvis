@@ -47,7 +47,7 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
 
   return (
     <Card className="flex flex-col h-full">
-      <CardHeader>
+      <CardHeader className="pb-4">
         <CardTitle className="text-sm font-medium text-primary/80 flex items-center gap-2">
           <MessageSquare className="h-4 w-4" />
           Comments & Service Notes
@@ -55,7 +55,7 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
       </CardHeader>
       <CardContent className="flex flex-col h-full space-y-4">
         <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-4">
+          <div className="space-y-6 relative before:absolute before:left-4 before:top-0 before:h-full before:w-[2px] before:bg-muted">
             {comments?.map((comment) => (
               <div
                 key={comment.id}
@@ -64,19 +64,24 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
                 }`}
               >
                 <div
-                  className={`max-w-[80%] rounded-lg p-3 ${
+                  className={`relative max-w-[80%] rounded-lg p-4 ${
                     comment.author === "Customer Service"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
+                      ? "bg-primary text-primary-foreground ml-6"
+                      : "bg-muted mr-6"
                   }`}
                 >
-                  <div className="flex justify-between text-xs mb-1">
+                  <div className={`absolute top-4 ${
+                    comment.author === "Customer Service" ? "left-[-1.75rem]" : "right-[-1.75rem]"
+                  } h-3 w-3 rounded-full border-2 border-background ${
+                    comment.author === "Customer Service" ? "bg-primary" : "bg-muted"
+                  }`} />
+                  <div className="flex justify-between text-xs mb-1.5">
                     <span className="font-medium">{comment.author}</span>
                     <span className="opacity-70">
                       {comment.commentdate && format(new Date(comment.commentdate), "PP p")}
                     </span>
                   </div>
-                  <p className="text-sm whitespace-pre-wrap">{comment.comment}</p>
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{comment.comment}</p>
                 </div>
               </div>
             ))}
@@ -93,7 +98,8 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
           <Button 
             onClick={handleAddNote} 
             disabled={!note.trim()}
-            className="self-end"
+            size="icon"
+            className="self-end h-10 w-10"
           >
             <Send className="h-4 w-4" />
           </Button>
