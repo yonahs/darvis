@@ -16,6 +16,7 @@ interface StockCount {
   updated_by: string;
   drug: {
     nameus: string;
+    chemical: string | null;
     newdrugdetails: {
       id: number;
       strength: string | null;
@@ -32,13 +33,13 @@ const StockCount = () => {
   const { data: stockCounts, isLoading, error } = useQuery({
     queryKey: ["stockCounts"],
     queryFn: async () => {
-      console.log("Fetching stock counts");
       const { data, error } = await supabase
         .from("stock_counts")
         .select(`
           *,
           drug:newdrugs!inner(
             nameus,
+            chemical,
             newdrugdetails!inner(
               id,
               strength
@@ -52,7 +53,6 @@ const StockCount = () => {
         throw error;
       }
 
-      console.log("Raw stock counts data:", data);
       return data as StockCount[];
     },
   });
@@ -62,7 +62,6 @@ const StockCount = () => {
   };
 
   const handleAdd = async (drugId: number, drugDetailId: number, count: number) => {
-    console.log("Adding stock count:", { drugId, drugDetailId, count });
     await addMutation.mutateAsync({ drugId, drugDetailId, count });
   };
 
