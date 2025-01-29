@@ -25,9 +25,22 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
 
     setIsSubmitting(true)
     try {
+      // First, get the maximum ID to ensure we don't have conflicts
+      const { data: maxIdResult, error: maxIdError } = await supabase
+        .from("ordercomments")
+        .select("id")
+        .order("id", { ascending: false })
+        .limit(1)
+        .single()
+
+      if (maxIdError) throw maxIdError
+
+      const newId = (maxIdResult?.id || 0) + 1
+
       const { error } = await supabase
         .from("ordercomments")
         .insert({
+          id: newId,
           orderid: orderId,
           comment: newComment.trim(),
           author: "Customer Service", // This could be dynamic based on user role
