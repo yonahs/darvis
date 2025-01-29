@@ -42,7 +42,6 @@ export const StockCountTable = ({
       await onRemoveClick(stockCount);
       toast.success("Stock count removed successfully");
     } catch (error) {
-      console.error("Error removing stock count:", error);
       toast.error("Failed to remove stock count");
     }
   };
@@ -82,7 +81,7 @@ export const StockCountTable = ({
               className="hover:bg-transparent p-0 h-auto font-medium flex items-center"
             >
               Medication Name
-              <ArrowUpDown className="ml-2 h-4 w-4" />
+              <ArrowUpDown className="ml-2 h-3 w-3" />
             </Button>
           </TableHead>
           <TableHead>Strength</TableHead>
@@ -93,7 +92,7 @@ export const StockCountTable = ({
               className="hover:bg-transparent p-0 h-auto font-medium flex items-center justify-center w-full"
             >
               Current Stock
-              <ArrowUpDown className="ml-2 h-4 w-4" />
+              <ArrowUpDown className="ml-2 h-3 w-3" />
             </Button>
           </TableHead>
           <TableHead>
@@ -103,7 +102,7 @@ export const StockCountTable = ({
               className="hover:bg-transparent p-0 h-auto font-medium flex items-center"
             >
               Last Updated
-              <ArrowUpDown className="ml-2 h-4 w-4" />
+              <ArrowUpDown className="ml-2 h-3 w-3" />
             </Button>
           </TableHead>
           <TableHead className="text-right">Actions</TableHead>
@@ -119,28 +118,30 @@ export const StockCountTable = ({
               )?.strength || "-"}
             </TableCell>
             <TableCell className="text-center">
-              <span className="px-4 py-2 border rounded-md inline-block min-w-[80px] font-medium">
+              <span className="px-2 py-1 border rounded-md inline-block min-w-[60px] font-medium">
                 {stockCount.count}
               </span>
             </TableCell>
             <TableCell>
               {new Date(stockCount.last_updated).toLocaleDateString()}
             </TableCell>
-            <TableCell className="text-right space-x-2">
+            <TableCell className="text-right space-x-1">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onUpdateClick(stockCount)}
+                className="h-7"
               >
-                <Pencil className="h-4 w-4 mr-1" />
+                <Pencil className="h-3 w-3 mr-1" />
                 Update
               </Button>
               <Button
                 variant="destructive"
                 size="sm"
                 onClick={() => handleRemoveClick(stockCount)}
+                className="h-7"
               >
-                <Trash2 className="h-4 w-4 mr-1" />
+                <Trash2 className="h-3 w-3 mr-1" />
                 Remove
               </Button>
             </TableCell>
