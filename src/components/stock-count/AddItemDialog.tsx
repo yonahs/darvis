@@ -23,7 +23,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AddItemDialogProps {
@@ -38,7 +38,7 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
   const [isAdding, setIsAdding] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const { data: drugs } = useQuery({
+  const { data: drugs, isLoading, error } = useQuery({
     queryKey: ["drugs"],
     queryFn: async () => {
       console.log("Fetching drugs for stock count add dialog");
@@ -95,9 +95,19 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
                   role="combobox"
                   aria-expanded={open}
                   className="w-full justify-between"
+                  disabled={isLoading}
                 >
-                  {selectedDrugName ?? "Select a medication..."}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Loading medications...
+                    </div>
+                  ) : (
+                    <>
+                      {selectedDrugName ?? "Select a medication..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </>
+                  )}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[400px] p-0">
@@ -150,8 +160,18 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isAdding || !selectedDrug || !count}>
-              {isAdding ? "Adding..." : "Add"}
+            <Button 
+              type="submit" 
+              disabled={isAdding || !selectedDrug || !count || isLoading}
+            >
+              {isAdding ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Adding...
+                </div>
+              ) : (
+                "Add"
+              )}
             </Button>
           </DialogFooter>
         </form>
