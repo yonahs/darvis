@@ -7,12 +7,12 @@ const Index = () => {
   const { data: orders, isLoading } = useQuery({
     queryKey: ['dashboard-orders'],
     queryFn: async () => {
-      console.log("Fetching dashboard orders with drug details...");
+      console.log("Fetching dashboard orders...");
       const { data, error } = await supabase
         .from('orders')
         .select(`
           *,
-          newdrugdetails:drugdetailid (
+          newdrugdetails:newdrugdetails!drugdetailid(
             nameil,
             strength,
             packsize
@@ -26,7 +26,7 @@ const Index = () => {
         throw error;
       }
 
-      console.log("Fetched orders with drug details:", data);
+      console.log("Fetched orders:", data);
       return data;
     },
   });
@@ -42,14 +42,16 @@ const Index = () => {
         {orders?.map((order) => (
           <Card key={order.id} className="p-4">
             <h3 className="font-semibold">Order #{order.orderid}</h3>
-            {order.newdrugdetails && (
-              <div className="mt-2">
-                <p className="text-sm font-medium">{order.newdrugdetails.nameil}</p>
+            <div className="mt-2">
+              <p className="text-sm text-gray-600">
+                {order.newdrugdetails?.nameil || 'No drug details'}
+              </p>
+              {order.newdrugdetails && (
                 <p className="text-sm text-gray-600">
                   {order.newdrugdetails.strength} - {order.newdrugdetails.packsize} units
                 </p>
-              </div>
-            )}
+              )}
+            </div>
             <p className="text-sm text-gray-600 mt-2">{formatCurrency(order.totalsale || 0)}</p>
           </Card>
         ))}
