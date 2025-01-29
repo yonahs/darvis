@@ -1,4 +1,4 @@
-import { Upload, Eye, FileText, Edit } from "lucide-react"
+import { Upload, Eye, Edit, FileText, Calendar, Pill } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -28,6 +28,11 @@ export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionM
     console.log("Edit Rx clicked")
   }
 
+  const calculateRefillsLeft = (allowed: number | null, filled: number | null) => {
+    if (allowed === null || filled === null) return 0
+    return Math.max(0, allowed - filled)
+  }
+
   return (
     <Card>
       <CardHeader className="p-2">
@@ -52,46 +57,73 @@ export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionM
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-2">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-xs">Rx Date</TableHead>
-              <TableHead className="text-xs">Drug</TableHead>
-              <TableHead className="text-xs"># Allowed</TableHead>
-              <TableHead className="text-xs"># Left</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {drugDetails?.prescriptionDetails ? (
-              <TableRow>
-                <TableCell className="py-2 text-xs">
+      <CardContent className="p-2 space-y-4">
+        {drugDetails?.prescriptionDetails ? (
+          <>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <div className="text-xs text-muted-foreground">Prescription Date</div>
+                <div className="text-sm font-medium flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
                   {drugDetails.prescriptionDetails.rxdate
                     ? format(new Date(drugDetails.prescriptionDetails.rxdate), "MMM dd, yyyy")
-                    : "-"}
-                </TableCell>
-                <TableCell className="py-2">
-                  <div className="space-y-0.5">
-                    <div className="text-xs font-medium">{drugDetails.nameil}</div>
-                    <div className="text-xs text-muted-foreground">{drugDetails.strength}</div>
-                  </div>
-                </TableCell>
-                <TableCell className="py-2 text-xs">
-                  {drugDetails.prescriptionDetails.refills || 0}
-                </TableCell>
-                <TableCell className="py-2 text-xs">
-                  {Math.max(0, (drugDetails.prescriptionDetails.refills || 0) - (drugDetails.prescriptionDetails.filled || 0))}
-                </TableCell>
-              </TableRow>
-            ) : (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center py-4 text-sm text-muted-foreground">
-                  No prescription information available
-                </TableCell>
-              </TableRow>
+                    : "Not specified"}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-xs text-muted-foreground">Quantity Per Cycle</div>
+                <div className="text-sm font-medium flex items-center gap-1">
+                  <Pill className="h-3 w-3" />
+                  {drugDetails.prescriptionDetails.qtypercycle || "Not specified"}
+                </div>
+              </div>
+            </div>
+
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">Drug</TableHead>
+                  <TableHead className="text-xs">Strength</TableHead>
+                  <TableHead className="text-xs"># Allowed</TableHead>
+                  <TableHead className="text-xs"># Filled</TableHead>
+                  <TableHead className="text-xs"># Left</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="py-2 text-xs font-medium">
+                    {drugDetails.nameil}
+                  </TableCell>
+                  <TableCell className="py-2 text-xs">
+                    {drugDetails.prescriptionDetails.strength || drugDetails.strength || "N/A"}
+                  </TableCell>
+                  <TableCell className="py-2 text-xs">
+                    {drugDetails.prescriptionDetails.refills || 0}
+                  </TableCell>
+                  <TableCell className="py-2 text-xs">
+                    {drugDetails.prescriptionDetails.filled || 0}
+                  </TableCell>
+                  <TableCell className="py-2 text-xs">
+                    {calculateRefillsLeft(
+                      drugDetails.prescriptionDetails.refills,
+                      drugDetails.prescriptionDetails.filled
+                    )}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+
+            {drugDetails.prescriptionDetails.duration && (
+              <div className="text-xs text-muted-foreground">
+                Duration: {drugDetails.prescriptionDetails.duration}
+              </div>
             )}
-          </TableBody>
-        </Table>
+          </>
+        ) : (
+          <div className="text-center py-4 text-sm text-muted-foreground">
+            No prescription information available
+          </div>
+        )}
       </CardContent>
     </Card>
   )
