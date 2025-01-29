@@ -1,58 +1,30 @@
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { formatCurrency } from "@/lib/utils";
 
 const Index = () => {
-  const { data: orders, isLoading } = useQuery({
-    queryKey: ['dashboard-orders'],
+  const { data: orders } = useQuery({
+    queryKey: ['orders'],
     queryFn: async () => {
-      console.log("Fetching dashboard orders...");
       const { data, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          newdrugdetails:newdrugdetails!drugdetailid(
-            nameil,
-            strength,
-            packsize
-          )
-        `)
-        .limit(5)
-        .order('orderdate', { ascending: false });
+        .from('vw_order_details')
+        .select('*')
+        .limit(5);
 
-      if (error) {
-        console.error("Error fetching orders:", error);
-        throw error;
-      }
-
-      console.log("Fetched orders:", data);
+      if (error) throw error;
       return data;
     },
   });
-
-  if (isLoading) {
-    return <div className="p-6">Loading...</div>;
-  }
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {orders?.map((order) => (
-          <Card key={order.id} className="p-4">
+          <Card key={order.orderid} className="p-4">
             <h3 className="font-semibold">Order #{order.orderid}</h3>
-            <div className="mt-2">
-              <p className="text-sm text-gray-600">
-                {order.newdrugdetails?.nameil || 'No drug details'}
-              </p>
-              {order.newdrugdetails && (
-                <p className="text-sm text-gray-600">
-                  {order.newdrugdetails.strength} - {order.newdrugdetails.packsize} units
-                </p>
-              )}
-            </div>
-            <p className="text-sm text-gray-600 mt-2">{formatCurrency(order.totalsale || 0)}</p>
+            <p className="text-sm text-gray-600">{order.clientname}</p>
+            <p className="text-sm text-gray-600">${order.totalsale}</p>
           </Card>
         ))}
       </div>

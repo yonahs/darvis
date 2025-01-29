@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 
 const Pharmacy = () => {
-  const { data: prescriptions, isLoading } = useQuery({
+  const { data: prescriptions } = useQuery({
     queryKey: ["prescriptions"],
     queryFn: async () => {
       console.log("Fetching prescriptions...")
@@ -11,13 +11,7 @@ const Pharmacy = () => {
         .from("clientrx")
         .select(`
           *,
-          clientrxdetails (
-            *,
-            drugdetails:drugdetailid (
-              nameil,
-              strength
-            )
-          )
+          clientrxdetails (*)
         `)
         .order("dateuploaded", { ascending: false })
         .limit(10)
@@ -32,10 +26,6 @@ const Pharmacy = () => {
     },
   })
 
-  if (isLoading) {
-    return <div>Loading prescriptions...</div>
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -49,12 +39,11 @@ const Pharmacy = () => {
             <p className="text-sm text-gray-600">Client ID: {prescription.clientid}</p>
             <p className="text-sm text-gray-600">Date: {prescription.dateuploaded}</p>
             <div className="mt-2">
-              <h4 className="text-sm font-medium">Medications:</h4>
+              <h4 className="text-sm font-medium">Details:</h4>
               <ul className="list-disc list-inside text-sm text-gray-600">
                 {prescription.clientrxdetails?.map((detail) => (
                   <li key={detail.id}>
-                    {detail.drugdetails?.nameil || 'Unknown Drug'} 
-                    {detail.drugdetails?.strength && ` - ${detail.drugdetails.strength}`}
+                    Drug ID: {detail.drugid} - Strength: {detail.strength}
                   </li>
                 ))}
               </ul>
