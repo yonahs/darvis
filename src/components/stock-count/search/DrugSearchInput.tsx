@@ -21,18 +21,18 @@ interface DrugOption {
   drugid: number;
   nameus: string;
   chemical: string;
-  strength?: string;
 }
 
 export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputProps) {
   const { data: drugs = [], isLoading, error } = useQuery({
     queryKey: ["drugs"],
     queryFn: async () => {
-      console.log("Fetching drugs data...");
+      console.log("Starting drug search query...");
       try {
         const { data: drugsData, error: drugsError } = await supabase
           .from("newdrugs")
           .select("drugid, nameus, chemical")
+          .ilike("nameus", '%semaglutide%')
           .order("nameus");
 
         if (drugsError) {
@@ -40,7 +40,7 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
           throw drugsError;
         }
 
-        console.log("Fetched drugs:", drugsData);
+        console.log("Fetched drugs data:", drugsData);
         return drugsData as DrugOption[];
       } catch (err) {
         console.error("Error in drug search query:", err);
@@ -59,11 +59,7 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
           className="h-9"
         />
         <CommandList>
-          <CommandGroup>
-            <CommandItem value="error" disabled className="text-red-500">
-              Error loading medications. Please try again.
-            </CommandItem>
-          </CommandGroup>
+          <CommandEmpty>No medications found.</CommandEmpty>
         </CommandList>
       </Command>
     );
@@ -85,9 +81,7 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
               </div>
             </CommandItem>
           ) : drugs.length === 0 ? (
-            <CommandItem value="empty" disabled>
-              No medications found.
-            </CommandItem>
+            <CommandEmpty>No medications found.</CommandEmpty>
           ) : (
             drugs.map((drug) => (
               <CommandItem
