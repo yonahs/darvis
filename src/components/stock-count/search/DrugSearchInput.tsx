@@ -31,7 +31,6 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
   const { data: drugs = [], isLoading, error } = useQuery({
     queryKey: ["drugs", searchTerm],
     queryFn: async () => {
-      console.log("Searching drugs with term:", searchTerm);
       try {
         const query = supabase
           .from("newdrugs")
@@ -52,7 +51,6 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
         const { data: drugsData, error: drugsError } = await query;
 
         if (drugsError) {
-          console.error("Error fetching drugs:", drugsError);
           throw drugsError;
         }
 
@@ -82,10 +80,8 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
           return acc;
         }, []);
 
-        console.log("Transformed and deduplicated drug data:", uniqueDrugs);
         return uniqueDrugs;
       } catch (err) {
-        console.error("Error in drug search query:", err);
         toast.error("Error loading medications. Please try again.");
         throw err;
       }
@@ -93,7 +89,6 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
   });
 
   if (error) {
-    console.error("Error in DrugSearchInput:", error);
     return (
       <Command className="border rounded-md">
         <CommandInput 
@@ -137,7 +132,6 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
                   key={uniqueId}
                   value={displayName}
                   onSelect={() => {
-                    console.log("Selected drug:", drug);
                     onSelectDrug(drug.drugid.toString(), drug.drugdetailid);
                   }}
                 >

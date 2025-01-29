@@ -29,7 +29,6 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
   const { data: drugs, isLoading } = useQuery({
     queryKey: ["drugs"],
     queryFn: async () => {
-      console.log("Fetching drugs for name display");
       const { data, error } = await supabase
         .from("newdrugs")
         .select(`
@@ -43,7 +42,6 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
         .order("nameus");
 
       if (error) {
-        console.error("Error fetching drugs:", error);
         toast.error("Error loading medications. Please try again.");
         throw error;
       }
@@ -71,7 +69,6 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
       setCount("");
       onClose();
     } catch (error) {
-      console.error("Error adding stock count:", error);
       toast.error("Failed to add stock count. Please try again.");
     } finally {
       setIsAdding(false);
