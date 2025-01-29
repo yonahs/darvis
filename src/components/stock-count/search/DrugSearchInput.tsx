@@ -16,7 +16,7 @@ interface DrugSearchInputProps {
 }
 
 export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputProps) => {
-  const { data: drugs, isLoading, error } = useQuery({
+  const { data: drugs = [], isLoading, error } = useQuery({
     queryKey: ["drugs"],
     queryFn: async () => {
       console.log("Fetching drugs for stock count add dialog");
@@ -52,34 +52,34 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
         disabled={isLoading}
       />
       <CommandGroup className="max-h-[200px] overflow-y-auto">
-        {isLoading ? (
+        {isLoading && (
           <div className="p-4 flex items-center justify-center">
             <Loader2 className="h-4 w-4 animate-spin" />
           </div>
-        ) : !drugs?.length ? (
-          <CommandEmpty>No medication found.</CommandEmpty>
-        ) : (
-          drugs.map((drug) => (
-            <CommandItem
-              key={drug.drugid}
-              value={`${drug.nameus} ${drug.chemical}`}
-              onSelect={() => {
-                console.log("Selected drug:", drug.drugid, drug.nameus);
-                onSelectDrug(drug.drugid.toString());
-              }}
-            >
-              <Check
-                className={cn(
-                  "mr-2 h-4 w-4",
-                  selectedDrug === drug.drugid.toString()
-                    ? "opacity-100"
-                    : "opacity-0"
-                )}
-              />
-              {drug.nameus} ({drug.chemical})
-            </CommandItem>
-          ))
         )}
+        {!isLoading && !drugs.length && (
+          <CommandEmpty>No medication found.</CommandEmpty>
+        )}
+        {!isLoading && drugs.map((drug) => (
+          <CommandItem
+            key={drug.drugid}
+            value={`${drug.nameus} ${drug.chemical}`}
+            onSelect={() => {
+              console.log("Selected drug:", drug.drugid, drug.nameus);
+              onSelectDrug(drug.drugid.toString());
+            }}
+          >
+            <Check
+              className={cn(
+                "mr-2 h-4 w-4",
+                selectedDrug === drug.drugid.toString()
+                  ? "opacity-100"
+                  : "opacity-0"
+              )}
+            />
+            {drug.nameus} ({drug.chemical})
+          </CommandItem>
+        ))}
       </CommandGroup>
     </Command>
   );
