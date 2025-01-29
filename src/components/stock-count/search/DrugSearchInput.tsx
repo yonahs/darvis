@@ -15,7 +15,7 @@ import { useState } from "react";
 
 interface DrugSearchInputProps {
   selectedDrug: string;
-  onSelectDrug: (drugId: string) => void;
+  onSelectDrug: (drugId: string, drugDetailId: number) => void;
 }
 
 interface DrugOption {
@@ -47,7 +47,6 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
           `)
           .order("nameus");
 
-        // Only apply search filter if there's a search term
         if (searchTerm) {
           query.ilike("nameus", `%${searchTerm}%`);
         }
@@ -59,7 +58,6 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
           throw drugsError;
         }
 
-        // Transform the data to flatten the structure and include strength
         const transformedData = drugsData?.flatMap(drug => 
           drug.newdrugdetails?.map(detail => ({
             drugid: drug.drugid,
@@ -137,21 +135,20 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
           ) : (
             drugs.map((drug) => {
               const displayName = `${drug.nameus}${drug.strength ? ` (${drug.strength})` : ''}`;
+              const uniqueId = `${drug.drugid}-${drug.drugdetailid}`;
               return (
                 <CommandItem
-                  key={`${drug.drugid}-${drug.strength}`}
+                  key={uniqueId}
                   value={displayName}
                   onSelect={() => {
                     console.log("Selected drug:", drug);
-                    onSelectDrug(drug.drugid.toString());
+                    onSelectDrug(drug.drugid.toString(), drug.drugdetailid);
                   }}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      selectedDrug === drug.drugid.toString()
-                        ? "opacity-100"
-                        : "opacity-0"
+                      selectedDrug === uniqueId ? "opacity-100" : "opacity-0"
                     )}
                   />
                   {displayName} {drug.chemical && `- ${drug.chemical}`}

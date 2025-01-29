@@ -22,6 +22,7 @@ interface AddItemDialogProps {
 
 const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
   const [selectedDrug, setSelectedDrug] = useState<string>("");
+  const [selectedDrugDetailId, setSelectedDrugDetailId] = useState<number>(0);
   const [count, setCount] = useState("");
   const [isAdding, setIsAdding] = useState(false);
 
@@ -31,7 +32,14 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
       console.log("Fetching drugs for name display");
       const { data, error } = await supabase
         .from("newdrugs")
-        .select("drugid, nameus")
+        .select(`
+          drugid,
+          nameus,
+          newdrugdetails (
+            id,
+            strength
+          )
+        `)
         .order("nameus");
 
       if (error) {
@@ -59,6 +67,7 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
 
       await onAdd(drugId, newCount);
       setSelectedDrug("");
+      setSelectedDrugDetailId(0);
       setCount("");
       onClose();
     } catch (error) {
@@ -69,9 +78,16 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
     }
   };
 
-  const selectedDrugName = drugs?.find(
-    (drug) => drug.drugid.toString() === selectedDrug
-  )?.nameus;
+  const selectedDrugInfo = drugs?.find(drug => 
+    drug.drugid.toString() === selectedDrug
+  );
+
+  const selectedDrugDetail = selectedDrugInfo?.newdrugdetails?.find(
+    detail => detail.id === selectedDrugDetailId
+  );
+
+  const selectedDrugName = selectedDrugInfo?.nameus;
+  const selectedDrugStrength = selectedDrugDetail?.strength;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -84,13 +100,17 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
             <Label>Search Medication</Label>
             <div className="relative">
               <DrugSearchInput
-                selectedDrug={selectedDrug}
-                onSelectDrug={setSelectedDrug}
+                selectedDrug={`${selectedDrug}-${selectedDrugDetailId}`}
+                onSelectDrug={(drugId, drugDetailId) => {
+                  setSelectedDrug(drugId);
+                  setSelectedDrugDetailId(drugDetailId);
+                }}
               />
             </div>
             {selectedDrugName && (
               <p className="text-sm text-muted-foreground">
                 Selected: {selectedDrugName}
+                {selectedDrugStrength && ` (${selectedDrugStrength})`}
               </p>
             )}
           </div>
