@@ -1,9 +1,5 @@
-import { useState } from "react"
-import { ChevronDown, Send, Users, Clock, AlertCircle } from "lucide-react"
+import { Users, Clock, AlertCircle, Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { toast } from "sonner"
-import { supabase } from "@/integrations/supabase/client"
 import type { Database } from "@/integrations/supabase/types"
 
 type Comment = Database["public"]["Tables"]["ordercomments"]["Row"]
@@ -14,33 +10,6 @@ interface OrderTimelineProps {
 }
 
 export const OrderTimeline = ({ orderId, comments }: OrderTimelineProps) => {
-  const [newComment, setNewComment] = useState("")
-
-  const handleAddComment = async () => {
-    if (!newComment.trim()) return
-
-    try {
-      const { error } = await supabase
-        .from("ordercomments")
-        .insert({
-          id: Date.now(),
-          orderid: orderId,
-          comment: newComment,
-          author: "Customer Service",
-          commentdate: new Date().toISOString(),
-          deleteable: true,
-          showonreadyshipping: false
-        })
-
-      if (error) throw error
-
-      toast.success("Comment added successfully")
-      setNewComment("")
-    } catch (error) {
-      toast.error("Failed to add comment")
-    }
-  }
-
   const getStatusIcon = (comment: Comment) => {
     const authorLower = comment.author?.toLowerCase() || ""
     if (authorLower.includes("pharmacy")) return "🔬"
@@ -50,21 +19,6 @@ export const OrderTimeline = ({ orderId, comments }: OrderTimelineProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="font-medium">Add Comment</h3>
-          <Button onClick={handleAddComment} size="sm" disabled={!newComment.trim()}>
-            Add Comment
-          </Button>
-        </div>
-        <Textarea
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Add a comment to the order timeline..."
-          className="min-h-[100px]"
-        />
-      </div>
-
       <div className="space-y-2">
         {comments?.map((comment) => (
           <div
