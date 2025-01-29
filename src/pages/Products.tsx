@@ -11,7 +11,12 @@ const Products = () => {
       console.log("Fetching product catalog...")
       const { data, error } = await supabase
         .from("vw_product_catalog")
-        .select("*")
+        .select(`
+          *,
+          shipper:shippers!newdrugdetails_defaultshipper_fkey(
+            display_name
+          )
+        `)
       
       if (error) {
         console.error("Error fetching product catalog:", error)

@@ -34,7 +34,7 @@ interface ProductCatalog {
   turkey_cost_usd: number | null
   canada_cost_usd: number | null
   supplier_full_name: string | null
-  shipper: {
+  shipper?: {
     display_name: string | null
   } | null
 }
