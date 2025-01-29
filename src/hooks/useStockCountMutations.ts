@@ -9,12 +9,18 @@ export const useStockCountMutations = () => {
   const updateMutation = useMutation({
     mutationFn: async ({ id, count }: { id: string; count: number }) => {
       console.log("Updating stock count", { id, count });
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error("You must be logged in to update stock counts");
+      }
+
       const { data, error } = await supabase
         .from("stock_counts")
         .update({ 
           count, 
           last_updated: new Date().toISOString(),
-          updated_by: (await supabase.auth.getUser()).data.user?.id
+          updated_by: session.user.id
         })
         .eq("id", id);
 
@@ -41,10 +47,10 @@ export const useStockCountMutations = () => {
   const addMutation = useMutation({
     mutationFn: async ({ drugId, count }: { drugId: number; count: number }) => {
       console.log("Adding new stock count", { drugId, count });
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (!user) {
-        throw new Error("User must be authenticated to add stock counts");
+      if (!session) {
+        throw new Error("You must be logged in to add stock counts");
       }
 
       const { data, error } = await supabase
@@ -54,7 +60,7 @@ export const useStockCountMutations = () => {
             drug_id: drugId,
             count,
             last_updated: new Date().toISOString(),
-            updated_by: user.id
+            updated_by: session.user.id
           },
         ]);
 
@@ -72,7 +78,7 @@ export const useStockCountMutations = () => {
       console.error("Error adding stock count:", error);
       toast({
         title: "Error",
-        description: "Failed to add stock count. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to add stock count. Please try again.",
         variant: "destructive",
       });
     },
