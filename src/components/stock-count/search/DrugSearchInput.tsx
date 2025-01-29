@@ -46,7 +46,7 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
   }
 
   return (
-    <Command className="border rounded-md">
+    <Command className="border rounded-md" loop>
       <CommandInput 
         placeholder="Type to search medications..." 
         className="h-9"
@@ -56,7 +56,7 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
         <CommandEmpty>No medication found.</CommandEmpty>
         <CommandGroup className="max-h-[200px] overflow-y-auto">
           {isLoading ? (
-            <CommandItem value="loading" className="justify-center">
+            <CommandItem value="loading" disabled>
               <Loader2 className="h-4 w-4 animate-spin" />
             </CommandItem>
           ) : (
