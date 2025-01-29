@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 
 interface ShipperStats {
   name: string
@@ -59,11 +59,15 @@ const Logistics = () => {
         console.error("Error fetching logistics data:", err)
         throw err
       }
-    }
+    },
+    // Reduce staleTime and increase refetchInterval for more frequent updates
+    staleTime: 1000,
+    refetchInterval: 5000
   })
 
   // Set up real-time subscription
   useEffect(() => {
+    console.log("Setting up real-time subscription for orders table")
     const channel = supabase
       .channel('orders-changes')
       .on(
@@ -88,6 +92,7 @@ const Logistics = () => {
 
     // Cleanup subscription on component unmount
     return () => {
+      console.log("Cleaning up real-time subscription")
       supabase.removeChannel(channel)
     }
   }, [refetch, toast])
