@@ -21,7 +21,6 @@ interface DrugSearchInputProps {
 interface DrugOption {
   drugid: number;
   nameus: string;
-  chemical: string;
   strength: string | null;
   drugdetailid: number;
 }
@@ -39,7 +38,6 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
           .select(`
             drugid,
             nameus,
-            chemical,
             newdrugdetails (
               id,
               strength
@@ -62,13 +60,11 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
           drug.newdrugdetails?.map(detail => ({
             drugid: drug.drugid,
             nameus: drug.nameus,
-            chemical: drug.chemical,
             strength: detail.strength,
             drugdetailid: detail.id
           })) || [{
             drugid: drug.drugid,
             nameus: drug.nameus,
-            chemical: drug.chemical,
             strength: null,
             drugdetailid: 0
           }]
