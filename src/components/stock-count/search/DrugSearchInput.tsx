@@ -45,7 +45,13 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
         throw error;
       }
       
-      return (data || []) as DrugOption[];
+      // Filter out drugs with no details and ensure details is always an array
+      const validDrugs = (data || []).map(drug => ({
+        ...drug,
+        details: Array.isArray(drug.details) ? drug.details : []
+      })).filter(drug => drug.details.length > 0);
+
+      return validDrugs as DrugOption[];
     },
   });
 
@@ -77,7 +83,7 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
             </CommandItem>
           ) : (
             drugs.map((drug) => (
-              drug.details.map((detail) => (
+              drug.details?.map((detail) => (
                 <CommandItem
                   key={`${drug.drugid}-${detail.id}`}
                   value={`${drug.nameus} ${drug.chemical} ${detail.strength}`}
