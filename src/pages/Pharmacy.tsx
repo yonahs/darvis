@@ -11,12 +11,10 @@ const Pharmacy = () => {
         .from("clientrx")
         .select(`
           *,
-          clientrxdetails!inner (
+          clientrxdetails (
             *,
-            newdrugs!inner (
-              nameus,
-              chemical
-            )
+            drugid,
+            strength
           )
         `)
         .order("dateuploaded", { ascending: false })
@@ -27,8 +25,34 @@ const Pharmacy = () => {
         throw error
       }
 
-      console.log("Fetched prescriptions:", data)
-      return data
+      // After getting prescriptions, fetch drug details separately
+      const prescriptionsWithDrugs = await Promise.all(
+        data.map(async (prescription) => {
+          const detailsWithDrugs = await Promise.all(
+            (prescription.clientrxdetails || []).map(async (detail) => {
+              if (!detail.drugid) return { ...detail, drug: null }
+              
+              const { data: drugData } = await supabase
+                .from("newdrugs")
+                .select("nameus, chemical")
+                .eq("drugid", detail.drugid)
+                .single()
+              
+              return {
+                ...detail,
+                drug: drugData
+              }
+            })
+          )
+          return {
+            ...prescription,
+            clientrxdetails: detailsWithDrugs
+          }
+        })
+      )
+
+      console.log("Fetched prescriptions:", prescriptionsWithDrugs)
+      return prescriptionsWithDrugs
     },
   })
 
@@ -49,7 +73,9 @@ const Pharmacy = () => {
               <ul className="list-disc list-inside text-sm text-gray-600">
                 {prescription.clientrxdetails?.map((detail) => (
                   <li key={detail.id}>
-                    {detail.newdrugs?.nameus || 'Unknown Drug'} ({detail.newdrugs?.chemical || 'N/A'}) - {detail.strength}
+                    {detail.drug?.nameus || 'Unknown Drug'} 
+                    {detail.drug?.chemical ? `(${detail.drug.chemical})` : ''} 
+                    {detail.strength ? ` - ${detail.strength}` : ''}
                   </li>
                 ))}
               </ul>
