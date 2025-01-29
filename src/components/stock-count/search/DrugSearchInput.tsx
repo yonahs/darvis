@@ -17,6 +17,8 @@ interface DrugSearchInputProps {
 }
 
 export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputProps) => {
+  console.log("DrugSearchInput rendering, selectedDrug:", selectedDrug);
+
   const { data: drugs = [], isLoading, error } = useQuery({
     queryKey: ["drugs"],
     queryFn: async () => {
@@ -36,6 +38,8 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
     },
   });
 
+  console.log("Current state - isLoading:", isLoading, "drugs length:", drugs.length);
+
   if (error) {
     console.error("Error in DrugSearchInput:", error);
     return (
@@ -46,18 +50,21 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
   }
 
   return (
-    <Command className="border rounded-md" loop>
+    <Command className="border rounded-md">
       <CommandInput 
         placeholder="Type to search medications..." 
         className="h-9"
         disabled={isLoading}
       />
       <CommandList>
-        <CommandEmpty>No medication found.</CommandEmpty>
         <CommandGroup className="max-h-[200px] overflow-y-auto">
           {isLoading ? (
             <CommandItem value="loading" disabled>
               <Loader2 className="h-4 w-4 animate-spin" />
+            </CommandItem>
+          ) : drugs.length === 0 ? (
+            <CommandItem value="empty" disabled>
+              No medications found.
             </CommandItem>
           ) : (
             drugs.map((drug) => (
