@@ -16,13 +16,28 @@ interface DrugSearchInputProps {
   onSelectDrug: (drugId: string) => void;
 }
 
+interface DrugOption {
+  drugid: number;
+  nameus: string;
+  chemical: string;
+  details: {
+    id: number;
+    strength: string;
+  }[];
+}
+
 export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputProps) => {
   const { data: drugs = [], isLoading, error } = useQuery({
     queryKey: ["drugs"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("newdrugs")
-        .select("drugid, nameus, chemical")
+        .select(`
+          drugid,
+          nameus,
+          chemical,
+          details:newdrugdetails(id, strength)
+        `)
         .order("nameus");
 
       if (error) {
@@ -30,7 +45,7 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
         throw error;
       }
       
-      return data || [];
+      return (data || []) as DrugOption[];
     },
   });
 
@@ -62,23 +77,25 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
             </CommandItem>
           ) : (
             drugs.map((drug) => (
-              <CommandItem
-                key={drug.drugid}
-                value={`${drug.nameus} ${drug.chemical}`}
-                onSelect={() => {
-                  onSelectDrug(drug.drugid.toString());
-                }}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    selectedDrug === drug.drugid.toString()
-                      ? "opacity-100"
-                      : "opacity-0"
-                  )}
-                />
-                {drug.nameus} ({drug.chemical})
-              </CommandItem>
+              drug.details.map((detail) => (
+                <CommandItem
+                  key={`${drug.drugid}-${detail.id}`}
+                  value={`${drug.nameus} ${drug.chemical} ${detail.strength}`}
+                  onSelect={() => {
+                    onSelectDrug(detail.id.toString());
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      selectedDrug === detail.id.toString()
+                        ? "opacity-100"
+                        : "opacity-0"
+                    )}
+                  />
+                  {drug.nameus} {detail.strength} ({drug.chemical})
+                </CommandItem>
+              ))
             ))
           )}
         </CommandGroup>
