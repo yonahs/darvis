@@ -11,7 +11,13 @@ const Pharmacy = () => {
         .from("clientrx")
         .select(`
           *,
-          clientrxdetails (*)
+          clientrxdetails!inner (
+            *,
+            newdrugs!inner (
+              nameus,
+              chemical
+            )
+          )
         `)
         .order("dateuploaded", { ascending: false })
         .limit(10)
@@ -43,7 +49,7 @@ const Pharmacy = () => {
               <ul className="list-disc list-inside text-sm text-gray-600">
                 {prescription.clientrxdetails?.map((detail) => (
                   <li key={detail.id}>
-                    Drug ID: {detail.drugid} - Strength: {detail.strength}
+                    {detail.newdrugs?.nameus || 'Unknown Drug'} ({detail.newdrugs?.chemical || 'N/A'}) - {detail.strength}
                   </li>
                 ))}
               </ul>
