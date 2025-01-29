@@ -19,9 +19,9 @@ import {
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "16rem"
-const SIDEBAR_WIDTH_MOBILE = "18rem"
-const SIDEBAR_WIDTH_ICON = "3rem"
+const SIDEBAR_WIDTH = "12rem" // Changed from 16rem (25% reduction)
+const SIDEBAR_WIDTH_MOBILE = "13.5rem" // Changed from 18rem (25% reduction)
+const SIDEBAR_WIDTH_ICON = "3rem" // Keeping this the same as it's already compact
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 type SidebarContext = {
