@@ -119,7 +119,7 @@ export const OrderDetailsContent = ({
         </div>
 
         <div key="comments" className="bg-white rounded-lg shadow-sm overflow-auto">
-          <CommentsCard comments={comments} />
+          <CommentsCard comments={comments} orderId={order?.orderid || 0} />
         </div>
       </ResponsiveGridLayout>
     </div>
