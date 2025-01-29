@@ -60,9 +60,8 @@ const Logistics = () => {
         throw err
       }
     },
-    // Reduce staleTime and increase refetchInterval for more frequent updates
-    staleTime: 1000,
-    refetchInterval: 5000
+    staleTime: 0, // Disable cache to always fetch fresh data
+    refetchInterval: 5000 // Refetch every 5 seconds
   })
 
   // Set up real-time subscription
@@ -88,7 +87,9 @@ const Logistics = () => {
           await refetch()
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log("Subscription status:", status)
+      })
 
     // Cleanup subscription on component unmount
     return () => {
