@@ -17,7 +17,7 @@ import { toast } from "sonner";
 interface AddItemDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (drugId: number, count: number) => void;
+  onAdd: (drugId: number, drugDetailId: number, count: number) => void;
 }
 
 const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
@@ -59,13 +59,13 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
       const drugId = parseInt(selectedDrug);
       const newCount = parseInt(count);
 
-      if (isNaN(drugId) || isNaN(newCount)) {
+      if (isNaN(drugId) || isNaN(newCount) || !selectedDrugDetailId) {
         toast.error("Please select a valid medication and count");
         setIsAdding(false);
         return;
       }
 
-      await onAdd(drugId, newCount);
+      await onAdd(drugId, selectedDrugDetailId, newCount);
       setSelectedDrug("");
       setSelectedDrugDetailId(0);
       setCount("");

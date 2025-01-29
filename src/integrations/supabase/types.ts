@@ -1349,6 +1349,7 @@ export type Database = {
         Row: {
           count: number
           created_at: string | null
+          drug_detail_id: number | null
           drug_id: number | null
           id: string
           last_updated: string | null
@@ -1357,6 +1358,7 @@ export type Database = {
         Insert: {
           count?: number
           created_at?: string | null
+          drug_detail_id?: number | null
           drug_id?: number | null
           id?: string
           last_updated?: string | null
@@ -1365,12 +1367,20 @@ export type Database = {
         Update: {
           count?: number
           created_at?: string | null
+          drug_detail_id?: number | null
           drug_id?: number | null
           id?: string
           last_updated?: string | null
           updated_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "stock_counts_drug_detail_id_fkey"
+            columns: ["drug_detail_id"]
+            isOneToOne: false
+            referencedRelation: "newdrugdetails"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "stock_counts_drug_id_fkey"
             columns: ["drug_id"]

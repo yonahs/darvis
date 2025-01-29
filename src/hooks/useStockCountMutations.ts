@@ -68,14 +68,23 @@ export const useStockCountMutations = () => {
   });
 
   const addMutation = useMutation({
-    mutationFn: async ({ drugId, count }: { drugId: number; count: number }) => {
-      console.log("Adding new stock count", { drugId, count });
+    mutationFn: async ({ 
+      drugId, 
+      drugDetailId,
+      count 
+    }: { 
+      drugId: number; 
+      drugDetailId: number;
+      count: number;
+    }) => {
+      console.log("Adding new stock count", { drugId, drugDetailId, count });
       
       const { data, error } = await supabase
         .from("stock_counts")
         .insert([
           {
             drug_id: drugId,
+            drug_detail_id: drugDetailId,
             count,
             last_updated: new Date().toISOString(),
           },

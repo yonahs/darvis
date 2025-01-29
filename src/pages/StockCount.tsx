@@ -10,6 +10,7 @@ import { useStockCountMutations } from "@/hooks/useStockCountMutations";
 interface StockCount {
   id: string;
   drug_id: number;
+  drug_detail_id: number;
   count: number;
   last_updated: string;
   updated_by: string;
@@ -53,22 +54,8 @@ const StockCount = () => {
         throw error;
       }
 
-      // Map the data to include the correct strength based on the drug detail ID
-      const mappedData = data?.map(stockCount => {
-        console.log("Processing stock count:", stockCount);
-        // Find the matching drug detail with the correct strength
-        const drugDetail = stockCount.drug.newdrugdetails[0];
-        return {
-          ...stockCount,
-          drug: {
-            ...stockCount.drug,
-            newdrugdetails: [drugDetail]
-          }
-        };
-      });
-
-      console.log("Mapped stock counts data:", mappedData);
-      return mappedData as StockCount[];
+      console.log("Raw stock counts data:", data);
+      return data as StockCount[];
     },
   });
 
@@ -76,8 +63,9 @@ const StockCount = () => {
     await updateMutation.mutateAsync({ id, count: newCount });
   };
 
-  const handleAdd = async (drugId: number, count: number) => {
-    await addMutation.mutateAsync({ drugId, count });
+  const handleAdd = async (drugId: number, drugDetailId: number, count: number) => {
+    console.log("Adding stock count:", { drugId, drugDetailId, count });
+    await addMutation.mutateAsync({ drugId, drugDetailId, count });
   };
 
   const handleRemove = async (stockCount: StockCount) => {
