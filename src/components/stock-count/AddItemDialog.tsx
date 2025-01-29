@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -18,12 +18,7 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AddItemDialogProps {
@@ -36,7 +31,6 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
   const [selectedDrug, setSelectedDrug] = useState<string>("");
   const [count, setCount] = useState("");
   const [isAdding, setIsAdding] = useState(false);
-  const [open, setOpen] = useState(false);
 
   const { data: drugs, isLoading, error } = useQuery({
     queryKey: ["drugs"],
@@ -52,7 +46,7 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
         throw error;
       }
 
-      return data || []; // Ensure we always return an array
+      return data || [];
     },
   });
 
@@ -91,60 +85,50 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="drug">Medication</Label>
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={open}
-                  className="w-full justify-between"
+            <Label>Search Medication</Label>
+            <div className="relative">
+              <Command className="border rounded-md">
+                <CommandInput 
+                  placeholder="Type to search medications..." 
+                  className="h-9"
                   disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Loading medications...
-                    </div>
-                  ) : (
-                    <>
-                      {selectedDrugName ?? "Select a medication..."}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[400px] p-0">
-                <Command>
-                  <CommandInput placeholder="Search medications..." />
-                  <CommandEmpty>No medication found.</CommandEmpty>
-                  {!isLoading && drugs && (
-                    <CommandGroup className="max-h-[300px] overflow-y-auto">
-                      {drugs.map((drug) => (
-                        <CommandItem
-                          key={drug.drugid}
-                          value={`${drug.nameus} ${drug.chemical}`}
-                          onSelect={() => {
-                            setSelectedDrug(drug.drugid.toString());
-                            setOpen(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              selectedDrug === drug.drugid.toString()
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                          {drug.nameus} ({drug.chemical})
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  )}
-                </Command>
-              </PopoverContent>
-            </Popover>
+                />
+                <CommandEmpty>No medication found.</CommandEmpty>
+                {!isLoading && drugs && (
+                  <CommandGroup className="max-h-[200px] overflow-y-auto">
+                    {drugs.map((drug) => (
+                      <CommandItem
+                        key={drug.drugid}
+                        value={`${drug.nameus} ${drug.chemical}`}
+                        onSelect={() => {
+                          setSelectedDrug(drug.drugid.toString());
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedDrug === drug.drugid.toString()
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {drug.nameus} ({drug.chemical})
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
+              </Command>
+              {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-background/50">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </div>
+              )}
+            </div>
+            {selectedDrugName && (
+              <p className="text-sm text-muted-foreground">
+                Selected: {selectedDrugName}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="count">Initial Count</Label>
