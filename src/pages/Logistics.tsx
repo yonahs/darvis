@@ -34,7 +34,7 @@ type OrderDetails = {
   clientname: string | null
   orderdate: string | null
   totalsale: number | null
-  orderstatus: number | null
+  orderstatus: string | null // Changed to string to match the view's return type
 }
 
 const Logistics = () => {
