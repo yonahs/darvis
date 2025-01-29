@@ -16,7 +16,6 @@ interface StockCount {
   updated_by: string;
   drug: {
     nameus: string;
-    chemical: string;
     newdrugdetails: {
       id: number;
       strength: string | null;
@@ -39,8 +38,7 @@ const StockCount = () => {
         .select(`
           *,
           drug:newdrugs!inner(
-            nameus, 
-            chemical,
+            nameus,
             newdrugdetails!inner(
               id,
               strength

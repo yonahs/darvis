@@ -6,8 +6,10 @@ import { toast } from "sonner";
 interface StockCount {
   id: string;
   drug_id: number;
+  drug_detail_id: number;
   count: number;
   last_updated: string;
+  updated_by: string;
   drug: {
     nameus: string;
     newdrugdetails: {
@@ -44,7 +46,7 @@ export const StockCountTable = ({
         <TableRow>
           <TableHead>Medication Name</TableHead>
           <TableHead>Strength</TableHead>
-          <TableHead className="text-right">Current Stock</TableHead>
+          <TableHead className="text-center">Current Stock</TableHead>
           <TableHead>Last Updated</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
@@ -58,7 +60,11 @@ export const StockCountTable = ({
                 (detail) => detail.id === stockCount.drug_detail_id
               )?.strength || "-"}
             </TableCell>
-            <TableCell className="text-right">{stockCount.count}</TableCell>
+            <TableCell className="text-center">
+              <span className="px-4 py-2 border rounded-md inline-block min-w-[80px] font-medium">
+                {stockCount.count}
+              </span>
+            </TableCell>
             <TableCell>
               {new Date(stockCount.last_updated).toLocaleDateString()}
             </TableCell>
