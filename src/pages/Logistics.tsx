@@ -30,13 +30,15 @@ const Logistics = () => {
         
         if (shipperError) throw shipperError
 
-        // Fetch orders with specific conditions
+        // Fetch active orders from last 30 days
         const { data: orders, error: ordersError } = await supabase
           .from("orders")
-          .select("shipperid, shipstatus")
+          .select("shipperid, shipstatus, status")
           .not('shipperid', 'is', null)
-          .not('cancelled', 'eq', true)  // Exclude cancelled orders
-          .gte('orderdate', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) // Last 30 days
+          .not('cancelled', 'eq', true)
+          .gte('orderdate', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+          .not('status', 'in', '(99, 100)') // Exclude completed/closed orders
+          .not('shipstatus', 'eq', 99) // Exclude delivered orders
 
         if (ordersError) throw ordersError
 
@@ -64,8 +66,8 @@ const Logistics = () => {
         throw err
       }
     },
-    staleTime: 0, // Disable cache to always fetch fresh data
-    refetchInterval: 5000 // Refetch every 5 seconds
+    staleTime: 0,
+    refetchInterval: 5000
   })
 
   // Set up real-time subscription
@@ -76,18 +78,16 @@ const Logistics = () => {
       .on(
         'postgres_changes',
         {
-          event: '*', // Listen to all changes (INSERT, UPDATE, DELETE)
+          event: '*',
           schema: 'public',
           table: 'orders'
         },
         async (payload) => {
           console.log('Orders table changed:', payload)
-          // Show toast notification
           toast({
             title: "Order Update",
             description: "Order data has changed. Refreshing statistics...",
           })
-          // Refetch data to update the counts
           await refetch()
         }
       )
@@ -95,7 +95,6 @@ const Logistics = () => {
         console.log("Subscription status:", status)
       })
 
-    // Cleanup subscription on component unmount
     return () => {
       console.log("Cleaning up real-time subscription")
       supabase.removeChannel(channel)
@@ -108,7 +107,6 @@ const Logistics = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {isLoading ? (
-          // Loading skeletons
           Array.from({ length: 8 }).map((_, i) => (
             <Card key={i} className="shadow-sm">
               <CardHeader className="space-y-2">
