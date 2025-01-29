@@ -53,12 +53,14 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
       />
       <CommandGroup className="max-h-[200px] overflow-y-auto">
         {isLoading && (
-          <div className="p-4 flex items-center justify-center">
+          <CommandItem value="loading" className="justify-center">
             <Loader2 className="h-4 w-4 animate-spin" />
-          </div>
+          </CommandItem>
         )}
-        {!isLoading && !drugs.length && (
-          <CommandEmpty>No medication found.</CommandEmpty>
+        {!isLoading && drugs.length === 0 && (
+          <CommandItem value="empty">
+            <CommandEmpty>No medication found.</CommandEmpty>
+          </CommandItem>
         )}
         {!isLoading && drugs.map((drug) => (
           <CommandItem
