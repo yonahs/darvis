@@ -1,12 +1,13 @@
 import React, { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { MessageCircle, SendHorizontal } from "lucide-react"
+import { MessageCircle, SendHorizontal, UserRound } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import type { Database } from "@/integrations/supabase/types"
 
 type Comment = Database["public"]["Tables"]["ordercomments"]["Row"]
@@ -68,56 +69,74 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
     }
   }
 
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">
+    <Card className="h-full flex flex-col bg-[#F8F9FA]">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3">
+        <CardTitle className="text-sm font-medium text-gray-700">
           Comments ({comments?.length || 0})
         </CardTitle>
-        <MessageCircle className="h-4 w-4 text-muted-foreground" />
+        <MessageCircle className="h-4 w-4 text-gray-500" />
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col">
-        <ScrollArea className="flex-1 pr-4 mb-4">
+      <CardContent className="flex-1 flex flex-col p-3">
+        <ScrollArea className="flex-1 pr-2 mb-3">
           {comments?.length ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {comments.map((comment) => (
                 <div 
                   key={comment.id} 
-                  className="flex flex-col space-y-1 p-3 rounded-lg hover:bg-accent/50 transition-colors"
+                  className="flex space-x-2 group hover:bg-gray-50 p-2 rounded-md transition-colors"
                 >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-primary">{comment.author}</p>
-                    <time className="text-xs text-muted-foreground">
-                      {comment.commentdate
-                        ? formatDistanceToNow(new Date(comment.commentdate), {
-                            addSuffix: true,
-                          })
-                        : "Unknown date"}
-                    </time>
+                  <Avatar className="h-8 w-8 bg-[#E5DEFF]">
+                    <AvatarFallback className="text-xs font-medium text-[#6B46C1]">
+                      {getInitials(comment.author || 'CS')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2">
+                      <p className="text-sm font-medium text-gray-900">{comment.author}</p>
+                      <time className="text-xs text-gray-500">
+                        {comment.commentdate
+                          ? formatDistanceToNow(new Date(comment.commentdate), {
+                              addSuffix: true,
+                            })
+                          : "Unknown date"}
+                      </time>
+                    </div>
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
+                      {comment.comment}
+                    </p>
                   </div>
-                  <p className="text-sm text-foreground whitespace-pre-wrap">{comment.comment}</p>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              No comments yet
-            </p>
+            <div className="flex items-center justify-center h-20">
+              <p className="text-sm text-gray-500">No comments yet</p>
+            </div>
           )}
         </ScrollArea>
         
-        <div className="relative mt-auto">
+        <div className="relative mt-auto bg-white rounded-md shadow-sm">
           <Textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder="Type a message..."
-            className="min-h-[80px] pr-12 resize-none"
+            className="min-h-[60px] max-h-[120px] pr-12 resize-none border-gray-200 focus:border-purple-200 focus:ring-purple-200"
           />
           <Button
             size="icon"
             variant="ghost"
-            className="absolute bottom-2 right-2"
+            className="absolute bottom-2 right-2 text-gray-500 hover:text-purple-600 hover:bg-purple-50"
             onClick={handleSubmitComment}
             disabled={!newComment.trim() || isSubmitting}
           >
