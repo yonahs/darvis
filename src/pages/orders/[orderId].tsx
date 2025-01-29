@@ -4,6 +4,16 @@ import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
 import { OrderDetailsHeader } from "@/components/orders/details/OrderDetailsHeader"
 import { OrderDetailsContent } from "@/components/orders/details/OrderDetailsContent"
+import type { Database } from "@/integrations/supabase/types"
+
+type Order = Database["public"]["Tables"]["orders"]["Row"]
+type DrugDetails = Database["public"]["Tables"]["newdrugdetails"]["Row"]
+type Comment = Database["public"]["Tables"]["ordercomments"]["Row"]
+
+interface CombinedOrder extends Order {
+  shippers: number[];
+  trackingNumbers: string[];
+}
 
 const OrderDetail = () => {
   const { orderId } = useParams()
@@ -23,16 +33,25 @@ const OrderDetail = () => {
         if (!orders?.length) throw new Error("Order not found")
         
         // Combine split order information
-        const combinedOrder = orders.reduce((acc, curr) => {
+        const combinedOrder = orders.reduce<CombinedOrder>((acc, curr) => {
+          // Start with the first order's data if acc is empty
+          if (Object.keys(acc).length === 0) {
+            return {
+              ...curr,
+              shippers: curr.shipperid ? [curr.shipperid] : [],
+              trackingNumbers: curr.ups ? [curr.ups] : [],
+              totalsale: curr.totalsale || 0
+            }
+          }
+          
+          // Add data from subsequent orders
           return {
             ...curr,
             totalsale: (acc.totalsale || 0) + (curr.totalsale || 0),
-            // Keep track of multiple shippers
-            shippers: [...(acc.shippers || []), curr.shipperid].filter(Boolean),
-            // Combine shipping tracking numbers
-            trackingNumbers: [...(acc.trackingNumbers || []), curr.ups].filter(Boolean),
+            shippers: [...acc.shippers, ...(curr.shipperid ? [curr.shipperid] : [])],
+            trackingNumbers: [...acc.trackingNumbers, ...(curr.ups ? [curr.ups] : [])]
           }
-        }, { shippers: [], trackingNumbers: [] })
+        }, {} as CombinedOrder)
 
         console.log("Combined order data:", combinedOrder)
         return combinedOrder
