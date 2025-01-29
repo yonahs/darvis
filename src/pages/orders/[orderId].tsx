@@ -13,6 +13,7 @@ type Comment = Database["public"]["Tables"]["ordercomments"]["Row"]
 interface CombinedOrder extends Order {
   shippers: number[];
   trackingNumbers: string[];
+  allOrderItems?: Order[];
 }
 
 const OrderDetail = () => {
@@ -40,7 +41,8 @@ const OrderDetail = () => {
               ...curr,
               shippers: curr.shipperid ? [curr.shipperid] : [],
               trackingNumbers: curr.ups ? [curr.ups] : [],
-              totalsale: curr.totalsale || 0
+              totalsale: curr.totalsale || 0,
+              allOrderItems: orders // Store all order items
             }
           }
           
@@ -49,7 +51,8 @@ const OrderDetail = () => {
             ...curr,
             totalsale: (acc.totalsale || 0) + (curr.totalsale || 0),
             shippers: [...acc.shippers, ...(curr.shipperid ? [curr.shipperid] : [])],
-            trackingNumbers: [...acc.trackingNumbers, ...(curr.ups ? [curr.ups] : [])]
+            trackingNumbers: [...acc.trackingNumbers, ...(curr.ups ? [curr.ups] : [])],
+            allOrderItems: orders // Store all order items
           }
         }, {} as CombinedOrder)
 
@@ -184,6 +187,7 @@ const OrderDetail = () => {
         comments={comments}
         onMarkAsShipped={handleMarkAsShipped}
         onMarkAsPaid={handleMarkAsPaid}
+        allOrderItems={orderData?.allOrderItems}
       />
     </div>
   )

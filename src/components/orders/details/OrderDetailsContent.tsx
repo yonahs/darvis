@@ -25,6 +25,7 @@ interface OrderDetailsContentProps {
   comments: Comment[] | null
   onMarkAsShipped: () => void
   onMarkAsPaid: () => void
+  allOrderItems?: Order[] | null
 }
 
 const defaultLayouts = {
@@ -61,6 +62,7 @@ export const OrderDetailsContent = ({
   comments,
   onMarkAsShipped,
   onMarkAsPaid,
+  allOrderItems,
 }: OrderDetailsContentProps) => {
   const [layouts, setLayouts] = useState(() => {
     const savedLayouts = localStorage.getItem("orderDetailsLayouts")
@@ -110,7 +112,7 @@ export const OrderDetailsContent = ({
         </div>
 
         <div key="orderItems" className="bg-white rounded-lg shadow-sm overflow-auto">
-          <OrderItemsCard drugDetails={drugDetails} />
+          <OrderItemsCard drugDetails={drugDetails} order={order} allOrderItems={allOrderItems} />
         </div>
 
         <div key="prescription" className="bg-white rounded-lg shadow-sm overflow-auto">
