@@ -40,7 +40,7 @@ export const OrdersTable = ({
 }: OrdersTableProps) => {
   const getStatusVariant = (order: OrderDetails) => {
     if (order.cancelled) return "destructive"
-    if (order.orderbilled) return "default" // Shipped/Processed
+    if (order.orderbilled) return "success" // Shipped/Processed
     return "secondary" // Pending
   }
 
@@ -155,14 +155,17 @@ export const OrdersTable = ({
             </TableCell>
             <TableCell>{order.clientname}</TableCell>
             <TableCell>
-              <Badge variant={getStatusVariant(order)}>
+              <Badge 
+                variant={getStatusVariant(order)}
+                className="rounded px-2 py-0.5 text-xs font-medium"
+              >
                 {order.orderstatus}
               </Badge>
             </TableCell>
             <TableCell>{formatCurrency(order.totalsale)}</TableCell>
             <TableCell>{order.payment}</TableCell>
             <TableCell>
-              <span className={`px-2 py-1 rounded-md text-sm font-medium ${getShipperColor(order.shipper)}`}>
+              <span className={`px-2 py-1 rounded text-sm font-medium ${getShipperColor(order.shipper)}`}>
                 {order.shipper || '-'}
               </span>
             </TableCell>
