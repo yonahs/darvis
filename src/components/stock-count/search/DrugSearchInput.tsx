@@ -44,6 +44,9 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
     );
   }
 
+  // Initialize an empty array if drugs is undefined to prevent the iteration error
+  const drugsList = drugs || [];
+
   return (
     <Command className="border rounded-md">
       <CommandInput 
@@ -51,33 +54,31 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
         className="h-9"
         disabled={isLoading}
       />
-      {!drugs?.length && !isLoading && (
+      {!drugsList.length && !isLoading && (
         <CommandEmpty>No medication found.</CommandEmpty>
       )}
-      {drugs && drugs.length > 0 && (
-        <CommandGroup className="max-h-[200px] overflow-y-auto">
-          {drugs.map((drug) => (
-            <CommandItem
-              key={drug.drugid}
-              value={`${drug.nameus} ${drug.chemical}`}
-              onSelect={() => {
-                console.log("Selected drug:", drug.drugid, drug.nameus);
-                onSelectDrug(drug.drugid.toString());
-              }}
-            >
-              <Check
-                className={cn(
-                  "mr-2 h-4 w-4",
-                  selectedDrug === drug.drugid.toString()
-                    ? "opacity-100"
-                    : "opacity-0"
-                )}
-              />
-              {drug.nameus} ({drug.chemical})
-            </CommandItem>
-          ))}
-        </CommandGroup>
-      )}
+      <CommandGroup className="max-h-[200px] overflow-y-auto">
+        {drugsList.map((drug) => (
+          <CommandItem
+            key={drug.drugid}
+            value={`${drug.nameus} ${drug.chemical}`}
+            onSelect={() => {
+              console.log("Selected drug:", drug.drugid, drug.nameus);
+              onSelectDrug(drug.drugid.toString());
+            }}
+          >
+            <Check
+              className={cn(
+                "mr-2 h-4 w-4",
+                selectedDrug === drug.drugid.toString()
+                  ? "opacity-100"
+                  : "opacity-0"
+              )}
+            />
+            {drug.nameus} ({drug.chemical})
+          </CommandItem>
+        ))}
+      </CommandGroup>
       {isLoading && (
         <div className="p-4 flex items-center justify-center">
           <Loader2 className="h-4 w-4 animate-spin" />
