@@ -28,12 +28,12 @@ interface ShipperStats {
   shipperid: number
 }
 
+// Simplified OrderDetails type with only the fields we need
 type OrderDetails = {
   orderid: number
   clientname: string | null
   orderdate: string | null
   totalsale: number | null
-  ups: string | null
   orderstatus: number | null
 }
 
@@ -106,7 +106,7 @@ const Logistics = () => {
       
       const query = supabase
         .from("vw_order_details")
-        .select("*")
+        .select("orderid, clientname, orderdate, totalsale, orderstatus")
         .eq("shipper", selectedShipper.name)
         .not('cancelled', 'eq', true)
         .gte('orderdate', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
@@ -126,7 +126,7 @@ const Logistics = () => {
       }
       
       console.log("Fetched orders for shipper:", data?.length)
-      return data
+      return data as OrderDetails[]
     },
     enabled: !!selectedShipper,
   })
