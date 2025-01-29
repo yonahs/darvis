@@ -20,21 +20,28 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+// Define strict interfaces for our data types
 interface ShipperStats {
+  shipperid: number
   name: string
   totalOrders: number
   uploaded: number
   notUploaded: number
-  shipperid: number
 }
 
-// Simplified OrderDetails type with only the fields we need
-type OrderDetails = {
+interface OrderDetails {
   orderid: number
   clientname: string | null
   orderdate: string | null
   totalsale: number | null
-  orderstatus: string | null // Changed to string to match the view's return type
+  orderstatus: string | null
+}
+
+interface ShipperOrder {
+  shipperid: number
+  shipstatus: number | null
+  status: number | null
+  ups: string | null
 }
 
 const Logistics = () => {
@@ -51,7 +58,7 @@ const Logistics = () => {
         // Fetch shippers
         const { data: shipperData, error: shipperError } = await supabase
           .from("shippers")
-          .select("*")
+          .select("shipperid, display_name, company_name")
           .order('display_name')
         
         if (shipperError) throw shipperError
@@ -62,10 +69,10 @@ const Logistics = () => {
           .select("shipperid, shipstatus, status, ups")
           .not('shipperid', 'is', null)
           .not('cancelled', 'eq', true)
-          .is('ups', null)  // Only orders without tracking numbers
+          .is('ups', null)
           .gte('orderdate', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
-          .not('status', 'in', '(99, 100)') // Exclude completed/closed orders
-          .not('shipstatus', 'eq', 99) // Exclude delivered orders
+          .not('status', 'in', '(99, 100)')
+          .not('shipstatus', 'eq', 99)
 
         if (ordersError) throw ordersError
 
@@ -104,7 +111,7 @@ const Logistics = () => {
       
       console.log("Fetching orders for shipper:", selectedShipper.shipperid, "showUploaded:", showUploaded)
       
-      const query = supabase
+      const { data, error } = await supabase
         .from("vw_order_details")
         .select("orderid, clientname, orderdate, totalsale, orderstatus")
         .eq("shipper", selectedShipper.name)
@@ -112,21 +119,13 @@ const Logistics = () => {
         .gte('orderdate', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
         .not('orderstatus', 'in', '(99, 100)')
 
-      if (showUploaded) {
-        query.eq('shipstatus', 2)
-      } else {
-        query.or('shipstatus.is.null,shipstatus.neq.2')
-      }
-
-      const { data, error } = await query
-      
       if (error) {
         console.error("Error fetching shipper orders:", error)
         throw error
       }
       
       console.log("Fetched orders for shipper:", data?.length)
-      return data as OrderDetails[]
+      return (data || []) as OrderDetails[]
     },
     enabled: !!selectedShipper,
   })
