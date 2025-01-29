@@ -40,8 +40,9 @@ export const OrdersTable = ({
 }: OrdersTableProps) => {
   const getStatusVariant = (order: OrderDetails) => {
     if (order.cancelled) return "destructive"
-    if (order.orderbilled) return "success" // Shipped/Processed
-    return "secondary" // Pending
+    if (order.orderbilled) return "success"
+    if (order.orderstatus.toLowerCase() === "new order") return "new"
+    return "secondary"
   }
 
   const getRowHoverClass = (order: OrderDetails) => {
@@ -141,7 +142,7 @@ export const OrdersTable = ({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {orders.map((order) => (
+        {orders?.map((order) => (
           <TableRow 
             key={order.orderid}
             onClick={() => onViewDetails(order.orderid)}

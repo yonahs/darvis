@@ -17,6 +17,8 @@ const badgeVariants = cva(
         outline: "text-foreground",
         success:
           "border-transparent bg-[#ECFDF5] text-[#065F46]",
+        new:
+          "border-transparent bg-[#F1F0FB] text-[#6E59A5]", // Consistent purple theme for new orders
       },
     },
     defaultVariants: {
