@@ -5,6 +5,7 @@ import { useShipperOrders } from "@/hooks/useShipperOrders"
 import { ShipperCard, ShipperCardSkeleton } from "@/components/logistics/ShipperCard"
 import { OrdersDialog } from "@/components/logistics/OrdersDialog"
 import { supabase } from "@/integrations/supabase/client"
+import { useEffect } from "react"
 
 interface ShipperStats {
   shipperid: number
@@ -29,7 +30,7 @@ const Logistics = () => {
   })
 
   // Set up real-time subscription
-  useState(() => {
+  useEffect(() => {
     console.log("Setting up real-time subscription for orders table")
     const channel = supabase
       .channel('orders-changes')
