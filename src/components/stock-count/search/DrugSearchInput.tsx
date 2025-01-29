@@ -22,6 +22,8 @@ interface DrugOption {
   drugid: number;
   nameus: string;
   chemical: string;
+  strength: string | null;
+  drugdetailid: number;
 }
 
 export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputProps) {
@@ -34,7 +36,15 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
       try {
         const query = supabase
           .from("newdrugs")
-          .select("drugid, nameus, chemical")
+          .select(`
+            drugid,
+            nameus,
+            chemical,
+            newdrugdetails (
+              id,
+              strength
+            )
+          `)
           .order("nameus");
 
         // Only apply search filter if there's a search term
@@ -49,8 +59,25 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
           throw drugsError;
         }
 
-        console.log("Fetched drugs data:", drugsData);
-        return drugsData as DrugOption[];
+        // Transform the data to flatten the structure and include strength
+        const transformedData = drugsData?.flatMap(drug => 
+          drug.newdrugdetails?.map(detail => ({
+            drugid: drug.drugid,
+            nameus: drug.nameus,
+            chemical: drug.chemical,
+            strength: detail.strength,
+            drugdetailid: detail.id
+          })) || [{
+            drugid: drug.drugid,
+            nameus: drug.nameus,
+            chemical: drug.chemical,
+            strength: null,
+            drugdetailid: 0
+          }]
+        );
+
+        console.log("Transformed drug data:", transformedData);
+        return transformedData as DrugOption[];
       } catch (err) {
         console.error("Error in drug search query:", err);
         toast.error("Error loading medications. Please try again.");
@@ -98,8 +125,8 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
           ) : (
             drugs.map((drug) => (
               <CommandItem
-                key={drug.drugid}
-                value={`${drug.nameus} ${drug.chemical}`}
+                key={`${drug.drugid}-${drug.strength}`}
+                value={`${drug.nameus} ${drug.strength || ''}`}
                 onSelect={() => {
                   console.log("Selected drug:", drug);
                   onSelectDrug(drug.drugid.toString());
@@ -113,7 +140,7 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
                       : "opacity-0"
                   )}
                 />
-                {drug.nameus} {drug.chemical && `(${drug.chemical})`}
+                {drug.nameus} {drug.strength && `(${drug.strength})`} {drug.chemical && `- ${drug.chemical}`}
               </CommandItem>
             ))
           )}
