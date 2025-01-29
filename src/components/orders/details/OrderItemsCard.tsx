@@ -29,7 +29,6 @@ export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
     console.log("Update refills clicked for drug:", drugDetails?.nameil)
   }
 
-  // Helper function to determine stock status badge
   const getStockStatusBadge = (available: boolean | null) => {
     if (available === null) return <Badge className="rounded" variant="outline">Unknown</Badge>
     return available ? (
@@ -41,72 +40,72 @@ export const OrderItemsCard = ({ drugDetails }: OrderItemsProps) => {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="p-2">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-sm font-medium text-primary/80 flex items-center gap-2">
-            <Pill className="h-4 w-4" />
+          <CardTitle className="text-xs font-medium text-primary/80 flex items-center gap-1">
+            <Pill className="h-3 w-3" />
             Order Items
           </CardTitle>
-          <div className="flex gap-2">
-            <Button variant="outline" size="xs" onClick={handleUploadRx}>
-              <Upload className="h-4 w-4 mr-2" />
+          <div className="flex gap-1">
+            <Button variant="outline" size="xs" onClick={handleUploadRx} className="h-6 px-2 text-xs gap-1">
+              <Upload className="h-3 w-3" />
               Upload Rx
             </Button>
-            <Button variant="outline" size="xs" onClick={handleViewRx}>
-              <Eye className="h-4 w-4 mr-2" />
+            <Button variant="outline" size="xs" onClick={handleViewRx} className="h-6 px-2 text-xs gap-1">
+              <Eye className="h-3 w-3" />
               View Rx
             </Button>
-            <Button variant="outline" size="xs" onClick={handleUpdateRefills}>
-              <RefreshCw className="h-4 w-4 mr-2" />
+            <Button variant="outline" size="xs" onClick={handleUpdateRefills} className="h-6 px-2 text-xs gap-1">
+              <RefreshCw className="h-3 w-3" />
               Update Refills
             </Button>
-            <Button variant="outline" size="xs">
-              <Plus className="h-4 w-4 mr-2" />
+            <Button variant="outline" size="xs" className="h-6 px-2 text-xs gap-1">
+              <Plus className="h-3 w-3" />
               Add Item
             </Button>
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-2">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Drug</TableHead>
-              <TableHead>Prescription</TableHead>
-              <TableHead>Refills</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Price</TableHead>
+              <TableHead className="text-xs">Drug</TableHead>
+              <TableHead className="text-xs">Prescription</TableHead>
+              <TableHead className="text-xs">Refills</TableHead>
+              <TableHead className="text-xs">Status</TableHead>
+              <TableHead className="text-xs">Price</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {drugDetails && (
               <TableRow>
-                <TableCell className="font-medium">
-                  <div className="space-y-1">
-                    <div>{drugDetails.nameil}</div>
-                    <div className="text-sm text-muted-foreground">
+                <TableCell className="py-2">
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-medium">{drugDetails.nameil}</div>
+                    <div className="text-xs text-muted-foreground">
                       {drugDetails.strength} - {drugDetails.packsize}
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>
-                  <Badge className="rounded" variant={drugDetails.otc ? "secondary" : "default"}>
+                <TableCell className="py-2">
+                  <Badge className="rounded text-xs" variant={drugDetails.otc ? "secondary" : "default"}>
                     {drugDetails.otc ? "OTC" : "Rx"}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-2">
                   {drugDetails.prescriptionDetails ? (
-                    <span className="text-sm">
+                    <span className="text-xs">
                       {drugDetails.prescriptionDetails.filled || 0}/{drugDetails.prescriptionDetails.refills || 0}
                     </span>
                   ) : (
-                    <span className="text-sm text-muted-foreground">-</span>
+                    <span className="text-xs text-muted-foreground">-</span>
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-2">
                   {getStockStatusBadge(drugDetails.available)}
                 </TableCell>
-                <TableCell>{formatCurrency(drugDetails.saledollar)}</TableCell>
+                <TableCell className="py-2 text-xs">{formatCurrency(drugDetails.saledollar)}</TableCell>
               </TableRow>
             )}
           </TableBody>

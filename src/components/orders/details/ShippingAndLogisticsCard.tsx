@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import type { Database } from "@/integrations/supabase/types"
 
 type Order = Database["public"]["Tables"]["orders"]["Row"]
-type TrackingStatus = Database["public"]["Tables"]["trackingstatus"]["Row"]
 
 interface ShippingAndLogisticsProps {
   order: Order | null
@@ -17,12 +16,10 @@ export const ShippingAndLogisticsCard = ({ order, onMarkAsShipped }: ShippingAnd
 
   const handleChangeAddress = () => {
     console.log("Change shipping address clicked for order:", order.orderid)
-    // TODO: Implement change address functionality
   }
 
   const handleChangeShipper = () => {
     console.log("Change shipper clicked for order:", order.orderid)
-    // TODO: Implement change shipper functionality
   }
 
   const steps = [
@@ -35,32 +32,31 @@ export const ShippingAndLogisticsCard = ({ order, onMarkAsShipped }: ShippingAnd
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="p-2">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Truck className="h-4 w-4" />
+          <CardTitle className="text-xs font-medium text-primary/80 flex items-center gap-1">
+            <Truck className="h-3 w-3" />
             Shipping & Logistics
           </CardTitle>
-          <div className="flex items-center gap-1.5">
-            <Button onClick={handleChangeAddress} variant="outline" size="xs">
-              <MapPin className="h-3.5 w-3.5 mr-1.5" />
+          <div className="flex items-center gap-1">
+            <Button onClick={handleChangeAddress} variant="outline" size="xs" className="h-6 px-2 text-xs gap-1">
+              <MapPin className="h-3 w-3" />
               Change Address
             </Button>
-            <Button onClick={handleChangeShipper} variant="outline" size="xs">
-              <Truck className="h-3.5 w-3.5 mr-1.5" />
+            <Button onClick={handleChangeShipper} variant="outline" size="xs" className="h-6 px-2 text-xs gap-1">
+              <Truck className="h-3 w-3" />
               Change Shipper
             </Button>
-            <Button onClick={onMarkAsShipped} variant="outline" size="xs">
-              <Truck className="h-3.5 w-3.5 mr-1.5" />
-              Mark as Shipped
+            <Button onClick={onMarkAsShipped} variant="outline" size="xs" className="h-6 px-2 text-xs gap-1">
+              <Check className="h-3 w-3" />
+              Mark Shipped
             </Button>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Timeline */}
+      <CardContent className="space-y-3 p-2">
         <div className="relative">
-          <div className="flex justify-between mb-4">
+          <div className="flex justify-between mb-3">
             {steps.map((step) => (
               <div
                 key={step.id}
@@ -68,12 +64,12 @@ export const ShippingAndLogisticsCard = ({ order, onMarkAsShipped }: ShippingAnd
                   step.id <= currentStep ? "text-blue-600" : "text-gray-400"
                 }`}
               >
-                <step.icon className="h-4 w-4 mb-2" />
+                <step.icon className="h-3 w-3 mb-1" />
                 <span className="text-xs">{step.label}</span>
               </div>
             ))}
           </div>
-          <div className="absolute top-2 left-0 right-0 h-0.5 bg-gray-200">
+          <div className="absolute top-1.5 left-0 right-0 h-0.5 bg-gray-200">
             <div
               className="h-full bg-blue-600 transition-all duration-500"
               style={{
@@ -83,30 +79,28 @@ export const ShippingAndLogisticsCard = ({ order, onMarkAsShipped }: ShippingAnd
           </div>
         </div>
 
-        {/* Shipping Details */}
-        <div className="space-y-2 pt-4 border-t">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground text-sm">Status</span>
-            <span className="text-sm font-medium">{order.shipstatus ? String(order.shipstatus) : "Not shipped"}</span>
+        <div className="space-y-1 pt-2 border-t">
+          <div className="flex justify-between text-xs">
+            <span className="text-muted-foreground">Status</span>
+            <span className="font-medium">{order.shipstatus ? String(order.shipstatus) : "Not shipped"}</span>
           </div>
           {order.sentdate && (
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground text-sm">Sent Date</span>
-              <span className="text-sm">{format(new Date(order.sentdate), "PPp")}</span>
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Sent Date</span>
+              <span>{format(new Date(order.sentdate), "PPp")}</span>
             </div>
           )}
           {order.ups && (
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground text-sm">Tracking #</span>
-              <span className="text-sm font-medium">{order.ups}</span>
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Tracking #</span>
+              <span className="font-medium">{order.ups}</span>
             </div>
           )}
         </div>
 
-        {/* Address Details */}
-        <div className="space-y-1 pt-4 border-t">
-          <p className="text-sm font-medium">Shipping Address:</p>
-          <p className="text-sm text-muted-foreground">
+        <div className="space-y-1 pt-2 border-t">
+          <p className="text-xs font-medium">Shipping Address:</p>
+          <p className="text-xs text-muted-foreground">
             {order.address}
             {order.address2 && <br />}
             {order.address2}

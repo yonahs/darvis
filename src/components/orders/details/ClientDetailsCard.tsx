@@ -22,7 +22,7 @@ export const ClientDetailsCard = ({ client }: ClientDetailsProps) => {
     <Card className="h-full">
       <CardHeader className="p-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium text-primary/80 flex items-center gap-1">
+          <CardTitle className="text-xs font-medium text-primary/80 flex items-center gap-1">
             <User className="h-3 w-3" />
             Client Details
           </CardTitle>
