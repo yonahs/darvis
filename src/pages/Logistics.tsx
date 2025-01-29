@@ -30,12 +30,13 @@ const Logistics = () => {
         
         if (shipperError) throw shipperError
 
-        // Fetch active orders from last 30 days
+        // Fetch active orders awaiting shipping
         const { data: orders, error: ordersError } = await supabase
           .from("orders")
-          .select("shipperid, shipstatus, status")
+          .select("shipperid, shipstatus, status, ups")
           .not('shipperid', 'is', null)
           .not('cancelled', 'eq', true)
+          .is('ups', null)  // Only orders without tracking numbers
           .gte('orderdate', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
           .not('status', 'in', '(99, 100)') // Exclude completed/closed orders
           .not('shipstatus', 'eq', 99) // Exclude delivered orders
@@ -129,7 +130,7 @@ const Logistics = () => {
                 <div>
                   <CardTitle className="text-lg font-bold">{shipper.name}</CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    {shipper.totalOrders} orders total
+                    {shipper.totalOrders} orders pending
                   </p>
                 </div>
               </CardHeader>
