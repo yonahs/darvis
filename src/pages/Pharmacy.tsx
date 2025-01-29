@@ -11,9 +11,9 @@ const Pharmacy = () => {
         .from("clientrx")
         .select(`
           *,
-          clientrxdetails (
+          clientrxdetails!inner (
             *,
-            drug:drugid (
+            newdrugs!inner (
               nameus,
               chemical
             )
@@ -53,9 +53,9 @@ const Pharmacy = () => {
               <ul className="list-disc list-inside text-sm text-gray-600">
                 {prescription.clientrxdetails?.map((detail) => (
                   <li key={detail.id}>
-                    {detail.drug?.nameus || 'Unknown Drug'} - {detail.strength}
-                    {detail.drug?.chemical && (
-                      <span className="text-gray-500"> ({detail.drug.chemical})</span>
+                    {detail.newdrugs?.nameus || 'Unknown Drug'} - {detail.strength}
+                    {detail.newdrugs?.chemical && (
+                      <span className="text-gray-500"> ({detail.newdrugs.chemical})</span>
                     )}
                   </li>
                 ))}
