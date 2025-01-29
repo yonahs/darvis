@@ -2,7 +2,8 @@ import { format } from "date-fns"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { MessageSquare, Send, Plus, User } from "lucide-react"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { MessageSquare, Send, Plus } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 import { supabase } from "@/integrations/supabase/client"
@@ -47,6 +48,15 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
     }
   }
 
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
   return (
     <Card className="flex flex-col h-full border-none shadow-none bg-transparent">
       <CardHeader className="pb-2">
@@ -58,7 +68,7 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
           <Button 
             variant="outline" 
             size="sm" 
-            className="h-8 hover:bg-primary/5 gap-1"
+            className="h-8 hover:bg-primary/5 gap-1.5"
             onClick={() => setIsExpanded(!isExpanded)}
           >
             <Plus className="h-3.5 w-3.5" />
@@ -89,7 +99,7 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
                 size="sm"
                 className="gap-1.5"
               >
-                <Send className="h-3 w-3" />
+                <Send className="h-3.5 w-3.5" />
                 Send Message
               </Button>
             </div>
@@ -97,23 +107,25 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
         )}
         
         <ScrollArea className="flex-1">
-          <div className="space-y-4 px-1">
+          <div className="space-y-6 px-1">
             {comments?.map((comment) => (
               <div
                 key={comment.id}
-                className="group flex items-start gap-3 hover:bg-muted/30 p-2 -mx-2 rounded-lg transition-colors"
+                className="group flex items-start gap-3 hover:bg-muted/10 p-2 -mx-2 rounded-lg transition-colors"
               >
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-primary">
-                  <User className="h-4 w-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="font-medium text-sm">{comment.author}</span>
+                <Avatar className="h-8 w-8 flex-shrink-0">
+                  <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                    {getInitials(comment.author || "")}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0 space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-sm">{comment.author}</span>
                     <span className="text-xs text-muted-foreground">
-                      {comment.commentdate && format(new Date(comment.commentdate), "MMM d, h:mm a")}
+                      {comment.commentdate && format(new Date(comment.commentdate), "h:mm a")}
                     </span>
                   </div>
-                  <div className="text-sm whitespace-pre-wrap leading-relaxed break-words">
+                  <div className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed break-words">
                     {comment.comment}
                   </div>
                 </div>
