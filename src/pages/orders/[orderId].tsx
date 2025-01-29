@@ -16,6 +16,12 @@ interface CombinedOrder extends Order {
   allOrderItems?: Order[];
 }
 
+interface OrderItemWithDetails extends Order {
+  drugDetails?: DrugDetails & {
+    prescriptionDetails?: Database["public"]["Tables"]["clientrxdetails"]["Row"] | null;
+  };
+}
+
 const OrderDetail = () => {
   const { orderId } = useParams()
 
@@ -35,24 +41,20 @@ const OrderDetail = () => {
         
         // Combine split order information
         const combinedOrder = orders.reduce<CombinedOrder>((acc, curr) => {
-          // Start with the first order's data if acc is empty
           if (Object.keys(acc).length === 0) {
             return {
               ...curr,
               shippers: curr.shipperid ? [curr.shipperid] : [],
               trackingNumbers: curr.ups ? [curr.ups] : [],
-              totalsale: curr.totalsale || 0,
-              allOrderItems: orders // Store all order items
+              allOrderItems: orders
             }
           }
           
-          // Add data from subsequent orders
           return {
-            ...curr,
-            totalsale: (acc.totalsale || 0) + (curr.totalsale || 0),
+            ...acc,
             shippers: [...acc.shippers, ...(curr.shipperid ? [curr.shipperid] : [])],
             trackingNumbers: [...acc.trackingNumbers, ...(curr.ups ? [curr.ups] : [])],
-            allOrderItems: orders // Store all order items
+            allOrderItems: orders
           }
         }, {} as CombinedOrder)
 
@@ -86,49 +88,57 @@ const OrderDetail = () => {
     },
   })
 
-  // Fetch drug details and prescription details
-  const { data: drugDetails } = useQuery({
-    queryKey: ["drug", orderData?.drugdetailid],
-    enabled: !!orderData?.drugdetailid,
+  // Fetch drug details for all items
+  const { data: allItemsWithDetails } = useQuery<OrderItemWithDetails[]>({
+    queryKey: ["drugDetails", orderData?.allOrderItems],
+    enabled: !!orderData?.allOrderItems,
     queryFn: async () => {
       try {
-        // First fetch drug details
-        const { data: drug, error: drugError } = await supabase
-          .from("newdrugdetails")
-          .select("*")
-          .eq("id", orderData.drugdetailid)
-          .maybeSingle()
+        const itemsWithDetails = await Promise.all(
+          (orderData?.allOrderItems || []).map(async (item) => {
+            // Fetch drug details
+            const { data: drug, error: drugError } = await supabase
+              .from("newdrugdetails")
+              .select("*")
+              .eq("id", item.drugdetailid)
+              .maybeSingle()
 
-        if (drugError) throw drugError
+            if (drugError) throw drugError
 
-        // Then fetch prescription details if we have a client
-        if (orderData.clientid) {
-          const { data: rxDetails, error: rxError } = await supabase
-            .from("clientrxdetails")
-            .select("*")
-            .eq("drugdetailid", orderData.drugdetailid)
-            .order("rxdate", { ascending: false })
-            .maybeSingle()
+            // Fetch prescription details if we have a client
+            let prescriptionDetails = null
+            if (item.clientid && drug) {
+              const { data: rxDetails, error: rxError } = await supabase
+                .from("clientrxdetails")
+                .select("*")
+                .eq("drugdetailid", item.drugdetailid)
+                .order("rxdate", { ascending: false })
+                .maybeSingle()
 
-          if (rxError) {
-            console.error("Error fetching prescription details:", rxError)
-          }
+              if (rxError) {
+                console.error("Error fetching prescription details:", rxError)
+              } else {
+                prescriptionDetails = rxDetails
+              }
+            }
 
-          return {
-            ...drug,
-            prescriptionDetails: rxDetails || null
-          }
-        }
+            return {
+              ...item,
+              drugDetails: drug ? {
+                ...drug,
+                prescriptionDetails
+              } : undefined
+            }
+          })
+        )
 
-        return {
-          ...drug,
-          prescriptionDetails: null
-        }
+        console.log("Items with details:", itemsWithDetails)
+        return itemsWithDetails
       } catch (err) {
         console.error("Failed to fetch drug details:", err)
-        return null
+        return []
       }
-    },
+    }
   })
 
   // Fetch order comments
@@ -183,11 +193,11 @@ const OrderDetail = () => {
       <OrderDetailsContent
         order={orderData}
         client={clientData}
-        drugDetails={drugDetails}
+        drugDetails={allItemsWithDetails?.[0]?.drugDetails}
         comments={comments}
         onMarkAsShipped={handleMarkAsShipped}
         onMarkAsPaid={handleMarkAsPaid}
-        allOrderItems={orderData?.allOrderItems}
+        allOrderItems={allItemsWithDetails}
       />
     </div>
   )

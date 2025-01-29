@@ -10,7 +10,9 @@ type DrugDetails = Database["public"]["Tables"]["newdrugdetails"]["Row"] & {
   prescriptionDetails?: Database["public"]["Tables"]["clientrxdetails"]["Row"] | null
 }
 
-type Order = Database["public"]["Tables"]["orders"]["Row"]
+type Order = Database["public"]["Tables"]["orders"]["Row"] & {
+  drugDetails?: DrugDetails
+}
 
 interface OrderItemsProps {
   drugDetails: DrugDetails | null
@@ -31,7 +33,7 @@ export const OrderItemsCard = ({ drugDetails, order, allOrderItems }: OrderItems
   }
 
   const handleUpdateRefills = () => {
-    console.log("Update refills clicked for drug:", drugDetails?.nameil)
+    console.log("Update refills clicked")
   }
 
   const getStockStatusBadge = (available: boolean | null) => {
@@ -98,28 +100,28 @@ export const OrderItemsCard = ({ drugDetails, order, allOrderItems }: OrderItems
               <TableRow key={`${item.orderid}-${index}`}>
                 <TableCell className="py-2">
                   <div className="space-y-0.5">
-                    <div className="text-xs font-medium">{drugDetails?.nameil}</div>
+                    <div className="text-xs font-medium">{item.drugDetails?.nameil}</div>
                     <div className="text-xs text-muted-foreground">
-                      {drugDetails?.strength} - {item.amount} units
+                      {item.drugDetails?.strength} - {item.amount} units
                     </div>
                   </div>
                 </TableCell>
                 <TableCell className="py-2">
-                  <Badge className="rounded text-xs" variant={drugDetails?.otc ? "secondary" : "default"}>
-                    {drugDetails?.otc ? "OTC" : "Rx"}
+                  <Badge className="rounded text-xs" variant={item.drugDetails?.otc ? "secondary" : "default"}>
+                    {item.drugDetails?.otc ? "OTC" : "Rx"}
                   </Badge>
                 </TableCell>
                 <TableCell className="py-2">
-                  {drugDetails?.prescriptionDetails ? (
+                  {item.drugDetails?.prescriptionDetails ? (
                     <span className="text-xs">
-                      {drugDetails.prescriptionDetails.filled || 0}/{drugDetails.prescriptionDetails.refills || 0}
+                      {item.drugDetails.prescriptionDetails.filled || 0}/{item.drugDetails.prescriptionDetails.refills || 0}
                     </span>
                   ) : (
                     <span className="text-xs text-muted-foreground">-</span>
                   )}
                 </TableCell>
                 <TableCell className="py-2">
-                  {getStockStatusBadge(drugDetails?.available)}
+                  {getStockStatusBadge(item.drugDetails?.available)}
                 </TableCell>
                 <TableCell className="py-2 text-xs">{formatCurrency(item.totalsale || 0)}</TableCell>
                 <TableCell className="py-2">
