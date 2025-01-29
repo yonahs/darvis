@@ -6,6 +6,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 import { Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -51,38 +52,40 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
         className="h-9"
         disabled={isLoading}
       />
-      <CommandGroup className="max-h-[200px] overflow-y-auto">
-        {isLoading && (
-          <CommandItem value="loading" className="justify-center">
-            <Loader2 className="h-4 w-4 animate-spin" />
-          </CommandItem>
-        )}
-        {!isLoading && drugs.length === 0 && (
-          <CommandItem value="empty">
-            <CommandEmpty>No medication found.</CommandEmpty>
-          </CommandItem>
-        )}
-        {!isLoading && drugs.map((drug) => (
-          <CommandItem
-            key={drug.drugid}
-            value={`${drug.nameus} ${drug.chemical}`}
-            onSelect={() => {
-              console.log("Selected drug:", drug.drugid, drug.nameus);
-              onSelectDrug(drug.drugid.toString());
-            }}
-          >
-            <Check
-              className={cn(
-                "mr-2 h-4 w-4",
-                selectedDrug === drug.drugid.toString()
-                  ? "opacity-100"
-                  : "opacity-0"
-              )}
-            />
-            {drug.nameus} ({drug.chemical})
-          </CommandItem>
-        ))}
-      </CommandGroup>
+      <CommandList>
+        <CommandGroup className="max-h-[200px] overflow-y-auto">
+          {isLoading ? (
+            <CommandItem value="loading" className="justify-center">
+              <Loader2 className="h-4 w-4 animate-spin" />
+            </CommandItem>
+          ) : drugs.length === 0 ? (
+            <CommandItem value="empty">
+              <CommandEmpty>No medication found.</CommandEmpty>
+            </CommandItem>
+          ) : (
+            drugs.map((drug) => (
+              <CommandItem
+                key={drug.drugid}
+                value={`${drug.nameus} ${drug.chemical}`}
+                onSelect={() => {
+                  console.log("Selected drug:", drug.drugid, drug.nameus);
+                  onSelectDrug(drug.drugid.toString());
+                }}
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    selectedDrug === drug.drugid.toString()
+                      ? "opacity-100"
+                      : "opacity-0"
+                  )}
+                />
+                {drug.nameus} ({drug.chemical})
+              </CommandItem>
+            ))
+          )}
+        </CommandGroup>
+      </CommandList>
     </Command>
   );
 };
