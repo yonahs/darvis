@@ -1,3 +1,4 @@
+import { Link, useLocation } from "react-router-dom"
 import {
   LayoutDashboard,
   Package,
@@ -88,6 +89,8 @@ const menuItems = [
 ]
 
 const DashboardSidebar = () => {
+  const location = useLocation()
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -98,10 +101,13 @@ const DashboardSidebar = () => {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a href={item.href}>
+                    <Link 
+                      to={item.href}
+                      className={location.pathname === item.href ? "bg-accent" : ""}
+                    >
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
