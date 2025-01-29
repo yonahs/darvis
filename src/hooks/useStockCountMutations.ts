@@ -42,10 +42,6 @@ export const useStockCountMutations = () => {
     mutationFn: async ({ drugId, count }: { drugId: number; count: number }) => {
       console.log("Adding new stock count", { drugId, count });
       
-      // First check if we're authenticated with the correct email
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log("Current session:", session?.user?.email);
-      
       const { data, error } = await supabase
         .from("stock_counts")
         .insert([
