@@ -18,7 +18,8 @@ interface StockCount {
   drug: {
     nameus: string;
     chemical: string;
-    newdrugdetails?: {
+    newdrugdetails: {
+      id: number;
       strength: string | null;
     }[];
   }

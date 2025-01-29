@@ -16,7 +16,8 @@ interface StockCount {
   drug: {
     nameus: string;
     chemical: string;
-    newdrugdetails?: {
+    newdrugdetails: {
+      id: number;
       strength: string | null;
     }[];
   }
@@ -39,7 +40,10 @@ const StockCount = () => {
           drug:newdrugs!inner(
             nameus, 
             chemical,
-            newdrugdetails!inner(strength)
+            newdrugdetails!inner(
+              id,
+              strength
+            )
           )
         `)
         .order("last_updated", { ascending: false });
