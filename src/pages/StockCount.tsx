@@ -16,6 +16,9 @@ interface StockCount {
   drug: {
     nameus: string;
     chemical: string;
+    newdrugdetails?: {
+      strength: string | null;
+    }[];
   }
 }
 
@@ -33,7 +36,11 @@ const StockCount = () => {
         .from("stock_counts")
         .select(`
           *,
-          drug:newdrugs(nameus, chemical)
+          drug:newdrugs(
+            nameus, 
+            chemical,
+            newdrugdetails(strength)
+          )
         `)
         .order("last_updated", { ascending: false });
 

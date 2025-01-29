@@ -18,6 +18,9 @@ interface StockCount {
   drug: {
     nameus: string;
     chemical: string;
+    newdrugdetails?: {
+      strength: string | null;
+    }[];
   }
 }
 
@@ -38,6 +41,7 @@ export const StockCountTable = ({
         <TableRow>
           <TableHead>Medication Name</TableHead>
           <TableHead>Chemical Name</TableHead>
+          <TableHead>Strength</TableHead>
           <TableHead>Current Stock</TableHead>
           <TableHead>Last Updated</TableHead>
           <TableHead>Actions</TableHead>
@@ -48,6 +52,9 @@ export const StockCountTable = ({
           <TableRow key={item.id}>
             <TableCell>{item.drug?.nameus || "Unknown"}</TableCell>
             <TableCell>{item.drug?.chemical || "Unknown"}</TableCell>
+            <TableCell>
+              {item.drug?.newdrugdetails?.[0]?.strength || "N/A"}
+            </TableCell>
             <TableCell>{item.count}</TableCell>
             <TableCell>
               {new Date(item.last_updated).toLocaleDateString()}
