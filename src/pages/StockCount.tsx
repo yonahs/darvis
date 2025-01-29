@@ -22,7 +22,7 @@ interface StockCount {
 const StockCount = () => {
   const [selectedStock, setSelectedStock] = useState<StockCount | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const { updateMutation, addMutation } = useStockCountMutations();
+  const { updateMutation, addMutation, removeMutation } = useStockCountMutations();
 
   // Query for fetching stock counts
   const { data: stockCounts, isLoading, error } = useQuery({
@@ -54,6 +54,10 @@ const StockCount = () => {
     await addMutation.mutateAsync({ drugId, count });
   };
 
+  const handleRemove = async (stockCount: StockCount) => {
+    await removeMutation.mutateAsync(stockCount.id);
+  };
+
   if (isLoading) {
     return <div className="p-8">Loading stock counts...</div>;
   }
@@ -71,7 +75,8 @@ const StockCount = () => {
       <StockCountHeader onAddClick={() => setIsAddDialogOpen(true)} />
       <StockCountTable 
         stockCounts={stockCounts} 
-        onUpdateClick={setSelectedStock} 
+        onUpdateClick={setSelectedStock}
+        onRemoveClick={handleRemove}
       />
 
       {selectedStock && (

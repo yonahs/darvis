@@ -7,7 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 
 interface StockCount {
   id: string;
@@ -24,9 +24,14 @@ interface StockCount {
 interface StockCountTableProps {
   stockCounts: StockCount[] | undefined;
   onUpdateClick: (stockCount: StockCount) => void;
+  onRemoveClick: (stockCount: StockCount) => void;
 }
 
-export const StockCountTable = ({ stockCounts, onUpdateClick }: StockCountTableProps) => {
+export const StockCountTable = ({ 
+  stockCounts, 
+  onUpdateClick,
+  onRemoveClick 
+}: StockCountTableProps) => {
   return (
     <Table>
       <TableHeader>
@@ -47,7 +52,7 @@ export const StockCountTable = ({ stockCounts, onUpdateClick }: StockCountTableP
             <TableCell>
               {new Date(item.last_updated).toLocaleDateString()}
             </TableCell>
-            <TableCell>
+            <TableCell className="space-x-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -56,6 +61,15 @@ export const StockCountTable = ({ stockCounts, onUpdateClick }: StockCountTableP
               >
                 <Edit className="h-4 w-4" />
                 Update
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="flex items-center gap-2"
+                onClick={() => onRemoveClick(item)}
+              >
+                <Trash2 className="h-4 w-4" />
+                Remove
               </Button>
             </TableCell>
           </TableRow>

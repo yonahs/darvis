@@ -38,6 +38,35 @@ export const useStockCountMutations = () => {
     },
   });
 
+  const removeMutation = useMutation({
+    mutationFn: async (id: string) => {
+      console.log("Removing stock count", { id });
+      
+      const { data, error } = await supabase
+        .from("stock_counts")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["stockCounts"] });
+      toast({
+        title: "Stock count removed",
+        description: "The stock count has been successfully removed.",
+      });
+    },
+    onError: (error) => {
+      console.error("Error removing stock count:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove stock count. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const addMutation = useMutation({
     mutationFn: async ({ drugId, count }: { drugId: number; count: number }) => {
       console.log("Adding new stock count", { drugId, count });
@@ -75,5 +104,6 @@ export const useStockCountMutations = () => {
   return {
     updateMutation,
     addMutation,
+    removeMutation,
   };
 };
