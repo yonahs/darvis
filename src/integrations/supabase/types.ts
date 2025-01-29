@@ -761,6 +761,13 @@ export type Database = {
             referencedRelation: "newdrugs"
             referencedColumns: ["drugid"]
           },
+          {
+            foreignKeyName: "fk_newdrugdetails_drug"
+            columns: ["drugid"]
+            isOneToOne: false
+            referencedRelation: "vw_product_catalog"
+            referencedColumns: ["drugid"]
+          },
         ]
       }
       newdrugs: {
@@ -1382,10 +1389,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "stock_counts_drug_detail_id_fkey"
+            columns: ["drug_detail_id"]
+            isOneToOne: false
+            referencedRelation: "vw_product_catalog"
+            referencedColumns: ["drug_detail_id"]
+          },
+          {
             foreignKeyName: "stock_counts_drug_id_fkey"
             columns: ["drug_id"]
             isOneToOne: false
             referencedRelation: "newdrugs"
+            referencedColumns: ["drugid"]
+          },
+          {
+            foreignKeyName: "stock_counts_drug_id_fkey"
+            columns: ["drug_id"]
+            isOneToOne: false
+            referencedRelation: "vw_product_catalog"
             referencedColumns: ["drugid"]
           },
         ]
@@ -1492,6 +1513,33 @@ export type Database = {
           state: string | null
           totalsale: number | null
           website: string | null
+        }
+        Relationships: []
+      }
+      vw_product_catalog: {
+        Row: {
+          available: boolean | null
+          brand: boolean | null
+          canada_cost_usd: number | null
+          chemical: string | null
+          defaultshipper: number | null
+          drug_detail_id: number | null
+          drugid: number | null
+          form: number | null
+          ivf: boolean | null
+          nameil: string | null
+          nameus: string | null
+          otc: boolean | null
+          packsize: number | null
+          prescription: boolean | null
+          saledollar: number | null
+          salenis: number | null
+          strength: string | null
+          supplier: number | null
+          supplier_full_name: string | null
+          supplier_name: string | null
+          turkey_cost_usd: number | null
+          turkeycostprice: number | null
         }
         Relationships: []
       }

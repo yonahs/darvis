@@ -1,88 +1,40 @@
-import { Card } from "@/components/ui/card"
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
+import { ProductCatalogTable } from "@/components/pharmacy/ProductCatalogTable"
 
 const Pharmacy = () => {
-  const { data: prescriptions } = useQuery({
-    queryKey: ["prescriptions"],
-    queryFn: async () => {
-      console.log("Fetching prescriptions...")
-      const { data, error } = await supabase
-        .from("clientrx")
-        .select(`
-          *,
-          clientrxdetails (
-            *,
-            drugid,
-            strength
-          )
-        `)
-        .order("dateuploaded", { ascending: false })
-        .limit(10)
+  const pageSize = 10
 
+  const { data: products, isLoading, isFetching } = useQuery({
+    queryKey: ["product-catalog"],
+    queryFn: async () => {
+      console.log("Fetching product catalog...")
+      const { data, error } = await supabase
+        .from("vw_product_catalog")
+        .select("*")
+      
       if (error) {
-        console.error("Error fetching prescriptions:", error)
+        console.error("Error fetching product catalog:", error)
         throw error
       }
-
-      // After getting prescriptions, fetch drug details separately
-      const prescriptionsWithDrugs = await Promise.all(
-        data.map(async (prescription) => {
-          const detailsWithDrugs = await Promise.all(
-            (prescription.clientrxdetails || []).map(async (detail) => {
-              if (!detail.drugid) return { ...detail, drug: null }
-              
-              const { data: drugData } = await supabase
-                .from("newdrugs")
-                .select("nameus, chemical")
-                .eq("drugid", detail.drugid)
-                .single()
-              
-              return {
-                ...detail,
-                drug: drugData
-              }
-            })
-          )
-          return {
-            ...prescription,
-            clientrxdetails: detailsWithDrugs
-          }
-        })
-      )
-
-      console.log("Fetched prescriptions:", prescriptionsWithDrugs)
-      return prescriptionsWithDrugs
+      
+      console.log("Product catalog data:", data)
+      return data
     },
   })
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Pharmacy Dashboard</h1>
+        <h1 className="text-2xl font-bold">Pharmacy Products</h1>
       </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {prescriptions?.map((prescription) => (
-          <Card key={prescription.id} className="p-4">
-            <h3 className="font-semibold">Prescription #{prescription.id}</h3>
-            <p className="text-sm text-gray-600">Client ID: {prescription.clientid}</p>
-            <p className="text-sm text-gray-600">Date: {prescription.dateuploaded}</p>
-            <div className="mt-2">
-              <h4 className="text-sm font-medium">Details:</h4>
-              <ul className="list-disc list-inside text-sm text-gray-600">
-                {prescription.clientrxdetails?.map((detail) => (
-                  <li key={detail.id}>
-                    {detail.drug?.nameus || 'Unknown Drug'} 
-                    {detail.drug?.chemical ? `(${detail.drug.chemical})` : ''} 
-                    {detail.strength ? ` - ${detail.strength}` : ''}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </Card>
-        ))}
-      </div>
+      
+      <ProductCatalogTable
+        products={products}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        pageSize={pageSize}
+      />
     </div>
   )
 }
