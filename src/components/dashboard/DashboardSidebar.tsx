@@ -12,6 +12,7 @@ import {
   BarChart3,
   TestTube,
   FileText,
+  Database,
 } from "lucide-react"
 import {
   Sidebar,
@@ -49,6 +50,11 @@ const menuItems = [
     title: "Pharmacy",
     icon: Stethoscope,
     href: "/pharmacy",
+  },
+  {
+    title: "Stock Count",
+    icon: Database,
+    href: "/stockcount",
   },
   {
     title: "Create Order",

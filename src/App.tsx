@@ -7,6 +7,7 @@ import Orders from '@/pages/Orders';
 import OrderDetail from '@/pages/orders/[orderId]';
 import Logistics from '@/pages/Logistics';
 import Pharmacy from '@/pages/Pharmacy';
+import StockCount from '@/pages/StockCount';
 import NotFound from '@/pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => {
             <Route path="/orders/:orderId" element={<OrderDetail />} />
             <Route path="/logistics" element={<Logistics />} />
             <Route path="/pharmacy" element={<Pharmacy />} />
+            <Route path="/stockcount" element={<StockCount />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </DashboardLayout>

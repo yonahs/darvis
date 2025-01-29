@@ -1310,6 +1310,68 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_count_settings: {
+        Row: {
+          created_at: string | null
+          email_frequency: string
+          email_recipients: string[]
+          id: string
+          last_email_sent: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email_frequency?: string
+          email_recipients?: string[]
+          id?: string
+          last_email_sent?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email_frequency?: string
+          email_recipients?: string[]
+          id?: string
+          last_email_sent?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      stock_counts: {
+        Row: {
+          count: number
+          created_at: string | null
+          drug_id: number | null
+          id: string
+          last_updated: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          count?: number
+          created_at?: string | null
+          drug_id?: number | null
+          id?: string
+          last_updated?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          count?: number
+          created_at?: string | null
+          drug_id?: number | null
+          id?: string
+          last_updated?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_counts_drug_id_fkey"
+            columns: ["drug_id"]
+            isOneToOne: false
+            referencedRelation: "newdrugs"
+            referencedColumns: ["drugid"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           id: number
