@@ -30,12 +30,18 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
         throw error;
       }
 
+      console.log("Fetched drugs:", data?.length || 0, "items");
       return data || [];
     },
   });
 
   if (error) {
-    console.error("Error loading medications:", error);
+    console.error("Error in DrugSearchInput:", error);
+    return (
+      <div className="text-red-500 p-4 border rounded">
+        Error loading medications. Please try again.
+      </div>
+    );
   }
 
   return (
@@ -45,14 +51,17 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
         className="h-9"
         disabled={isLoading}
       />
-      <CommandEmpty>No medication found.</CommandEmpty>
-      {!isLoading && drugs && (
+      {!drugs?.length && !isLoading && (
+        <CommandEmpty>No medication found.</CommandEmpty>
+      )}
+      {drugs && drugs.length > 0 && (
         <CommandGroup className="max-h-[200px] overflow-y-auto">
           {drugs.map((drug) => (
             <CommandItem
               key={drug.drugid}
               value={`${drug.nameus} ${drug.chemical}`}
               onSelect={() => {
+                console.log("Selected drug:", drug.drugid, drug.nameus);
                 onSelectDrug(drug.drugid.toString());
               }}
             >
@@ -70,7 +79,7 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
         </CommandGroup>
       )}
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/50">
+        <div className="p-4 flex items-center justify-center">
           <Loader2 className="h-4 w-4 animate-spin" />
         </div>
       )}
