@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
+import { useEffect } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useToast } from "@/components/ui/use-toast"
 
 interface ShipperStats {
   name: string
@@ -13,7 +15,9 @@ interface ShipperStats {
 }
 
 const Logistics = () => {
-  const { data: shippers, isLoading } = useQuery({
+  const { toast } = useToast()
+
+  const { data: shippers, isLoading, refetch } = useQuery({
     queryKey: ["logistics-stats"],
     queryFn: async () => {
       console.log("Fetching logistics statistics...")
@@ -57,6 +61,36 @@ const Logistics = () => {
       }
     }
   })
+
+  // Set up real-time subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('orders-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all changes (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'orders'
+        },
+        async (payload) => {
+          console.log('Orders table changed:', payload)
+          // Show toast notification
+          toast({
+            title: "Order Update",
+            description: "Order data has changed. Refreshing statistics...",
+          })
+          // Refetch data to update the counts
+          await refetch()
+        }
+      )
+      .subscribe()
+
+    // Cleanup subscription on component unmount
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [refetch, toast])
 
   return (
     <div className="container mx-auto p-6">
