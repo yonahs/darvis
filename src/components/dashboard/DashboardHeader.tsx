@@ -17,11 +17,7 @@ const motivationalQuotes = [
   "Ready, set, achieve!",
 ]
 
-interface DashboardHeaderProps {
-  showSearch?: boolean;
-}
-
-const DashboardHeader = ({ showSearch = true }: DashboardHeaderProps) => {
+const DashboardHeader = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const navigate = useNavigate()
 
@@ -82,35 +78,33 @@ const DashboardHeader = ({ showSearch = true }: DashboardHeaderProps) => {
   return (
     <header className="border-b h-16">
       <div className="flex items-center px-4 h-full gap-4">
-        {showSearch && (
-          <div className="w-full max-w-sm">
-            <div className="relative">
-              <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search orders by ID or client name..."
-                className="pl-8"
-                value={searchQuery}
-                onChange={handleSearch}
-                onKeyDown={handleKeyDown}
-              />
-              {searchResults && searchResults.length > 0 && searchQuery && (
-                <div className="absolute w-full mt-1 bg-white border rounded-md shadow-lg z-50">
-                  {searchResults.map((result) => (
-                    <div
-                      key={result.orderid}
-                      className="p-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => navigate(`/orders/${result.orderid}`)}
-                    >
-                      <div className="text-sm">
-                        Order #{result.orderid} - {result.clientname}
-                      </div>
+        <div className="w-full max-w-sm">
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search orders by ID or client name..."
+              className="pl-8"
+              value={searchQuery}
+              onChange={handleSearch}
+              onKeyDown={handleKeyDown}
+            />
+            {searchResults && searchResults.length > 0 && searchQuery && (
+              <div className="absolute w-full mt-1 bg-white border rounded-md shadow-lg z-50">
+                {searchResults.map((result) => (
+                  <div
+                    key={result.orderid}
+                    className="p-2 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => navigate(`/orders/${result.orderid}`)}
+                  >
+                    <div className="text-sm">
+                      Order #{result.orderid} - {result.clientname}
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+        </div>
         <div className="flex-1 flex items-center justify-end gap-4">
           <p className="text-sm font-medium">
             Hi, Saul! · {formatDistanceToNow(new Date(), { addSuffix: true })}
