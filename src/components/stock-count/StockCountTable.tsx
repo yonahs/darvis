@@ -1,7 +1,8 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
 
 interface StockCount {
   id: string;
@@ -25,11 +26,17 @@ interface StockCountTableProps {
   onRemoveClick: (stockCount: StockCount) => void;
 }
 
+type SortField = "name" | "count" | "lastUpdated";
+type SortOrder = "asc" | "desc";
+
 export const StockCountTable = ({
   stockCounts,
   onUpdateClick,
   onRemoveClick,
 }: StockCountTableProps) => {
+  const [sortField, setSortField] = useState<SortField>("name");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
+
   const handleRemoveClick = async (stockCount: StockCount) => {
     try {
       await onRemoveClick(stockCount);
@@ -40,19 +47,70 @@ export const StockCountTable = ({
     }
   };
 
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortOrder("asc");
+    }
+  };
+
+  const sortedStockCounts = [...stockCounts].sort((a, b) => {
+    const multiplier = sortOrder === "asc" ? 1 : -1;
+
+    switch (sortField) {
+      case "name":
+        return multiplier * a.drug.nameus.localeCompare(b.drug.nameus);
+      case "count":
+        return multiplier * (a.count - b.count);
+      case "lastUpdated":
+        return multiplier * (new Date(a.last_updated).getTime() - new Date(b.last_updated).getTime());
+      default:
+        return 0;
+    }
+  });
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Medication Name</TableHead>
+          <TableHead>
+            <Button
+              variant="ghost"
+              onClick={() => handleSort("name")}
+              className="hover:bg-transparent p-0 h-auto font-medium flex items-center"
+            >
+              Medication Name
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          </TableHead>
           <TableHead>Strength</TableHead>
-          <TableHead className="text-center">Current Stock</TableHead>
-          <TableHead>Last Updated</TableHead>
+          <TableHead>
+            <Button
+              variant="ghost"
+              onClick={() => handleSort("count")}
+              className="hover:bg-transparent p-0 h-auto font-medium flex items-center justify-center w-full"
+            >
+              Current Stock
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          </TableHead>
+          <TableHead>
+            <Button
+              variant="ghost"
+              onClick={() => handleSort("lastUpdated")}
+              className="hover:bg-transparent p-0 h-auto font-medium flex items-center"
+            >
+              Last Updated
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          </TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {stockCounts.map((stockCount) => (
+        {sortedStockCounts.map((stockCount) => (
           <TableRow key={stockCount.id}>
             <TableCell>{stockCount.drug.nameus}</TableCell>
             <TableCell>
