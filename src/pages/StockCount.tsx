@@ -53,8 +53,22 @@ const StockCount = () => {
         throw error;
       }
 
-      console.log("Stock counts data:", data);
-      return data as StockCount[];
+      // Map the data to include the correct strength based on the drug detail ID
+      const mappedData = data?.map(stockCount => {
+        console.log("Processing stock count:", stockCount);
+        // Find the matching drug detail with the correct strength
+        const drugDetail = stockCount.drug.newdrugdetails[0];
+        return {
+          ...stockCount,
+          drug: {
+            ...stockCount.drug,
+            newdrugdetails: [drugDetail]
+          }
+        };
+      });
+
+      console.log("Mapped stock counts data:", mappedData);
+      return mappedData as StockCount[];
     },
   });
 
