@@ -86,7 +86,7 @@ const StockCount = () => {
       <StockCountHeader onAddClick={() => setIsAddDialogOpen(true)} />
       <StockCountTable 
         stockCounts={stockCounts} 
-        onUpdateClick={setSelectedStock}
+        onUpdateClick={(stockCount: StockCount) => setSelectedStock(stockCount)}
         onRemoveClick={handleRemove}
       />
 
