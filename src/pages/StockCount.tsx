@@ -36,10 +36,10 @@ const StockCount = () => {
         .from("stock_counts")
         .select(`
           *,
-          drug:newdrugs(
+          drug:newdrugs!inner(
             nameus, 
             chemical,
-            newdrugdetails(strength)
+            newdrugdetails!inner(strength)
           )
         `)
         .order("last_updated", { ascending: false });
@@ -49,6 +49,7 @@ const StockCount = () => {
         throw error;
       }
 
+      console.log("Stock counts data:", data);
       return data as StockCount[];
     },
   });
