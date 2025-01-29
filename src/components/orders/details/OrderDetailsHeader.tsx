@@ -106,92 +106,87 @@ export const OrderDetailsHeader = ({ order, onEscalate }: OrderDetailsHeaderProp
     <div className="mb-6">
       <Card className="w-full">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex-shrink-0">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-4">
               <OrderSummaryCard order={order} />
+              <OrderStatusBadge order={order} onEscalate={handleEscalate} />
             </div>
             
-            <div className="flex-grow">
-              <div className="flex flex-wrap gap-1">
-                <Button
-                  onClick={handleEscalate}
-                  variant="outline"
-                  size="sm"
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  <AlertCircle className="h-4 w-4 mr-2" />
-                  Escalate
-                </Button>
-                <Button
-                  onClick={handleDeescalate}
-                  variant="outline"
-                  size="sm"
-                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                >
-                  <ShieldCheck className="h-4 w-4 mr-2" />
-                  De-escalate
-                </Button>
-                <Button
-                  onClick={handleRushOrder}
-                  variant="outline"
-                  size="sm"
-                >
-                  <ArrowUp className="h-4 w-4 mr-2" />
-                  Rush
-                </Button>
-                <Button
-                  onClick={handleDiscount}
-                  variant="outline"
-                  size="sm"
-                >
-                  <Percent className="h-4 w-4 mr-2" />
-                  Discount
-                </Button>
-                <Button
-                  onClick={handleExtraCharge}
-                  variant="outline"
-                  size="sm"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Extra Charge
-                </Button>
-                <Button
-                  onClick={handleChangeShipper}
-                  variant="outline"
-                  size="sm"
-                >
-                  <Truck className="h-4 w-4 mr-2" />
-                  Change Shipper
-                </Button>
-                <Button
-                  onClick={handleSignatureRequired}
-                  variant="outline"
-                  size="sm"
-                >
-                  <Signature className="h-4 w-4 mr-2" />
-                  Signature
-                </Button>
-                <Button
-                  onClick={handleDelayShipDate}
-                  variant="outline"
-                  size="sm"
-                >
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Delay Ship
-                </Button>
-                <Button
-                  onClick={handleCombineOrder}
-                  variant="outline"
-                  size="sm"
-                >
-                  <Combine className="h-4 w-4 mr-2" />
-                  Combine
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex-shrink-0">
-              <OrderStatusBadge order={order} onEscalate={handleEscalate} />
+            <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap md:gap-1">
+              <Button
+                onClick={handleEscalate}
+                variant="outline"
+                size="sm"
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <AlertCircle className="h-4 w-4 mr-2" />
+                Escalate
+              </Button>
+              <Button
+                onClick={handleDeescalate}
+                variant="outline"
+                size="sm"
+                className="text-green-600 hover:text-green-700 hover:bg-green-50"
+              >
+                <ShieldCheck className="h-4 w-4 mr-2" />
+                De-escalate
+              </Button>
+              <Button
+                onClick={handleRushOrder}
+                variant="outline"
+                size="sm"
+              >
+                <ArrowUp className="h-4 w-4 mr-2" />
+                Rush
+              </Button>
+              <Button
+                onClick={handleDiscount}
+                variant="outline"
+                size="sm"
+              >
+                <Percent className="h-4 w-4 mr-2" />
+                Discount
+              </Button>
+              <Button
+                onClick={handleExtraCharge}
+                variant="outline"
+                size="sm"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Extra
+              </Button>
+              <Button
+                onClick={handleChangeShipper}
+                variant="outline"
+                size="sm"
+              >
+                <Truck className="h-4 w-4 mr-2" />
+                Shipper
+              </Button>
+              <Button
+                onClick={handleSignatureRequired}
+                variant="outline"
+                size="sm"
+              >
+                <Signature className="h-4 w-4 mr-2" />
+                Sign
+              </Button>
+              <Button
+                onClick={handleDelayShipDate}
+                variant="outline"
+                size="sm"
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                Delay
+              </Button>
+              <Button
+                onClick={handleCombineOrder}
+                variant="outline"
+                size="sm"
+              >
+                <Combine className="h-4 w-4 mr-2" />
+                Combine
+              </Button>
             </div>
           </div>
         </CardContent>
