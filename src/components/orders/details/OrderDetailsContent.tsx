@@ -6,7 +6,6 @@ import { OrderItemsCard } from "./OrderItemsCard"
 import { ShippingAndLogisticsCard } from "./ShippingAndLogisticsCard"
 import { FinancialDetailsCard } from "./FinancialDetailsCard"
 import { ClientDetailsCard } from "./ClientDetailsCard"
-import { OrderTimeline } from "./OrderTimeline"
 import { PrescriptionManagementCard } from "./PrescriptionManagementCard"
 import type { Database } from "@/integrations/supabase/types"
 
@@ -34,7 +33,6 @@ const defaultLayouts = {
     { i: "financial", x: 8, y: 0, w: 4, h: 2 },
     { i: "orderItems", x: 0, y: 2, w: 6, h: 2 },
     { i: "prescription", x: 6, y: 2, w: 6, h: 2 },
-    { i: "timeline", x: 0, y: 4, w: 12, h: 3 },
   ],
   md: [
     { i: "client", x: 0, y: 0, w: 4, h: 2 },
@@ -42,7 +40,6 @@ const defaultLayouts = {
     { i: "financial", x: 8, y: 0, w: 4, h: 2 },
     { i: "orderItems", x: 0, y: 2, w: 6, h: 2 },
     { i: "prescription", x: 6, y: 2, w: 6, h: 2 },
-    { i: "timeline", x: 0, y: 4, w: 12, h: 3 },
   ],
   sm: [
     { i: "client", x: 0, y: 0, w: 6, h: 2 },
@@ -50,7 +47,6 @@ const defaultLayouts = {
     { i: "financial", x: 0, y: 4, w: 6, h: 2 },
     { i: "orderItems", x: 0, y: 6, w: 6, h: 2 },
     { i: "prescription", x: 0, y: 8, w: 6, h: 2 },
-    { i: "timeline", x: 0, y: 10, w: 6, h: 3 },
   ],
 }
 
@@ -116,10 +112,6 @@ export const OrderDetailsContent = ({
 
         <div key="prescription" className="bg-white rounded-lg shadow-sm overflow-auto">
           <PrescriptionManagementCard order={order} drugDetails={drugDetails} />
-        </div>
-        
-        <div key="timeline" className="bg-white rounded-lg shadow-sm overflow-auto">
-          <OrderTimeline orderId={order?.orderid || 0} comments={comments} />
         </div>
       </ResponsiveGridLayout>
     </div>
