@@ -7,6 +7,7 @@ import { ShippingAndLogisticsCard } from "./ShippingAndLogisticsCard"
 import { FinancialDetailsCard } from "./FinancialDetailsCard"
 import { ClientDetailsCard } from "./ClientDetailsCard"
 import { PrescriptionManagementCard } from "./PrescriptionManagementCard"
+import { CommentsCard } from "./CommentsCard"
 import type { Database } from "@/integrations/supabase/types"
 
 const ResponsiveGridLayout = WidthProvider(Responsive)
@@ -33,6 +34,7 @@ const defaultLayouts = {
     { i: "financial", x: 8, y: 0, w: 4, h: 2 },
     { i: "orderItems", x: 0, y: 2, w: 6, h: 2 },
     { i: "prescription", x: 6, y: 2, w: 6, h: 2 },
+    { i: "comments", x: 0, y: 4, w: 12, h: 2 },
   ],
   md: [
     { i: "client", x: 0, y: 0, w: 4, h: 2 },
@@ -40,6 +42,7 @@ const defaultLayouts = {
     { i: "financial", x: 8, y: 0, w: 4, h: 2 },
     { i: "orderItems", x: 0, y: 2, w: 6, h: 2 },
     { i: "prescription", x: 6, y: 2, w: 6, h: 2 },
+    { i: "comments", x: 0, y: 4, w: 12, h: 2 },
   ],
   sm: [
     { i: "client", x: 0, y: 0, w: 6, h: 2 },
@@ -47,6 +50,7 @@ const defaultLayouts = {
     { i: "financial", x: 0, y: 4, w: 6, h: 2 },
     { i: "orderItems", x: 0, y: 6, w: 6, h: 2 },
     { i: "prescription", x: 0, y: 8, w: 6, h: 2 },
+    { i: "comments", x: 0, y: 10, w: 6, h: 2 },
   ],
 }
 
@@ -112,6 +116,10 @@ export const OrderDetailsContent = ({
 
         <div key="prescription" className="bg-white rounded-lg shadow-sm overflow-auto">
           <PrescriptionManagementCard order={order} drugDetails={drugDetails} />
+        </div>
+
+        <div key="comments" className="bg-white rounded-lg shadow-sm overflow-auto">
+          <CommentsCard comments={comments} />
         </div>
       </ResponsiveGridLayout>
     </div>
