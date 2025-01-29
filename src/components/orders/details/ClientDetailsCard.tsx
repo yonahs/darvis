@@ -19,31 +19,31 @@ export const ClientDetailsCard = ({ client }: ClientDetailsProps) => {
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-full">
+      <CardHeader className="p-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium text-primary/80 flex items-center gap-2">
-            <User className="h-4 w-4" />
+          <CardTitle className="text-sm font-medium text-primary/80 flex items-center gap-1">
+            <User className="h-3 w-3" />
             Client Details
           </CardTitle>
           <Button
             variant="outline"
-            size="sm"
+            size="xs"
             onClick={handleChangeDetails}
-            className="gap-2"
+            className="h-6 px-2 text-xs gap-1"
           >
-            <Pencil className="h-4 w-4" />
+            <Pencil className="h-3 w-3" />
             Change Details
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="space-y-1 text-sm">
-        <p>
+      <CardContent className="space-y-0.5 text-xs p-2">
+        <p className="font-medium">
           {client.firstname} {client.lastname}
         </p>
-        <p>DOB: {client.birthdate && format(new Date(client.birthdate), "PP")}</p>
-        <p>ID: {client.personalid}</p>
-        <p>Email: {client.email}</p>
+        <p className="text-muted-foreground">DOB: {client.birthdate && format(new Date(client.birthdate), "PP")}</p>
+        <p className="text-muted-foreground">ID: {client.personalid}</p>
+        <p className="text-muted-foreground">Email: {client.email}</p>
       </CardContent>
     </Card>
   )

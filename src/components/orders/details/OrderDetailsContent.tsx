@@ -83,7 +83,7 @@ export const OrderDetailsContent = ({
         breakpoints={{ lg: 1200, md: 996, sm: 768 }}
         cols={{ lg: 12, md: 12, sm: 6 }}
         rowHeight={120}
-        margin={[8, 8]}
+        margin={[4, 4]}
         containerPadding={[0, 0]}
         isDraggable
         isResizable
@@ -109,7 +109,7 @@ export const OrderDetailsContent = ({
           <OrderItemsCard drugDetails={drugDetails} />
         </div>
         
-        <div key="timeline" className="bg-white rounded-lg shadow-sm overflow-auto p-4">
+        <div key="timeline" className="bg-white rounded-lg shadow-sm overflow-auto">
           <OrderTimeline orderId={order?.orderid || 0} comments={comments} />
         </div>
       </ResponsiveGridLayout>
