@@ -31,16 +31,18 @@ const Pharmacy = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-semibold">Pharmacy Dashboard</h2>
-          <p className="text-muted-foreground">
-            Manage prescriptions and pharmacy workflows
-          </p>
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-semibold">Pharmacy Dashboard</h2>
+            <p className="text-muted-foreground">
+              Manage prescriptions and pharmacy workflows
+            </p>
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
+          <Card className="bg-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Active Prescriptions
@@ -58,7 +60,7 @@ const Pharmacy = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Pending Verifications
@@ -77,7 +79,7 @@ const Pharmacy = () => {
           </Card>
         </div>
 
-        <Card>
+        <Card className="bg-card">
           <CardHeader>
             <CardTitle>Recent Prescriptions</CardTitle>
             <CardDescription>
