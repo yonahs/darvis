@@ -7,6 +7,7 @@ import { ShippingAndLogisticsCard } from "./ShippingAndLogisticsCard"
 import { CommentsCard } from "./CommentsCard"
 import { FinancialDetailsCard } from "./FinancialDetailsCard"
 import { ClientDetailsCard } from "./ClientDetailsCard"
+import { OrderTimeline } from "./OrderTimeline"
 import type { Database } from "@/integrations/supabase/types"
 
 const ResponsiveGridLayout = WidthProvider(Responsive)
@@ -31,21 +32,21 @@ const defaultLayouts = {
     { i: "shipping", x: 4, y: 0, w: 4, h: 2 },
     { i: "financial", x: 8, y: 0, w: 4, h: 2 },
     { i: "orderItems", x: 0, y: 2, w: 6, h: 2 },
-    { i: "comments", x: 6, y: 2, w: 6, h: 2 },
+    { i: "timeline", x: 6, y: 2, w: 6, h: 3 },
   ],
   md: [
     { i: "client", x: 0, y: 0, w: 4, h: 2 },
     { i: "shipping", x: 4, y: 0, w: 4, h: 2 },
     { i: "financial", x: 8, y: 0, w: 4, h: 2 },
     { i: "orderItems", x: 0, y: 2, w: 6, h: 2 },
-    { i: "comments", x: 6, y: 2, w: 6, h: 2 },
+    { i: "timeline", x: 6, y: 2, w: 6, h: 3 },
   ],
   sm: [
     { i: "client", x: 0, y: 0, w: 6, h: 2 },
     { i: "shipping", x: 0, y: 2, w: 6, h: 2 },
     { i: "financial", x: 0, y: 4, w: 6, h: 2 },
     { i: "orderItems", x: 0, y: 6, w: 6, h: 2 },
-    { i: "comments", x: 0, y: 8, w: 6, h: 2 },
+    { i: "timeline", x: 0, y: 8, w: 6, h: 3 },
   ],
 }
 
@@ -62,14 +63,11 @@ export const OrderDetailsContent = ({
     return savedLayouts ? JSON.parse(savedLayouts) : defaultLayouts
   })
 
-  // Save layouts to localStorage whenever they change
   const handleLayoutChange = (_: any, allLayouts: any) => {
-    console.log("Layout changed:", allLayouts)
     setLayouts(allLayouts)
     localStorage.setItem("orderDetailsLayouts", JSON.stringify(allLayouts))
   }
 
-  // Load saved layouts when component mounts
   useEffect(() => {
     const savedLayouts = localStorage.getItem("orderDetailsLayouts")
     if (savedLayouts) {
@@ -111,8 +109,8 @@ export const OrderDetailsContent = ({
           <OrderItemsCard drugDetails={drugDetails} />
         </div>
         
-        <div key="comments" className="bg-white rounded-lg shadow-sm overflow-auto">
-          <CommentsCard comments={comments} orderId={order?.orderid || 0} />
+        <div key="timeline" className="bg-white rounded-lg shadow-sm overflow-auto p-4">
+          <OrderTimeline orderId={order?.orderid || 0} comments={comments} />
         </div>
       </ResponsiveGridLayout>
     </div>
