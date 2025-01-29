@@ -52,10 +52,14 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
         disabled={isLoading}
       />
       <CommandGroup className="max-h-[200px] overflow-y-auto">
-        {!drugs?.length && !isLoading ? (
+        {isLoading ? (
+          <div className="p-4 flex items-center justify-center">
+            <Loader2 className="h-4 w-4 animate-spin" />
+          </div>
+        ) : !drugs?.length ? (
           <CommandEmpty>No medication found.</CommandEmpty>
         ) : (
-          drugs?.map((drug) => (
+          drugs.map((drug) => (
             <CommandItem
               key={drug.drugid}
               value={`${drug.nameus} ${drug.chemical}`}
@@ -75,11 +79,6 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
               {drug.nameus} ({drug.chemical})
             </CommandItem>
           ))
-        )}
-        {isLoading && (
-          <div className="p-4 flex items-center justify-center">
-            <Loader2 className="h-4 w-4 animate-spin" />
-          </div>
         )}
       </CommandGroup>
     </Command>
