@@ -151,7 +151,7 @@ export function DrugSearchInput({ selectedDrug, onSelectDrug }: DrugSearchInputP
                       selectedDrug === uniqueId ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {displayName} {drug.chemical && `- ${drug.chemical}`}
+                  {displayName}
                 </CommandItem>
               );
             })
