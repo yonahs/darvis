@@ -17,12 +17,9 @@ interface DrugSearchInputProps {
 }
 
 export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputProps) => {
-  console.log("DrugSearchInput rendering, selectedDrug:", selectedDrug);
-
   const { data: drugs = [], isLoading, error } = useQuery({
     queryKey: ["drugs"],
     queryFn: async () => {
-      console.log("Fetching drugs for stock count add dialog");
       const { data, error } = await supabase
         .from("newdrugs")
         .select("drugid, nameus, chemical")
@@ -32,13 +29,10 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
         console.error("Error fetching drugs:", error);
         throw error;
       }
-
-      console.log("Fetched drugs:", data?.length || 0, "items");
+      
       return data || [];
     },
   });
-
-  console.log("Current state - isLoading:", isLoading, "drugs length:", drugs.length);
 
   if (error) {
     console.error("Error in DrugSearchInput:", error);
@@ -72,7 +66,6 @@ export const DrugSearchInput = ({ selectedDrug, onSelectDrug }: DrugSearchInputP
                 key={drug.drugid}
                 value={`${drug.nameus} ${drug.chemical}`}
                 onSelect={() => {
-                  console.log("Selected drug:", drug.drugid, drug.nameus);
                   onSelectDrug(drug.drugid.toString());
                 }}
               >
