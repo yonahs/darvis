@@ -90,16 +90,17 @@ export function SidebarProvider({
     [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
   )
 
+  const wrapperStyles = {
+    "--sidebar-width": "10.56rem",
+    "--sidebar-width-icon": "3rem",
+    ...style,
+  } as React.CSSProperties
+
   return (
     <SidebarContext.Provider value={contextValue}>
       <div
-        className="group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar"
-        style={{
-          "--sidebar-width": "10.56rem",
-          "--sidebar-width-icon": "3rem",
-          ...style,
-        } as React.CSSProperties}
-        className={className}
+        className={`group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar ${className}`}
+        style={wrapperStyles}
       >
         {children}
       </div>

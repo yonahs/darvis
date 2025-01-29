@@ -28,13 +28,13 @@ interface ShipperStats {
   shipperid: number
 }
 
-interface OrderDetails {
+type OrderDetails = {
   orderid: number
   clientname: string | null
   orderdate: string | null
   totalsale: number | null
   ups: string | null
-  shipstatus: number | null
+  orderstatus: number | null
 }
 
 const Logistics = () => {
