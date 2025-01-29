@@ -1,10 +1,24 @@
 import { useQuery } from "@tanstack/react-query"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/hooks/use-toast"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 interface ShipperStats {
   name: string
@@ -14,8 +28,20 @@ interface ShipperStats {
   shipperid: number
 }
 
+interface OrderDetails {
+  orderid: number
+  clientname: string | null
+  orderdate: string | null
+  totalsale: number | null
+  ups: string | null
+  shipstatus: number | null
+}
+
 const Logistics = () => {
   const { toast } = useToast()
+  const [selectedShipper, setSelectedShipper] = useState<ShipperStats | null>(null)
+  const [showUploaded, setShowUploaded] = useState(false)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   const { data: shippers, isLoading, refetch } = useQuery({
     queryKey: ["logistics-stats"],
@@ -71,6 +97,40 @@ const Logistics = () => {
     refetchInterval: 5000
   })
 
+  const { data: selectedOrders, isLoading: isLoadingOrders } = useQuery({
+    queryKey: ["shipper-orders", selectedShipper?.shipperid, showUploaded],
+    queryFn: async () => {
+      if (!selectedShipper) return []
+      
+      console.log("Fetching orders for shipper:", selectedShipper.shipperid, "showUploaded:", showUploaded)
+      
+      const query = supabase
+        .from("vw_order_details")
+        .select("*")
+        .eq("shipper", selectedShipper.name)
+        .not('cancelled', 'eq', true)
+        .gte('orderdate', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+        .not('orderstatus', 'in', '(99, 100)')
+
+      if (showUploaded) {
+        query.eq('shipstatus', 2)
+      } else {
+        query.or('shipstatus.is.null,shipstatus.neq.2')
+      }
+
+      const { data, error } = await query
+      
+      if (error) {
+        console.error("Error fetching shipper orders:", error)
+        throw error
+      }
+      
+      console.log("Fetched orders for shipper:", data?.length)
+      return data
+    },
+    enabled: !!selectedShipper,
+  })
+
   // Set up real-time subscription
   useEffect(() => {
     console.log("Setting up real-time subscription for orders table")
@@ -102,6 +162,12 @@ const Logistics = () => {
     }
   }, [refetch, toast])
 
+  const handleViewOrders = (shipper: ShipperStats, uploaded: boolean) => {
+    setSelectedShipper(shipper)
+    setShowUploaded(uploaded)
+    setIsDialogOpen(true)
+  }
+
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Logistics Manager</h1>
@@ -124,8 +190,8 @@ const Logistics = () => {
             </Card>
           ))
         ) : (
-          shippers?.map((shipper, index) => (
-            <Card key={index} className="shadow-sm">
+          shippers?.map((shipper) => (
+            <Card key={shipper.shipperid} className="shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div>
                   <CardTitle className="text-lg font-bold">{shipper.name}</CardTitle>
@@ -152,6 +218,7 @@ const Logistics = () => {
                       variant="secondary" 
                       size="sm" 
                       className="w-full bg-blue-50 hover:bg-blue-100 text-xs"
+                      onClick={() => handleViewOrders(shipper, true)}
                     >
                       View Uploaded
                     </Button>
@@ -159,6 +226,7 @@ const Logistics = () => {
                       variant="secondary" 
                       size="sm" 
                       className="w-full bg-blue-50 hover:bg-blue-100 text-xs"
+                      onClick={() => handleViewOrders(shipper, false)}
                     >
                       View Pending
                     </Button>
@@ -169,6 +237,50 @@ const Logistics = () => {
           ))
         )}
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedShipper?.name} - {showUploaded ? 'Uploaded' : 'Pending'} Orders
+            </DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[600px] overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Order ID</TableHead>
+                  <TableHead>Client Name</TableHead>
+                  <TableHead>Order Date</TableHead>
+                  <TableHead>Total Sale</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoadingOrders ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center">Loading orders...</TableCell>
+                  </TableRow>
+                ) : selectedOrders && selectedOrders.length > 0 ? (
+                  selectedOrders.map((order) => (
+                    <TableRow key={order.orderid}>
+                      <TableCell>{order.orderid}</TableCell>
+                      <TableCell>{order.clientname}</TableCell>
+                      <TableCell>{new Date(order.orderdate!).toLocaleDateString()}</TableCell>
+                      <TableCell>${order.totalsale?.toFixed(2)}</TableCell>
+                      <TableCell>{order.orderstatus}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center">No orders found</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
