@@ -11,7 +11,11 @@ export const useStockCountMutations = () => {
       console.log("Updating stock count", { id, count });
       const { data, error } = await supabase
         .from("stock_counts")
-        .update({ count, last_updated: new Date().toISOString() })
+        .update({ 
+          count, 
+          last_updated: new Date().toISOString(),
+          updated_by: (await supabase.auth.getUser()).data.user?.id
+        })
         .eq("id", id);
 
       if (error) throw error;
@@ -37,6 +41,12 @@ export const useStockCountMutations = () => {
   const addMutation = useMutation({
     mutationFn: async ({ drugId, count }: { drugId: number; count: number }) => {
       console.log("Adding new stock count", { drugId, count });
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error("User must be authenticated to add stock counts");
+      }
+
       const { data, error } = await supabase
         .from("stock_counts")
         .insert([
@@ -44,6 +54,7 @@ export const useStockCountMutations = () => {
             drug_id: drugId,
             count,
             last_updated: new Date().toISOString(),
+            updated_by: user.id
           },
         ]);
 
