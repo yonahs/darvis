@@ -1,4 +1,4 @@
-import { Upload, Eye, FileText } from "lucide-react"
+import { Upload, Eye, FileText, Edit } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -24,6 +24,10 @@ export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionM
     console.log("View Rx clicked")
   }
 
+  const handleEditRx = () => {
+    console.log("Edit Rx clicked")
+  }
+
   return (
     <Card>
       <CardHeader className="p-2">
@@ -40,6 +44,10 @@ export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionM
             <Button variant="outline" size="xs" onClick={handleViewRx} className="h-6 px-2 text-xs gap-1">
               <Eye className="h-3 w-3" />
               View Rx
+            </Button>
+            <Button variant="outline" size="xs" onClick={handleEditRx} className="h-6 px-2 text-xs gap-1">
+              <Edit className="h-3 w-3" />
+              Edit
             </Button>
           </div>
         </div>
