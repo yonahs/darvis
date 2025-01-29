@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DrugSearchInput } from "./search/DrugSearchInput";
 import { DialogFooterActions } from "./dialog/DialogFooterActions";
+import { toast } from "sonner";
 
 interface AddItemDialogProps {
   isOpen: boolean;
@@ -27,12 +28,17 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
   const { data: drugs, isLoading } = useQuery({
     queryKey: ["drugs"],
     queryFn: async () => {
+      console.log("Fetching drugs for name display");
       const { data, error } = await supabase
         .from("newdrugs")
         .select("drugid, nameus")
         .order("nameus");
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching drugs:", error);
+        toast.error("Error loading medications. Please try again.");
+        throw error;
+      }
       return data || [];
     },
   });
@@ -41,19 +47,26 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
     e.preventDefault();
     setIsAdding(true);
 
-    const drugId = parseInt(selectedDrug);
-    const newCount = parseInt(count);
+    try {
+      const drugId = parseInt(selectedDrug);
+      const newCount = parseInt(count);
 
-    if (isNaN(drugId) || isNaN(newCount)) {
+      if (isNaN(drugId) || isNaN(newCount)) {
+        toast.error("Please select a valid medication and count");
+        setIsAdding(false);
+        return;
+      }
+
+      await onAdd(drugId, newCount);
+      setSelectedDrug("");
+      setCount("");
+      onClose();
+    } catch (error) {
+      console.error("Error adding stock count:", error);
+      toast.error("Failed to add stock count. Please try again.");
+    } finally {
       setIsAdding(false);
-      return;
     }
-
-    await onAdd(drugId, newCount);
-    setIsAdding(false);
-    setSelectedDrug("");
-    setCount("");
-    onClose();
   };
 
   const selectedDrugName = drugs?.find(
