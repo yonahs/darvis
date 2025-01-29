@@ -12,12 +12,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AddItemDialogProps {
   isOpen: boolean;
@@ -29,6 +36,7 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
   const [selectedDrug, setSelectedDrug] = useState<string>("");
   const [count, setCount] = useState("");
   const [isAdding, setIsAdding] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const { data: drugs } = useQuery({
     queryKey: ["drugs"],
@@ -67,6 +75,10 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
     onClose();
   };
 
+  const selectedDrugName = drugs?.find(
+    (drug) => drug.drugid.toString() === selectedDrug
+  )?.nameus;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
@@ -76,21 +88,47 @@ const AddItemDialog = ({ isOpen, onClose, onAdd }: AddItemDialogProps) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="drug">Medication</Label>
-            <Select
-              value={selectedDrug}
-              onValueChange={setSelectedDrug}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a medication" />
-              </SelectTrigger>
-              <SelectContent>
-                {drugs?.map((drug) => (
-                  <SelectItem key={drug.drugid} value={drug.drugid.toString()}>
-                    {drug.nameus} ({drug.chemical})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="w-full justify-between"
+                >
+                  {selectedDrugName ?? "Select a medication..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[400px] p-0">
+                <Command>
+                  <CommandInput placeholder="Search medications..." />
+                  <CommandEmpty>No medication found.</CommandEmpty>
+                  <CommandGroup className="max-h-[300px] overflow-y-auto">
+                    {drugs?.map((drug) => (
+                      <CommandItem
+                        key={drug.drugid}
+                        value={`${drug.nameus} ${drug.chemical}`}
+                        onSelect={() => {
+                          setSelectedDrug(drug.drugid.toString());
+                          setOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedDrug === drug.drugid.toString()
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {drug.nameus} ({drug.chemical})
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
           <div className="space-y-2">
             <Label htmlFor="count">Initial Count</Label>
