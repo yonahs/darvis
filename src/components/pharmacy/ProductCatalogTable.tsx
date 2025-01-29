@@ -10,7 +10,6 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency } from "@/lib/utils"
-import { Package2, Pill } from "lucide-react"
 
 interface ProductCatalog {
   drugid: number
@@ -74,6 +73,8 @@ export const ProductCatalogTable = ({
             <TableHead>Details</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Supplier</TableHead>
+            <TableHead>Shipper</TableHead>
+            <TableHead>Country</TableHead>
             <TableHead>Price (USD)</TableHead>
             <TableHead>Price (NIS)</TableHead>
           </TableRow>
@@ -85,6 +86,8 @@ export const ProductCatalogTable = ({
               <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
               <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
               <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
               <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
               <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
             </TableRow>
@@ -103,13 +106,15 @@ export const ProductCatalogTable = ({
             <TableHead>Details</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Supplier</TableHead>
+            <TableHead>Shipper</TableHead>
+            <TableHead>Country</TableHead>
             <TableHead>Price (USD)</TableHead>
             <TableHead>Price (NIS)</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           <TableRow>
-            <TableCell colSpan={6} className="text-center py-8">
+            <TableCell colSpan={8} className="text-center py-8">
               No products found
             </TableCell>
           </TableRow>
@@ -126,6 +131,8 @@ export const ProductCatalogTable = ({
           <TableHead>Details</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Supplier</TableHead>
+          <TableHead>Shipper</TableHead>
+          <TableHead>Country</TableHead>
           <TableHead>Price (USD)</TableHead>
           <TableHead>Price (NIS)</TableHead>
         </TableRow>
@@ -138,8 +145,7 @@ export const ProductCatalogTable = ({
           >
             <TableCell>
               <div className="space-y-1">
-                <div className="font-medium flex items-center gap-1">
-                  <Pill className="h-4 w-4 text-primary" />
+                <div className="font-medium">
                   {product.nameus}
                 </div>
                 <div className="text-sm text-muted-foreground">
@@ -162,10 +168,13 @@ export const ProductCatalogTable = ({
               </div>
             </TableCell>
             <TableCell>
-              <div className="flex items-center gap-2">
-                <Package2 className="h-4 w-4 text-muted-foreground" />
-                <span>{product.supplier_full_name || product.supplier_name}</span>
-              </div>
+              <span>{product.supplier_full_name || product.supplier_name}</span>
+            </TableCell>
+            <TableCell>
+              <span>{product.defaultshipper || '-'}</span>
+            </TableCell>
+            <TableCell>
+              <span>Israel</span>
             </TableCell>
             <TableCell>{product.saledollar ? formatCurrency(product.saledollar) : '-'}</TableCell>
             <TableCell>{product.salenis ? `₪${product.salenis.toFixed(2)}` : '-'}</TableCell>
