@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, CheckCircle2, Clock, HelpCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import type { Database } from "@/integrations/supabase/types"
@@ -20,30 +20,53 @@ export const OrderStatusBadge = ({ order, onEscalate }: OrderStatusBadgeProps) =
     onEscalate()
   }
 
-  const getStatusColor = (status: number) => {
+  const getStatusDetails = (status: number) => {
     switch (status) {
-      case 1: return "bg-yellow-500"
-      case 2: return "bg-green-500"
-      case 3: return "bg-blue-500"
-      default: return "bg-gray-500"
+      case 1:
+        return {
+          label: "Pending",
+          variant: "new" as const,
+          icon: Clock
+        }
+      case 2:
+        return {
+          label: "Processing",
+          variant: "success" as const,
+          icon: CheckCircle2
+        }
+      case 3:
+        return {
+          label: "Shipped",
+          variant: "default" as const,
+          icon: CheckCircle2
+        }
+      default:
+        return {
+          label: "Processing",
+          variant: "secondary" as const,
+          icon: HelpCircle
+        }
     }
   }
 
+  const statusDetails = getStatusDetails(order.status || 0)
+
   return (
     <div className="flex items-center gap-2">
-      <Badge className={getStatusColor(order.status || 0)}>
-        {order.status === 1 ? "Pending" : 
-         order.status === 2 ? "Processing" :
-         order.status === 3 ? "Shipped" : "Unknown"}
+      <Badge variant={statusDetails.variant} className="flex items-center gap-1.5 py-1">
+        <statusDetails.icon className="h-3.5 w-3.5" />
+        {statusDetails.label}
       </Badge>
-      <Button
-        onClick={handleEscalate}
-        variant="ghost"
-        size="sm"
-        className="text-red-500 hover:text-red-600 hover:bg-red-50"
-      >
-        <AlertCircle className="h-4 w-4" />
-      </Button>
+      {order.problemorder && (
+        <Button
+          onClick={handleEscalate}
+          variant="ghost"
+          size="sm"
+          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+        >
+          <AlertCircle className="h-4 w-4" />
+        </Button>
+      )}
     </div>
   )
 }

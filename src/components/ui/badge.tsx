@@ -11,14 +11,14 @@ const badgeVariants = cva(
         default:
           "border-transparent bg-primary text-primary-foreground",
         secondary:
-          "border-transparent bg-[#F1F0FB] text-[#6E59A5]",
+          "border-transparent bg-secondary text-secondary-foreground",
         destructive:
           "border-transparent bg-[#FEE2E2] text-[#991B1B]",
         outline: "text-foreground",
         success:
           "border-transparent bg-[#ECFDF5] text-[#065F46]",
         new:
-          "border-transparent bg-[#F1F0FB] text-[#6E59A5]", // Consistent purple theme for new orders
+          "border-transparent bg-[#F1F0FB] text-[#6E59A5]",
       },
     },
     defaultVariants: {

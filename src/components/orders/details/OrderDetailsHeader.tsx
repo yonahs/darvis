@@ -107,17 +107,24 @@ export const OrderDetailsHeader = ({ order, onEscalate }: OrderDetailsHeaderProp
       <Card className="w-full">
         <CardContent className="p-4">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-4">
-              <OrderSummaryCard order={order} />
-              <OrderStatusBadge order={order} onEscalate={handleEscalate} />
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col items-start">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-semibold">Order #{order?.orderid}</h2>
+                  <OrderStatusBadge order={order} onEscalate={handleEscalate} />
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {new Date(order?.orderdate || "").toLocaleDateString()}
+                </span>
+              </div>
             </div>
             
-            <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap md:gap-1">
+            <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap md:gap-1.5">
               <Button
                 onClick={handleEscalate}
                 variant="outline"
                 size="sm"
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
               >
                 <AlertCircle className="h-4 w-4 mr-2" />
                 Escalate
@@ -126,7 +133,7 @@ export const OrderDetailsHeader = ({ order, onEscalate }: OrderDetailsHeaderProp
                 onClick={handleDeescalate}
                 variant="outline"
                 size="sm"
-                className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                className="text-success hover:text-success hover:bg-success/10"
               >
                 <ShieldCheck className="h-4 w-4 mr-2" />
                 De-escalate
