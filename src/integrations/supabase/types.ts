@@ -753,7 +753,15 @@ export type Database = {
           woocommerceparentid?: number | null
           yarpa?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_newdrugdetails_drug"
+            columns: ["drugid"]
+            isOneToOne: false
+            referencedRelation: "newdrugs"
+            referencedColumns: ["drugid"]
+          },
+        ]
       }
       newdrugs: {
         Row: {
