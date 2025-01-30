@@ -28,7 +28,7 @@ export const ShipperFilter = ({
 }: ShipperFilterProps) => {
   const [open, setOpen] = React.useState(false)
 
-  const { data: shippers = [] } = useQuery({
+  const { data: shippers = [], isLoading } = useQuery({
     queryKey: ["shippers"],
     queryFn: async () => {
       console.log("Fetching shippers...")
@@ -66,6 +66,7 @@ export const ShipperFilter = ({
           role="combobox"
           aria-expanded={open}
           className="min-w-[200px] justify-between"
+          disabled={isLoading}
         >
           {shipperFilter.length === 0
             ? "Filter by shipper"
@@ -78,7 +79,7 @@ export const ShipperFilter = ({
           <CommandInput placeholder="Search shippers..." />
           <CommandEmpty>No shipper found.</CommandEmpty>
           <CommandGroup>
-            {shippers?.map((shipper) => (
+            {shippers.map((shipper) => (
               <CommandItem
                 key={shipper.shipperid}
                 value={shipper.display_name}

@@ -28,7 +28,7 @@ export const SupplierFilter = ({
 }: SupplierFilterProps) => {
   const [open, setOpen] = React.useState(false)
 
-  const { data: suppliers = [] } = useQuery({
+  const { data: suppliers = [], isLoading } = useQuery({
     queryKey: ["suppliers"],
     queryFn: async () => {
       console.log("Fetching suppliers...")
@@ -66,6 +66,7 @@ export const SupplierFilter = ({
           role="combobox"
           aria-expanded={open}
           className="min-w-[200px] justify-between"
+          disabled={isLoading}
         >
           {supplierFilter.length === 0
             ? "Filter by supplier"
@@ -78,7 +79,7 @@ export const SupplierFilter = ({
           <CommandInput placeholder="Search suppliers..." />
           <CommandEmpty>No supplier found.</CommandEmpty>
           <CommandGroup>
-            {suppliers?.map((supplier) => (
+            {suppliers.map((supplier) => (
               <CommandItem
                 key={supplier.id}
                 value={supplier.name}
