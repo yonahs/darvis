@@ -63,7 +63,7 @@ export const SupplierFilter = ({
 
   const filteredSuppliers = React.useMemo(() => {
     return suppliers.filter(supplier => 
-      supplier.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      supplier.name?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false
     )
   }, [suppliers, searchQuery])
 
@@ -107,21 +107,25 @@ export const SupplierFilter = ({
           />
           <CommandEmpty>No supplier found.</CommandEmpty>
           <CommandGroup>
-            {filteredSuppliers.map((supplier) => (
-              <CommandItem
-                key={supplier.id}
-                value={supplier.name || ""}
-                onSelect={() => toggleSupplier(supplier.id.toString())}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    supplierFilter.includes(supplier.id.toString()) ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                {supplier.name}
-              </CommandItem>
-            ))}
+            {filteredSuppliers.map((supplier) => {
+              // Ensure we always have a string value for the CommandItem
+              const displayName = supplier.name || `Supplier ${supplier.id}`
+              return (
+                <CommandItem
+                  key={supplier.id}
+                  value={displayName}
+                  onSelect={() => toggleSupplier(supplier.id.toString())}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      supplierFilter.includes(supplier.id.toString()) ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {displayName}
+                </CommandItem>
+              )
+            })}
           </CommandGroup>
         </Command>
       </PopoverContent>
