@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
+import { useQuery } from "@tanstack/react-query"
+import { supabase } from "@/integrations/supabase/client"
 
 interface ProductCatalog {
   drugid: number
@@ -37,6 +39,11 @@ interface ProductCatalog {
   supplier_full_name: string | null
 }
 
+interface Shipper {
+  shipperid: number
+  display_name: string | null
+}
+
 interface ProductCatalogTableProps {
   products: ProductCatalog[] | undefined
   isLoading: boolean
@@ -51,6 +58,31 @@ export const ProductCatalogTable = ({
   pageSize,
 }: ProductCatalogTableProps) => {
   const { toast } = useToast()
+
+  // Fetch shippers data
+  const { data: shippers } = useQuery({
+    queryKey: ["shippers"],
+    queryFn: async () => {
+      console.log("Fetching shippers...")
+      const { data, error } = await supabase
+        .from("shippers")
+        .select("shipperid, display_name")
+
+      if (error) {
+        console.error("Error fetching shippers:", error)
+        throw error
+      }
+
+      console.log("Shippers data:", data)
+      return data as Shipper[]
+    },
+  })
+
+  const getShipperName = (shipperId: number | null) => {
+    if (!shipperId || !shippers) return "-"
+    const shipper = shippers.find(s => s.shipperid === shipperId)
+    return shipper?.display_name || "-"
+  }
 
   const getAvailabilityBadge = (available: boolean | null) => {
     if (available === null) return <Badge variant="outline">Unknown</Badge>
@@ -174,7 +206,7 @@ export const ProductCatalogTable = ({
               <span>{product.supplier_full_name || product.supplier_name}</span>
             </TableCell>
             <TableCell>
-              <span>{product.defaultshipper || '-'}</span>
+              <span>{getShipperName(product.defaultshipper)}</span>
             </TableCell>
             <TableCell>
               <span>Israel</span>
