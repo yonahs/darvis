@@ -1,21 +1,23 @@
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 import { ProductCatalogTable } from "@/components/pharmacy/ProductCatalogTable"
+import { useToast } from "@/components/ui/use-toast"
 
 const Products = () => {
   const pageSize = 10
+  const { toast } = useToast()
 
-  const { data: products, isLoading, isFetching } = useQuery({
+  const { data: products, isLoading, isFetching, error } = useQuery({
     queryKey: ["product-catalog"],
     queryFn: async () => {
       console.log("Fetching product catalog...")
-      const { data: productData, error } = await supabase
+      const { data: productData, error: productError } = await supabase
         .from("vw_product_catalog")
         .select()
       
-      if (error) {
-        console.error("Error fetching product catalog:", error)
-        throw error
+      if (productError) {
+        console.error("Error fetching product catalog:", productError)
+        throw productError
       }
 
       // Fetch shipper data for each product with retries
@@ -29,6 +31,7 @@ const Products = () => {
           // Implement retry logic for fetching shipper data
           const maxRetries = 3
           let retryCount = 0
+          let lastError = null
           
           while (retryCount < maxRetries) {
             try {
@@ -41,6 +44,7 @@ const Products = () => {
               
               if (shipperError) {
                 console.error(`Attempt ${retryCount + 1} failed:`, shipperError)
+                lastError = shipperError
                 retryCount++
                 if (retryCount === maxRetries) {
                   console.log(`Max retries reached for product ${product.drugid}, returning null shipper`)
@@ -57,6 +61,7 @@ const Products = () => {
               }
             } catch (err) {
               console.error(`Attempt ${retryCount + 1} failed for product ${product.drugid}:`, err)
+              lastError = err
               retryCount++
               if (retryCount === maxRetries) {
                 console.log(`Max retries reached for product ${product.drugid}, returning null shipper`)
@@ -74,9 +79,28 @@ const Products = () => {
       console.log("Product catalog data:", productsWithShippers)
       return productsWithShippers
     },
-    retry: 3, // Add retry at the query level
+    retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 30000),
+    onError: (error) => {
+      console.error("Failed to fetch products:", error)
+      toast({
+        title: "Error",
+        description: "Failed to load products. Please try again later.",
+        variant: "destructive",
+      })
+    },
   })
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-6">Products</h1>
+        <div className="bg-destructive/15 p-4 rounded-md">
+          <p className="text-destructive">Failed to load products. Please try again later.</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto p-6">
