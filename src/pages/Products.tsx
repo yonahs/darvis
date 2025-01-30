@@ -18,7 +18,7 @@ const Products = () => {
         throw error
       }
 
-      // Fetch shipper data for each product
+      // Fetch shipper data for each product with retries
       const productsWithShippers = await Promise.all(
         productData.map(async (product) => {
           if (!product.defaultshipper) {
@@ -26,33 +26,56 @@ const Products = () => {
             return { ...product, shipper: null }
           }
           
-          try {
-            console.log(`Fetching shipper data for defaultshipper: ${product.defaultshipper}`)
-            const { data: shipperData, error: shipperError } = await supabase
-              .from("shippers")
-              .select("display_name")
-              .eq("shipperid", product.defaultshipper)
-              .maybeSingle()
-            
-            if (shipperError) {
-              console.error("Error fetching shipper:", shipperError)
-              return { ...product, shipper: null }
-            }
+          // Implement retry logic for fetching shipper data
+          const maxRetries = 3
+          let retryCount = 0
+          
+          while (retryCount < maxRetries) {
+            try {
+              console.log(`Attempt ${retryCount + 1}: Fetching shipper data for defaultshipper: ${product.defaultshipper}`)
+              const { data: shipperData, error: shipperError } = await supabase
+                .from("shippers")
+                .select("display_name")
+                .eq("shipperid", product.defaultshipper)
+                .maybeSingle()
+              
+              if (shipperError) {
+                console.error(`Attempt ${retryCount + 1} failed:`, shipperError)
+                retryCount++
+                if (retryCount === maxRetries) {
+                  console.log(`Max retries reached for product ${product.drugid}, returning null shipper`)
+                  return { ...product, shipper: null }
+                }
+                // Wait before retrying (exponential backoff)
+                await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000))
+                continue
+              }
 
-            return {
-              ...product,
-              shipper: shipperData
+              return {
+                ...product,
+                shipper: shipperData
+              }
+            } catch (err) {
+              console.error(`Attempt ${retryCount + 1} failed for product ${product.drugid}:`, err)
+              retryCount++
+              if (retryCount === maxRetries) {
+                console.log(`Max retries reached for product ${product.drugid}, returning null shipper`)
+                return { ...product, shipper: null }
+              }
+              // Wait before retrying (exponential backoff)
+              await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000))
             }
-          } catch (err) {
-            console.error(`Failed to fetch shipper for product ${product.drugid}:`, err)
-            return { ...product, shipper: null }
           }
+          
+          return { ...product, shipper: null }
         })
       )
       
       console.log("Product catalog data:", productsWithShippers)
       return productsWithShippers
     },
+    retry: 3, // Add retry at the query level
+    retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 30000),
   })
 
   return (
