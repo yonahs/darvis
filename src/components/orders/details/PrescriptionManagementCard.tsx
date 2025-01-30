@@ -1,13 +1,27 @@
-import { Upload, Eye, Edit, FileText, Calendar, Pill } from "lucide-react"
+import { Upload, Eye, Edit, FileText, Calendar, Pill, Link } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { format } from "date-fns"
+import { useQuery } from "@tanstack/react-query"
+import { supabase } from "@/integrations/supabase/client"
 import type { Database } from "@/integrations/supabase/types"
 
 type Order = Database["public"]["Tables"]["orders"]["Row"]
-type DrugDetails = Database["public"]["Tables"]["newdrugdetails"]["Row"] & {
-  prescriptionDetails?: Database["public"]["Tables"]["clientrxdetails"]["Row"] | null
+type DrugDetails = Database["public"]["Tables"]["newdrugdetails"]["Row"]
+
+interface PrescriptionDetails {
+  rxid: number
+  rxdate: string
+  drugid: number
+  strength: string
+  totalboxesallowed: number | null
+  filled: number | null
+  qtypercycle: number | null
+  duration: string | null
+  refills: number | null
+  dateuploaded: string | null
+  image: string | null
 }
 
 interface PrescriptionManagementCardProps {
@@ -16,12 +30,52 @@ interface PrescriptionManagementCardProps {
 }
 
 export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionManagementCardProps) => {
+  const { data: prescriptionDetails } = useQuery<PrescriptionDetails>({
+    queryKey: ["prescription", order?.orderid],
+    enabled: !!order?.orderid,
+    queryFn: async () => {
+      console.log("Fetching prescription details for order:", order?.orderid)
+      const { data, error } = await supabase
+        .from('clientrxdetails')
+        .select(`
+          rxid,
+          rxdate,
+          drugid,
+          strength,
+          totalboxesallowed,
+          filled,
+          qtypercycle,
+          duration,
+          refills,
+          clientrx (
+            dateuploaded,
+            image,
+            directory
+          )
+        `)
+        .eq('drugid', order?.drugid)
+        .eq('strength', drugDetails?.strength)
+        .single()
+
+      if (error) {
+        console.error("Error fetching prescription details:", error)
+        throw error
+      }
+
+      console.log("Prescription details:", data)
+      return data
+    }
+  })
+
   const handleUploadRx = () => {
     console.log("Upload Rx clicked")
   }
 
   const handleViewRx = () => {
-    console.log("View Rx clicked")
+    if (prescriptionDetails?.clientrx?.directory && prescriptionDetails?.clientrx?.image) {
+      const imageUrl = `https://old.israelpharm.com/${prescriptionDetails.clientrx.directory}/${prescriptionDetails.clientrx.image}`
+      window.open(imageUrl, '_blank')
+    }
   }
 
   const handleEditRx = () => {
@@ -46,7 +100,13 @@ export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionM
               <Upload className="h-3 w-3" />
               Upload Rx
             </Button>
-            <Button variant="outline" size="xs" onClick={handleViewRx} className="h-6 px-2 text-xs gap-1">
+            <Button 
+              variant="outline" 
+              size="xs" 
+              onClick={handleViewRx} 
+              className="h-6 px-2 text-xs gap-1"
+              disabled={!prescriptionDetails?.clientrx?.image}
+            >
               <Eye className="h-3 w-3" />
               View Rx
             </Button>
@@ -58,23 +118,25 @@ export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionM
         </div>
       </CardHeader>
       <CardContent className="p-2 space-y-4">
-        {drugDetails?.prescriptionDetails ? (
+        {prescriptionDetails ? (
           <>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <div className="text-xs text-muted-foreground">Prescription Date</div>
                 <div className="text-sm font-medium flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
-                  {drugDetails.prescriptionDetails.rxdate
-                    ? format(new Date(drugDetails.prescriptionDetails.rxdate), "MMM dd, yyyy")
+                  {prescriptionDetails.rxdate
+                    ? format(new Date(prescriptionDetails.rxdate), "MMM dd, yyyy")
                     : "Not specified"}
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="text-xs text-muted-foreground">Quantity Per Cycle</div>
+                <div className="text-xs text-muted-foreground">Upload Date</div>
                 <div className="text-sm font-medium flex items-center gap-1">
-                  <Pill className="h-3 w-3" />
-                  {drugDetails.prescriptionDetails.qtypercycle || "Not specified"}
+                  <Calendar className="h-3 w-3" />
+                  {prescriptionDetails.clientrx?.dateuploaded
+                    ? format(new Date(prescriptionDetails.clientrx.dateuploaded), "MMM dd, yyyy")
+                    : "Not specified"}
                 </div>
               </div>
             </div>
@@ -92,30 +154,44 @@ export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionM
               <TableBody>
                 <TableRow>
                   <TableCell className="py-2 text-xs font-medium">
-                    {drugDetails.nameil}
+                    {drugDetails?.nameil}
                   </TableCell>
                   <TableCell className="py-2 text-xs">
-                    {drugDetails.prescriptionDetails.strength || drugDetails.strength || "N/A"}
+                    {prescriptionDetails.strength || "N/A"}
                   </TableCell>
                   <TableCell className="py-2 text-xs">
-                    {drugDetails.prescriptionDetails.refills || 0}
+                    {prescriptionDetails.refills || 0}
                   </TableCell>
                   <TableCell className="py-2 text-xs">
-                    {drugDetails.prescriptionDetails.filled || 0}
+                    {prescriptionDetails.filled || 0}
                   </TableCell>
                   <TableCell className="py-2 text-xs">
                     {calculateRefillsLeft(
-                      drugDetails.prescriptionDetails.refills,
-                      drugDetails.prescriptionDetails.filled
+                      prescriptionDetails.refills,
+                      prescriptionDetails.filled
                     )}
                   </TableCell>
                 </TableRow>
               </TableBody>
             </Table>
 
-            {drugDetails.prescriptionDetails.duration && (
+            {prescriptionDetails.duration && (
               <div className="text-xs text-muted-foreground">
-                Duration: {drugDetails.prescriptionDetails.duration}
+                Duration: {prescriptionDetails.duration}
+              </div>
+            )}
+
+            {prescriptionDetails.clientrx?.image && (
+              <div className="text-xs flex items-center gap-1">
+                <Link className="h-3 w-3" />
+                <a 
+                  href={`https://old.israelpharm.com/${prescriptionDetails.clientrx.directory}/${prescriptionDetails.clientrx.image}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  View Prescription Image
+                </a>
               </div>
             )}
           </>
