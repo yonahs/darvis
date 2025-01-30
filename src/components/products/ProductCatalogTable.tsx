@@ -109,14 +109,14 @@ export const ProductCatalogTable = ({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Product</TableHead>
-          <TableHead>Details</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Supplier</TableHead>
-          <TableHead>Shipper</TableHead>
-          <TableHead>Country</TableHead>
-          <TableHead>Price (USD)</TableHead>
-          <TableHead>Price (NIS)</TableHead>
+          <TableHead className="w-[200px]">Product</TableHead>
+          <TableHead className="w-[150px]">Details</TableHead>
+          <TableHead className="w-[140px]">Status</TableHead>
+          <TableHead className="w-[120px]">Supplier</TableHead>
+          <TableHead className="w-[120px]">Shipper</TableHead>
+          <TableHead className="w-[100px]">Country</TableHead>
+          <TableHead className="w-[100px]">Price (USD)</TableHead>
+          <TableHead className="w-[100px]">Price (NIS)</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -125,44 +125,42 @@ export const ProductCatalogTable = ({
             key={`${product.drugid}-${product.drug_detail_id}`}
             className="cursor-pointer hover:bg-muted/50"
           >
-            <TableCell>
-              <div className="space-y-1">
-                <div className="font-medium">
-                  {product.nameus}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {product.chemical}
-                </div>
+            <TableCell className="py-2">
+              <div className="space-y-0.5">
+                <div className="font-medium">{product.nameus}</div>
+                <div className="text-sm text-muted-foreground">{product.chemical}</div>
               </div>
             </TableCell>
-            <TableCell>
-              <div className="space-y-1">
+            <TableCell className="py-2">
+              <div className="space-y-0.5">
                 <div className="text-sm">{product.strength}</div>
-                <div className="text-sm text-muted-foreground">
-                  Pack size: {product.packsize || '-'}
-                </div>
+                <div className="text-sm text-muted-foreground">Pack size: {product.packsize || '-'}</div>
               </div>
             </TableCell>
-            <TableCell>
+            <TableCell className="py-2">
               <ProductStatusBadges
                 available={product.available}
                 prescription={product.prescription}
                 otc={product.otc}
               />
             </TableCell>
-            <TableCell>
-              <span>{product.supplier_full_name || product.supplier_name}</span>
+            <TableCell className="py-2">
+              <span className="text-sm">{product.supplier_full_name || product.supplier_name}</span>
             </TableCell>
-            <TableCell>
+            <TableCell className="py-2">
               <span className={`px-2 py-1 rounded text-sm font-medium ${getShipperColor(product.shipper_name)}`}>
                 {product.shipper_name || '-'}
               </span>
             </TableCell>
-            <TableCell>
-              <span>Israel</span>
+            <TableCell className="py-2">
+              <span className="text-sm">Israel</span>
             </TableCell>
-            <TableCell>{product.saledollar ? formatCurrency(product.saledollar) : '-'}</TableCell>
-            <TableCell>{product.salenis ? `₪${product.salenis.toFixed(2)}` : '-'}</TableCell>
+            <TableCell className="py-2">
+              {product.saledollar ? formatCurrency(product.saledollar) : '-'}
+            </TableCell>
+            <TableCell className="py-2">
+              {product.salenis ? `₪${product.salenis.toFixed(2)}` : '-'}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

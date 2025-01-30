@@ -23,7 +23,7 @@ export const ProductStatusBadges = ({ available, prescription, otc }: ProductSta
   }
 
   return (
-    <div className="space-y-2">
+    <div className="flex flex-wrap gap-1.5 items-center">
       {getAvailabilityBadge(available)}
       {getPrescriptionBadge(prescription, otc)}
     </div>
