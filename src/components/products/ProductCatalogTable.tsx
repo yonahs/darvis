@@ -70,6 +70,11 @@ export const ProductCatalogTable = ({
 
       if (error) {
         console.error("Error fetching shippers:", error)
+        toast({
+          title: "Error fetching shippers",
+          description: error.message,
+          variant: "destructive",
+        })
         throw error
       }
 
