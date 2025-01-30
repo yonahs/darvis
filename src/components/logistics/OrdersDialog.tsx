@@ -58,7 +58,7 @@ export const OrdersDialog = ({
       const { data, error } = await supabase
         .from("vw_order_details")
         .select("orderid,clientname,orderdate,totalsale,orderstatus")
-        .eq("shipperid", shipperId)
+        .eq("shipper", shipperName)
         .order("orderdate", { ascending: false })
 
       if (error) {
@@ -67,7 +67,7 @@ export const OrdersDialog = ({
       }
 
       console.log("Fetched orders:", data)
-      return data as OrderDetails[]
+      return data || []
     },
   })
 
