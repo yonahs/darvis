@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
-import { ProductCatalogTable } from "@/components/pharmacy/ProductCatalogTable"
+import { ProductCatalogTable } from "@/components/products/ProductCatalogTable"
 
 const Products = () => {
   const pageSize = 10
