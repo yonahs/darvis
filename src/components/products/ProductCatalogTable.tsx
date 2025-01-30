@@ -85,7 +85,9 @@ export const ProductCatalogTable = ({
 
   const getShipperName = (shipperId: number | null) => {
     if (!shipperId || !shippers) return "-"
+    console.log("Looking for shipper with ID:", shipperId)
     const shipper = shippers.find(s => s.shipperid === shipperId)
+    console.log("Found shipper:", shipper)
     return shipper?.display_name || "-"
   }
 
