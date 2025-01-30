@@ -42,7 +42,7 @@ const Logistics = () => {
       )}
 
       <OrdersDialog
-        open={!!selectedShipperId}
+        isOpen={!!selectedShipperId}
         onOpenChange={() => setSelectedShipperId(null)}
         shipperId={selectedShipperId}
       />
