@@ -21,17 +21,31 @@ const Pharmacy = () => {
       // Fetch shipper data for each product
       const productsWithShippers = await Promise.all(
         productData.map(async (product) => {
-          if (!product.defaultshipper) return { ...product, shipper: null }
+          if (!product.defaultshipper) {
+            console.log(`No defaultshipper for product ${product.drugid}`)
+            return { ...product, shipper: null }
+          }
           
-          const { data: shipperData } = await supabase
-            .from("shippers")
-            .select("display_name")
-            .eq("shipperid", product.defaultshipper)
-            .single()
-          
-          return {
-            ...product,
-            shipper: shipperData || null
+          try {
+            console.log(`Fetching shipper data for defaultshipper: ${product.defaultshipper}`)
+            const { data: shipperData, error: shipperError } = await supabase
+              .from("shippers")
+              .select("display_name")
+              .eq("shipperid", product.defaultshipper)
+              .maybeSingle()
+            
+            if (shipperError) {
+              console.error("Error fetching shipper:", shipperError)
+              return { ...product, shipper: null }
+            }
+
+            return {
+              ...product,
+              shipper: shipperData
+            }
+          } catch (err) {
+            console.error(`Failed to fetch shipper for product ${product.drugid}:`, err)
+            return { ...product, shipper: null }
           }
         })
       )
