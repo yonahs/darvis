@@ -1534,6 +1534,7 @@ export type Database = {
           prescription: boolean | null
           saledollar: number | null
           salenis: number | null
+          shipper_name: string | null
           strength: string | null
           supplier: number | null
           supplier_full_name: string | null
