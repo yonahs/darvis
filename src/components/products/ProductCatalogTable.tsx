@@ -7,12 +7,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
+import { ProductTableSkeleton } from "./table/ProductTableSkeleton"
+import { ProductStatusBadges } from "./table/ProductStatusBadges"
 
 interface ProductCatalog {
   drugid: number
@@ -59,7 +59,6 @@ export const ProductCatalogTable = ({
 }: ProductCatalogTableProps) => {
   const { toast } = useToast()
 
-  // Fetch shippers data
   const { data: shippers } = useQuery({
     queryKey: ["shippers"],
     queryFn: async () => {
@@ -91,52 +90,8 @@ export const ProductCatalogTable = ({
     return shipper?.display_name || "-"
   }
 
-  const getAvailabilityBadge = (available: boolean | null) => {
-    if (available === null) return <Badge variant="outline">Unknown</Badge>
-    return available ? (
-      <Badge variant="success">In Stock</Badge>
-    ) : (
-      <Badge variant="destructive">Out of Stock</Badge>
-    )
-  }
-
-  const getPrescriptionBadge = (prescription: boolean | null, otc: boolean | null) => {
-    if (otc) return <Badge variant="secondary">OTC</Badge>
-    if (prescription) return <Badge>Rx Required</Badge>
-    return <Badge variant="outline">Unknown</Badge>
-  }
-
   if (isLoading || isFetching) {
-    return (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Product</TableHead>
-            <TableHead>Details</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Supplier</TableHead>
-            <TableHead>Shipper</TableHead>
-            <TableHead>Country</TableHead>
-            <TableHead>Price (USD)</TableHead>
-            <TableHead>Price (NIS)</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {Array.from({ length: pageSize }).map((_, i) => (
-            <TableRow key={i}>
-              <TableCell><Skeleton className="h-4 w-[200px]" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    )
+    return <ProductTableSkeleton pageSize={pageSize} />
   }
 
   if (!products?.length) {
@@ -204,10 +159,11 @@ export const ProductCatalogTable = ({
               </div>
             </TableCell>
             <TableCell>
-              <div className="space-y-2">
-                {getAvailabilityBadge(product.available)}
-                {getPrescriptionBadge(product.prescription, product.otc)}
-              </div>
+              <ProductStatusBadges
+                available={product.available}
+                prescription={product.prescription}
+                otc={product.otc}
+              />
             </TableCell>
             <TableCell>
               <span>{product.supplier_full_name || product.supplier_name}</span>
