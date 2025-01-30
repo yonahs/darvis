@@ -34,7 +34,7 @@ export const useShipperStats = () => {
           throw shipperError
         }
 
-        // Get orders from the last 30 days
+        // Get orders from the last 30 days that need shipping
         const thirtyDaysAgo = new Date()
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
@@ -43,6 +43,7 @@ export const useShipperStats = () => {
           .select("shipperid, shipstatus, status, ups")
           .not('shipperid', 'is', null)
           .not('cancelled', 'eq', true)
+          .is('ups', null) // Only get orders that don't have tracking numbers yet
           .gte('orderdate', thirtyDaysAgo.toISOString())
           .not('status', 'in', '(99, 100)')
           .not('shipstatus', 'eq', 99)
