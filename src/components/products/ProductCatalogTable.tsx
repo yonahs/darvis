@@ -66,6 +66,7 @@ export const ProductCatalogTable = ({
       const { data, error } = await supabase
         .from("shippers")
         .select("shipperid, display_name")
+        .order('display_name')
 
       if (error) {
         console.error("Error fetching shippers:", error)
@@ -77,6 +78,10 @@ export const ProductCatalogTable = ({
         throw error
       }
 
+      if (!data || data.length === 0) {
+        console.warn("No shippers found in the database")
+      }
+
       console.log("Received shippers data:", data)
       return data as Shipper[]
     },
@@ -86,7 +91,7 @@ export const ProductCatalogTable = ({
     if (!shipperId || !shippers) return "-"
     console.log("Looking for shipper with ID:", shipperId)
     console.log("Available shippers:", shippers)
-    const shipper = shippers.find(s => s.shipperid === shipperId)
+    const shipper = shippers?.find(s => s.shipperid === shipperId)
     console.log("Found shipper:", shipper)
     return shipper?.display_name || "-"
   }
@@ -136,7 +141,7 @@ export const ProductCatalogTable = ({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {products.map((product) => (
+        {products?.map((product) => (
           <TableRow 
             key={`${product.drugid}-${product.drug_detail_id}`}
             className="cursor-pointer hover:bg-muted/50"
