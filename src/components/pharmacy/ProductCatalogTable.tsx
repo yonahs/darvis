@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
 interface ProductCatalog {
   drugid: number
@@ -52,6 +53,8 @@ export const ProductCatalogTable = ({
   isFetching,
   pageSize,
 }: ProductCatalogTableProps) => {
+  const { toast } = useToast()
+
   const getAvailabilityBadge = (available: boolean | null) => {
     if (available === null) return <Badge variant="outline">Unknown</Badge>
     return available ? (
@@ -174,7 +177,7 @@ export const ProductCatalogTable = ({
               <span>{product.supplier_full_name || product.supplier_name}</span>
             </TableCell>
             <TableCell>
-              <span>{product.shipper?.display_name || '-'}</span>
+              <span>-</span>
             </TableCell>
             <TableCell>
               <span>Israel</span>
