@@ -50,14 +50,14 @@ export const OrdersDialog = ({
     },
   })
 
-  const { data: orders, isLoading } = useQuery({
+  const { data: orders, isLoading } = useQuery<OrderDetails[]>({
     queryKey: ["shipper-orders", shipperId],
     enabled: !!shipperId,
     queryFn: async () => {
       console.log("Fetching orders for shipper:", shipperId)
       const { data, error } = await supabase
         .from("vw_order_details")
-        .select("*")
+        .select("orderid,clientname,orderdate,totalsale,orderstatus")
         .eq("shipperid", shipperId)
         .order("orderdate", { ascending: false })
 
@@ -67,7 +67,7 @@ export const OrdersDialog = ({
       }
 
       console.log("Fetched orders:", data)
-      return data
+      return data as OrderDetails[]
     },
   })
 
