@@ -23,6 +23,7 @@ export const useShipperStats = () => {
     queryFn: async () => {
       console.log("Fetching logistics statistics...")
       try {
+        // First get active shippers
         const { data: shipperData, error: shipperError } = await supabase
           .from("shippers")
           .select("shipperid, display_name, company_name")
@@ -33,6 +34,8 @@ export const useShipperStats = () => {
           toast.error("Failed to fetch shippers data")
           throw shipperError
         }
+
+        console.log("Fetched shippers:", shipperData)
 
         // Get orders from the last 30 days that need shipping
         const thirtyDaysAgo = new Date()
@@ -56,6 +59,7 @@ export const useShipperStats = () => {
 
         console.log("Fetched orders:", orders?.length)
 
+        // Calculate statistics for each shipper
         const shippersWithStats: ShipperStats[] = shipperData?.map(shipper => {
           const shipperOrders = orders?.filter(order => order.shipperid === shipper.shipperid) || []
           const uploaded = shipperOrders.filter(order => order.shipstatus === 2).length

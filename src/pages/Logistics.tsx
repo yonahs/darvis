@@ -1,98 +1,50 @@
-import { useState } from "react"
-import { useToast } from "@/hooks/use-toast"
 import { useShipperStats } from "@/hooks/useShipperStats"
-import { useShipperOrders } from "@/hooks/useShipperOrders"
-import { ShipperCard, ShipperCardSkeleton } from "@/components/logistics/ShipperCard"
+import { ShipperCard } from "@/components/logistics/ShipperCard"
 import { OrdersDialog } from "@/components/logistics/OrdersDialog"
-import { supabase } from "@/integrations/supabase/client"
-import { useEffect } from "react"
-
-interface ShipperStats {
-  shipperid: number
-  name: string
-  totalOrders: number
-  uploaded: number
-  notUploaded: number
-}
+import { useState } from "react"
 
 const Logistics = () => {
-  const { toast } = useToast()
-  const [selectedShipper, setSelectedShipper] = useState<ShipperStats | null>(null)
-  const [showUploaded, setShowUploaded] = useState(false)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-
-  const { data: shippers, isLoading, refetch } = useShipperStats()
-
-  const { data: selectedOrders, isLoading: isLoadingOrders } = useShipperOrders({
-    shipperid: selectedShipper?.shipperid || 0,
-    shipperName: selectedShipper?.name || "",
-    enabled: !!selectedShipper,
-  })
-
-  // Set up real-time subscription
-  useEffect(() => {
-    console.log("Setting up real-time subscription for orders table")
-    const channel = supabase
-      .channel('orders-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'orders'
-        },
-        async (payload) => {
-          console.log('Orders table changed:', payload)
-          toast({
-            title: "Order Update",
-            description: "Order data has changed. Refreshing statistics...",
-          })
-          await refetch()
-        }
-      )
-      .subscribe((status) => {
-        console.log("Subscription status:", status)
-      })
-
-    return () => {
-      console.log("Cleaning up real-time subscription")
-      supabase.removeChannel(channel)
-    }
-  }, [refetch, toast])
-
-  const handleViewOrders = (shipper: ShipperStats, uploaded: boolean) => {
-    setSelectedShipper(shipper)
-    setShowUploaded(uploaded)
-    setIsDialogOpen(true)
-  }
+  const { data: shipperStats, isLoading } = useShipperStats()
+  const [selectedShipperId, setSelectedShipperId] = useState<number | null>(null)
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Logistics Manager</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {isLoading ? (
-          Array.from({ length: 8 }).map((_, i) => (
-            <ShipperCardSkeleton key={i} />
-          ))
-        ) : (
-          shippers?.map((shipper) => (
-            <ShipperCard
-              key={shipper.shipperid}
-              shipper={shipper}
-              onViewOrders={(uploaded) => handleViewOrders(shipper, uploaded)}
-            />
-          ))
-        )}
+    <div className="container py-8 space-y-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold tracking-tight">Logistics</h1>
       </div>
 
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-[180px] rounded-lg bg-muted animate-pulse" />
+          ))}
+        </div>
+      ) : shipperStats?.length === 0 ? (
+        <div className="text-center py-12">
+          <h3 className="text-lg font-medium">No active shippers</h3>
+          <p className="text-muted-foreground">
+            There are no shippers with pending orders at the moment.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {shipperStats?.map((stats) => (
+            <ShipperCard
+              key={stats.shipperid}
+              name={stats.name}
+              totalOrders={stats.totalOrders}
+              uploaded={stats.uploaded}
+              notUploaded={stats.notUploaded}
+              onClick={() => setSelectedShipperId(stats.shipperid)}
+            />
+          ))}
+        </div>
+      )}
+
       <OrdersDialog
-        isOpen={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        orders={selectedOrders}
-        isLoading={isLoadingOrders}
-        shipperName={selectedShipper?.name || ""}
-        showUploaded={showUploaded}
+        open={!!selectedShipperId}
+        onOpenChange={() => setSelectedShipperId(null)}
+        shipperId={selectedShipperId}
       />
     </div>
   )
