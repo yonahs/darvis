@@ -11,6 +11,10 @@ interface LogisticsTimelineProps {
 }
 
 export const LogisticsTimeline = ({ status, lastUpdate, trackingNumber }: LogisticsTimelineProps) => {
+  console.log("LogisticsTimeline - Received status:", status)
+  console.log("LogisticsTimeline - Tracking number:", trackingNumber)
+  console.log("LogisticsTimeline - Last update:", lastUpdate)
+
   const steps = [
     { id: 1, label: "Order Placed", icon: Package },
     { id: 2, label: "Processing", icon: ArrowRight },

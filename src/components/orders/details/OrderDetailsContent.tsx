@@ -33,6 +33,10 @@ export const OrderDetailsContent = ({
   onMarkAsPaid,
   allOrderItems,
 }: OrderDetailsContentProps) => {
+  console.log("OrderDetailsContent - Full order object:", order)
+  console.log("OrderDetailsContent - Shipper ID:", order?.shipperid)
+  console.log("OrderDetailsContent - Shipping status:", order?.shipstatus)
+
   const [layouts, setLayouts] = useState(() => {
     const savedLayouts = localStorage.getItem("orderDetailsLayouts")
     return savedLayouts ? JSON.parse(savedLayouts) : defaultLayouts
