@@ -35,9 +35,6 @@ interface ProductCatalog {
   turkey_cost_usd: number | null
   canada_cost_usd: number | null
   supplier_full_name: string | null
-  shipper: {
-    display_name: string | null
-  } | null
 }
 
 interface ProductCatalogTableProps {
@@ -177,7 +174,7 @@ export const ProductCatalogTable = ({
               <span>{product.supplier_full_name || product.supplier_name}</span>
             </TableCell>
             <TableCell>
-              <span>-</span>
+              <span>{product.defaultshipper || '-'}</span>
             </TableCell>
             <TableCell>
               <span>Israel</span>
