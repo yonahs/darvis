@@ -39,11 +39,6 @@ interface ProductCatalog {
   supplier_full_name: string | null
 }
 
-interface Shipper {
-  shipperid: number
-  display_name: string | null
-}
-
 interface ProductCatalogTableProps {
   products: ProductCatalog[] | undefined
   isLoading: boolean
@@ -59,41 +54,24 @@ export const ProductCatalogTable = ({
 }: ProductCatalogTableProps) => {
   const { toast } = useToast()
 
-  const { data: shippers } = useQuery({
-    queryKey: ["shippers"],
-    queryFn: async () => {
-      console.log("Fetching shippers...")
-      const { data, error } = await supabase
-        .from("shippers")
-        .select("shipperid, display_name")
-        .order('display_name')
+  const getShipperColor = (shipper: string | null) => {
+    if (!shipper) return "bg-gray-100 text-gray-600"
+    
+    const shipperColors: { [key: string]: string } = {
+      "Pharma Shaul": "bg-[#E5DEFF] text-[#5B21B6]",
+      "Leading Up": "bg-[#FEF3C7] text-[#92400E]",
+      "SUBS 2": "bg-[#DBEAFE] text-[#1E40AF]",
+      "Aktive": "bg-[#FCE7F3] text-[#9D174D]",
+      "FedEx": "bg-[#ECFCCB] text-[#3F6212]",
+      "UPS": "bg-[#FEF9C3] text-[#854D0E]",
+      "DHL": "bg-[#FFEDD5] text-[#9A3412]",
+      "USPS": "bg-[#F3E8FF] text-[#6B21A8]",
+      "EMS": "bg-[#DBEAFE] text-[#1E40AF]",
+      "TNT": "bg-[#FEE2E2] text-[#991B1B]",
+      "Aramex": "bg-[#FFE4E6] text-[#9F1239]",
+    }
 
-      if (error) {
-        console.error("Error fetching shippers:", error)
-        toast({
-          title: "Error fetching shippers",
-          description: error.message,
-          variant: "destructive",
-        })
-        throw error
-      }
-
-      if (!data || data.length === 0) {
-        console.warn("No shippers found in the database")
-      }
-
-      console.log("Received shippers data:", data)
-      return data as Shipper[]
-    },
-  })
-
-  const getShipperName = (shipperId: number | null) => {
-    if (!shipperId || !shippers) return "-"
-    console.log("Looking for shipper with ID:", shipperId)
-    console.log("Available shippers:", shippers)
-    const shipper = shippers?.find(s => s.shipperid === shipperId)
-    console.log("Found shipper:", shipper)
-    return shipper?.display_name || "-"
+    return shipperColors[shipper] || "bg-[#F1F0FB] text-gray-700"
   }
 
   if (isLoading || isFetching) {
@@ -175,7 +153,9 @@ export const ProductCatalogTable = ({
               <span>{product.supplier_full_name || product.supplier_name}</span>
             </TableCell>
             <TableCell>
-              <span>{getShipperName(product.defaultshipper)}</span>
+              <span className={`px-2 py-1 rounded text-sm font-medium ${getShipperColor(product.defaultshipper?.toString() || null)}`}>
+                {product.defaultshipper || '-'}
+              </span>
             </TableCell>
             <TableCell>
               <span>Israel</span>
