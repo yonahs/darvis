@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
+import { toast } from "sonner"
 
 interface ShipperStats {
   shipperid: number
@@ -27,19 +28,30 @@ export const useShipperStats = () => {
           .select("shipperid, display_name, company_name")
           .order('display_name')
         
-        if (shipperError) throw shipperError
+        if (shipperError) {
+          console.error("Error fetching shippers:", shipperError)
+          toast.error("Failed to fetch shippers data")
+          throw shipperError
+        }
+
+        // Get orders from the last 30 days
+        const thirtyDaysAgo = new Date()
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
         const { data: orders, error: ordersError } = await supabase
           .from("orders")
           .select("shipperid, shipstatus, status, ups")
           .not('shipperid', 'is', null)
           .not('cancelled', 'eq', true)
-          .is('ups', null)
-          .gte('orderdate', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+          .gte('orderdate', thirtyDaysAgo.toISOString())
           .not('status', 'in', '(99, 100)')
           .not('shipstatus', 'eq', 99)
 
-        if (ordersError) throw ordersError
+        if (ordersError) {
+          console.error("Error fetching orders:", ordersError)
+          toast.error("Failed to fetch orders data")
+          throw ordersError
+        }
 
         console.log("Fetched orders:", orders?.length)
 
@@ -55,16 +67,17 @@ export const useShipperStats = () => {
             uploaded: uploaded,
             notUploaded: total - uploaded
           }
-        }) || []
+        }).filter(shipper => shipper.totalOrders > 0) || []
 
         console.log("Calculated shipper stats:", shippersWithStats)
         return shippersWithStats
       } catch (err) {
         console.error("Error fetching logistics data:", err)
+        toast.error("Failed to load logistics data")
         throw err
       }
     },
-    staleTime: 0,
-    refetchInterval: 5000
+    staleTime: 30000, // 30 seconds
+    refetchInterval: 30000 // Refresh every 30 seconds
   })
 }
