@@ -7,8 +7,8 @@ import { ProductSearch } from "@/components/products/ProductSearch"
 const Products = () => {
   const pageSize = 10
   const [search, setSearch] = useState("")
-  const [supplierFilter, setSupplierFilter] = useState<string[]>([])
-  const [shipperFilter, setShipperFilter] = useState<string[]>([])
+  const [supplierFilter, setSupplierFilter] = useState<number[]>([])
+  const [shipperFilter, setShipperFilter] = useState<number[]>([])
   const [availabilityFilter, setAvailabilityFilter] = useState<string[]>([])
 
   const { data: products, isLoading, isFetching } = useQuery({
@@ -68,6 +68,14 @@ const Products = () => {
     },
   })
 
+  const handleSupplierFilterChange = (values: string[]) => {
+    setSupplierFilter(values.map(v => parseInt(v, 10)))
+  }
+
+  const handleShipperFilterChange = (values: string[]) => {
+    setShipperFilter(values.map(v => parseInt(v, 10)))
+  }
+
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Products</h1>
@@ -75,10 +83,10 @@ const Products = () => {
         <ProductSearch
           search={search}
           onSearchChange={setSearch}
-          supplierFilter={supplierFilter}
-          onSupplierFilterChange={setSupplierFilter}
-          shipperFilter={shipperFilter}
-          onShipperFilterChange={setShipperFilter}
+          supplierFilter={supplierFilter.map(String)}
+          onSupplierFilterChange={handleSupplierFilterChange}
+          shipperFilter={shipperFilter.map(String)}
+          onShipperFilterChange={handleShipperFilterChange}
           availabilityFilter={availabilityFilter}
           onAvailabilityFilterChange={setAvailabilityFilter}
         />
