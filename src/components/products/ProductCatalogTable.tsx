@@ -77,7 +77,7 @@ export const ProductCatalogTable = ({
         throw error
       }
 
-      console.log("Shippers data:", data)
+      console.log("Received shippers data:", data)
       return data as Shipper[]
     },
   })
@@ -85,6 +85,7 @@ export const ProductCatalogTable = ({
   const getShipperName = (shipperId: number | null) => {
     if (!shipperId || !shippers) return "-"
     console.log("Looking for shipper with ID:", shipperId)
+    console.log("Available shippers:", shippers)
     const shipper = shippers.find(s => s.shipperid === shipperId)
     console.log("Found shipper:", shipper)
     return shipper?.display_name || "-"
