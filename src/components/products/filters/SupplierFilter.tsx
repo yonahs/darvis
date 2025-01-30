@@ -14,8 +14,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
-import { Check, ChevronsUpDown } from "lucide-react"
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
+
+interface Supplier {
+  id: number
+  name: string | null
+}
 
 interface SupplierFilterProps {
   supplierFilter: string[]
@@ -27,25 +33,39 @@ export const SupplierFilter = ({
   onSupplierFilterChange,
 }: SupplierFilterProps) => {
   const [open, setOpen] = React.useState(false)
+  const [searchQuery, setSearchQuery] = React.useState("")
 
   const { data: suppliers = [], isLoading } = useQuery({
     queryKey: ["suppliers"],
     queryFn: async () => {
       console.log("Fetching suppliers...")
-      const { data, error } = await supabase
-        .from("suppliers")
-        .select("id, name")
-        .order("name")
+      try {
+        const { data, error } = await supabase
+          .from("suppliers")
+          .select("id, name")
+          .order("name")
 
-      if (error) {
-        console.error("Error fetching suppliers:", error)
-        throw error
+        if (error) {
+          console.error("Error fetching suppliers:", error)
+          toast.error("Failed to load suppliers")
+          return []
+        }
+        
+        console.log("Fetched suppliers:", data)
+        return (data || []) as Supplier[]
+      } catch (err) {
+        console.error("Error in supplier query:", err)
+        toast.error("Failed to load suppliers")
+        return []
       }
-      
-      console.log("Fetched suppliers:", data)
-      return data || []
     },
   })
+
+  const filteredSuppliers = React.useMemo(() => {
+    return suppliers.filter(supplier => 
+      supplier.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  }, [suppliers, searchQuery])
 
   const toggleSupplier = (supplierId: string) => {
     const currentFilters = [...supplierFilter]
@@ -68,21 +88,29 @@ export const SupplierFilter = ({
           className="min-w-[200px] justify-between"
           disabled={isLoading}
         >
-          {supplierFilter.length === 0
-            ? "Filter by supplier"
-            : `${supplierFilter.length} supplier${supplierFilter.length > 1 ? 's' : ''} selected`}
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : supplierFilter.length === 0 ? (
+            "Filter by supplier"
+          ) : (
+            `${supplierFilter.length} supplier${supplierFilter.length > 1 ? 's' : ''} selected`
+          )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
-        <Command>
-          <CommandInput placeholder="Search suppliers..." />
+        <Command shouldFilter={false}>
+          <CommandInput 
+            placeholder="Search suppliers..." 
+            value={searchQuery}
+            onValueChange={setSearchQuery}
+          />
           <CommandEmpty>No supplier found.</CommandEmpty>
           <CommandGroup>
-            {suppliers.map((supplier) => (
+            {filteredSuppliers.map((supplier) => (
               <CommandItem
                 key={supplier.id}
-                value={supplier.name}
+                value={supplier.name || ""}
                 onSelect={() => toggleSupplier(supplier.id.toString())}
               >
                 <Check
