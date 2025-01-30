@@ -13,11 +13,11 @@ const Pharmacy = () => {
         .from("vw_product_catalog")
         .select(`
           *,
-          shipper:shippers(
+          shipper:shippers!inner(
             display_name
           )
         `)
-        .eq('shippers.shipperid', 'defaultshipper')
+        .eq('defaultshipper', 'shipperid')
       
       if (error) {
         console.error("Error fetching product catalog:", error)
