@@ -20,8 +20,11 @@ interface PrescriptionDetails {
   qtypercycle: number | null
   duration: string | null
   refills: number | null
-  dateuploaded: string | null
-  image: string | null
+  clientrx: {
+    dateuploaded: string | null
+    image: string | null
+    directory: string | null
+  } | null
 }
 
 interface PrescriptionManagementCardProps {
@@ -32,7 +35,7 @@ interface PrescriptionManagementCardProps {
 export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionManagementCardProps) => {
   const { data: prescriptionDetails } = useQuery<PrescriptionDetails>({
     queryKey: ["prescription", order?.orderid],
-    enabled: !!order?.orderid,
+    enabled: !!order?.orderid && !!drugDetails?.strength,
     queryFn: async () => {
       console.log("Fetching prescription details for order:", order?.orderid)
       const { data, error } = await supabase
@@ -55,6 +58,8 @@ export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionM
         `)
         .eq('drugid', order?.drugid)
         .eq('strength', drugDetails?.strength)
+        .order('rxdate', { ascending: false })
+        .limit(1)
         .single()
 
       if (error) {
@@ -63,7 +68,7 @@ export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionM
       }
 
       console.log("Prescription details:", data)
-      return data
+      return data as PrescriptionDetails
     }
   })
 
