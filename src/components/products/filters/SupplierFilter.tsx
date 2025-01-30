@@ -78,7 +78,7 @@ export const SupplierFilter = ({
           <CommandInput placeholder="Search suppliers..." />
           <CommandEmpty>No supplier found.</CommandEmpty>
           <CommandGroup>
-            {suppliers.map((supplier) => (
+            {suppliers?.map((supplier) => (
               <CommandItem
                 key={supplier.id}
                 value={supplier.name}

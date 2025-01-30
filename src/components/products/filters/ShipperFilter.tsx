@@ -78,7 +78,7 @@ export const ShipperFilter = ({
           <CommandInput placeholder="Search shippers..." />
           <CommandEmpty>No shipper found.</CommandEmpty>
           <CommandGroup>
-            {shippers.map((shipper) => (
+            {shippers?.map((shipper) => (
               <CommandItem
                 key={shipper.shipperid}
                 value={shipper.display_name}
