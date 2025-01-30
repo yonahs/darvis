@@ -1,4 +1,4 @@
-import { Upload, Eye, Edit, FileText, Calendar, Pill, Link } from "lucide-react"
+import { Upload, Eye, Edit, FileText, Calendar, Link } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -102,6 +102,8 @@ export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionM
     return null
   }
 
+  const rxImageUrl = getRxImageUrl()
+
   return (
     <>
       <Card>
@@ -121,10 +123,19 @@ export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionM
                 size="xs" 
                 onClick={handleViewRx} 
                 className="h-6 px-2 text-xs gap-1"
-                disabled={!prescriptionDetails?.clientrx?.image}
+                disabled={!rxImageUrl}
               >
                 <Eye className="h-3 w-3" />
                 View Rx
+                {rxImageUrl && (
+                  <Link 
+                    className="h-3 w-3 ml-1" 
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      window.open(rxImageUrl, '_blank')
+                    }}
+                  />
+                )}
               </Button>
               <Button variant="outline" size="xs" onClick={handleEditRx} className="h-6 px-2 text-xs gap-1">
                 <Edit className="h-3 w-3" />
@@ -176,14 +187,14 @@ export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionM
                       {prescriptionDetails.strength || "N/A"}
                     </TableCell>
                     <TableCell className="py-2 text-xs">
-                      {prescriptionDetails.refills || 0}
+                      {prescriptionDetails.totalboxesallowed || 0}
                     </TableCell>
                     <TableCell className="py-2 text-xs">
                       {prescriptionDetails.filled || 0}
                     </TableCell>
                     <TableCell className="py-2 text-xs">
                       {calculateRefillsLeft(
-                        prescriptionDetails.refills,
+                        prescriptionDetails.totalboxesallowed,
                         prescriptionDetails.filled
                       )}
                     </TableCell>
@@ -207,9 +218,9 @@ export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionM
 
       <Dialog open={showRxImage} onOpenChange={setShowRxImage}>
         <DialogContent className="max-w-3xl">
-          {getRxImageUrl() && (
+          {rxImageUrl && (
             <img 
-              src={getRxImageUrl()!} 
+              src={rxImageUrl} 
               alt="Prescription" 
               className="w-full h-auto"
               onError={(e) => {
