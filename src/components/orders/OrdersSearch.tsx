@@ -52,7 +52,7 @@ export const OrdersSearch = ({
   const [openStatus, setOpenStatus] = React.useState(false)
   const [openShipper, setOpenShipper] = React.useState(false)
 
-  const { data: shippers = [] } = useQuery({
+  const { data: shippers = [], isLoading: isLoadingShippers } = useQuery({
     queryKey: ["shippers"],
     queryFn: async () => {
       console.log("Fetching shippers...")
@@ -118,6 +118,7 @@ export const OrdersSearch = ({
                 role="combobox"
                 aria-expanded={openShipper}
                 className="min-w-[200px] justify-between"
+                disabled={isLoadingShippers}
               >
                 {shipperFilter.length === 0
                   ? "Filter by shipper"
