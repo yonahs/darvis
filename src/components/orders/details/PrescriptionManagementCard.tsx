@@ -97,7 +97,10 @@ export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionM
 
   const getRxImageUrl = () => {
     if (prescriptionDetails?.clientrx?.directory && prescriptionDetails?.clientrx?.image) {
-      return `https://old.israelpharm.com/${prescriptionDetails.clientrx.directory}/${prescriptionDetails.clientrx.image}`
+      // Remove any trailing slashes from directory and leading slashes from image
+      const directory = prescriptionDetails.clientrx.directory.replace(/\/+$/, '')
+      const image = prescriptionDetails.clientrx.image.replace(/^\/+/, '')
+      return `https://old.israelpharm.com/${directory}/${image}`
     }
     return null
   }
