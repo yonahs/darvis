@@ -1519,6 +1519,7 @@ export type Database = {
           state: string | null
           totalsale: number | null
           uploaded: number | null
+          ups: string | null
           website: string | null
         }
         Relationships: []
