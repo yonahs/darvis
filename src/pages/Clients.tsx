@@ -82,13 +82,12 @@ export default function Clients() {
       
       if (clientsError) throw clientsError
 
-      // Get order counts excluding cancelled orders
+      // Get order counts using a count aggregation
       const { data: orderCounts, error: orderCountsError } = await supabase
         .from("orders")
-        .select("clientid, count", { count: 'exact' })
+        .select('clientid, count(*)', { count: 'exact', head: false })
         .eq('cancelled', false)
-        .in("clientid", clientsData.map(c => c.clientid))
-        .groupBy('clientid')
+        .in('clientid', clientsData.map(c => c.clientid))
 
       if (orderCountsError) throw orderCountsError
 
@@ -108,10 +107,16 @@ export default function Clients() {
         return acc
       }, {} as Record<number, number>)
 
+      // Calculate order counts per client from the raw data
+      const orderCountByClient = orderCounts.reduce((acc, count) => {
+        acc[count.clientid] = parseInt(count.count)
+        return acc
+      }, {} as Record<number, number>)
+
       // Merge the data
       return clientsData.map(client => ({
         ...client,
-        total_orders: orderCounts?.find(oc => oc.clientid === client.clientid)?.count || 0,
+        total_orders: orderCountByClient[client.clientid] || 0,
         lifetime_value: lifetimeValueByClient[client.clientid] || 0
       })) as ClientWithOrderCount[]
     },
