@@ -41,7 +41,6 @@ export default function ClientDetail() {
 
   const updateClientMutation = useMutation({
     mutationFn: async (updates: any) => {
-      // Update client
       const { error: updateError } = await supabase
         .from("clients")
         .update(updates)
@@ -49,7 +48,6 @@ export default function ClientDetail() {
 
       if (updateError) throw updateError
 
-      // Log changes
       const changes = Object.entries(updates).map(([field, newValue]) => ({
         client_id: parseInt(clientId || "0"),
         field_name: field,
@@ -84,11 +82,11 @@ export default function ClientDetail() {
   })
 
   if (isLoading) {
-    return <div className="p-6">Loading...</div>
+    return <div className="p-4">Loading...</div>
   }
 
   if (!client) {
-    return <div className="p-6">Client not found</div>
+    return <div className="p-4">Client not found</div>
   }
 
   const handleEdit = () => {
@@ -110,6 +108,24 @@ export default function ClientDetail() {
       country: editedClient.country,
       doctor: editedClient.doctor,
       drphone: editedClient.drphone,
+      condition_anxiety: editedClient.condition_anxiety,
+      condition_arthritis: editedClient.condition_arthritis,
+      condition_cancer: editedClient.condition_cancer,
+      condition_chronic_pain: editedClient.condition_chronic_pain,
+      condition_ed: editedClient.condition_ed,
+      condition_fibromyalgia: editedClient.condition_fibromyalgia,
+      condition_glaucoma: editedClient.condition_glaucoma,
+      condition_hiv_aids: editedClient.condition_hiv_aids,
+      condition_loss_of_apppetite: editedClient.condition_loss_of_apppetite,
+      condition_migraines: editedClient.condition_migraines,
+      condition_muscle_spasm: editedClient.condition_muscle_spasm,
+      condition_nausea: editedClient.condition_nausea,
+      condition_seizures: editedClient.condition_seizures,
+      condition_trouble_sleeping: editedClient.condition_trouble_sleeping,
+      condition_weight_loss: editedClient.condition_weight_loss,
+      condition_other: editedClient.condition_other,
+      condition_other_info: editedClient.condition_other_info,
+      allergies: editedClient.allergies,
     }
 
     updateClientMutation.mutate(updates)
@@ -120,7 +136,7 @@ export default function ClientDetail() {
     setEditedClient(null)
   }
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setEditedClient((prev: any) => ({
       ...prev,
       [field]: value
@@ -128,8 +144,8 @@ export default function ClientDetail() {
   }
 
   return (
-    <div className="p-6">
-      <Breadcrumb className="mb-6">
+    <div className="p-3">
+      <Breadcrumb className="mb-3">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
@@ -145,12 +161,12 @@ export default function ClientDetail() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-3">
         <h1 className="text-2xl font-bold">
           {client.firstname} {client.lastname}
         </h1>
         {!isEditing && (
-          <Button onClick={handleEdit}>Edit Client Information</Button>
+          <Button onClick={handleEdit}>Edit Information</Button>
         )}
         {isEditing && (
           <div className="space-x-2">
@@ -164,13 +180,13 @@ export default function ClientDetail() {
         )}
       </div>
 
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-        <div className="space-y-6">
+      <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
+        <div className="space-y-3">
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-2">
               <CardTitle>Contact Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-2">
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>
                 {isEditing ? (
@@ -240,10 +256,10 @@ export default function ClientDetail() {
           </Card>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-2">
               <CardTitle>Medical Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-2">
               <div>
                 <p className="text-sm text-muted-foreground">Doctor</p>
                 {isEditing ? (
@@ -274,18 +290,22 @@ export default function ClientDetail() {
           </Card>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-2">
               <CardTitle>Health Conditions</CardTitle>
             </CardHeader>
             <CardContent>
-              <ClientHealthInfo client={client} />
+              <ClientHealthInfo 
+                client={isEditing ? editedClient : client} 
+                isEditing={isEditing}
+                onConditionChange={handleInputChange}
+              />
             </CardContent>
           </Card>
         </div>
 
         <div>
           <Card className="h-full">
-            <CardHeader>
+            <CardHeader className="pb-2">
               <CardTitle>Order History</CardTitle>
             </CardHeader>
             <CardContent>

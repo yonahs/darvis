@@ -1,12 +1,15 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Check, X } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
+import { Textarea } from "@/components/ui/textarea"
 
 interface ClientHealthInfoProps {
   client: any
+  isEditing?: boolean
+  onConditionChange?: (field: string, value: boolean | string) => void
 }
 
-export function ClientHealthInfo({ client }: ClientHealthInfoProps) {
+export function ClientHealthInfo({ client, isEditing = false, onConditionChange }: ClientHealthInfoProps) {
   const conditions = [
     { key: 'condition_anxiety', label: 'Anxiety' },
     { key: 'condition_arthritis', label: 'Arthritis' },
@@ -26,36 +29,59 @@ export function ClientHealthInfo({ client }: ClientHealthInfoProps) {
   ]
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Health Conditions</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-4">
-          {conditions.map(({ key, label }) => (
-            <div key={key} className="flex items-center gap-2">
-              {client[key] ? (
+    <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-2">
+        {conditions.map(({ key, label }) => (
+          <div key={key} className="flex items-center justify-between">
+            <span className="text-sm">{label}</span>
+            {isEditing ? (
+              <Switch
+                checked={client[key] || false}
+                onCheckedChange={(checked) => onConditionChange?.(key, checked)}
+              />
+            ) : (
+              client[key] ? (
                 <Check className="h-4 w-4 text-green-500" />
               ) : (
                 <X className="h-4 w-4 text-gray-300" />
-              )}
-              <span className="text-sm">{label}</span>
-            </div>
-          ))}
+              )
+            )}
+          </div>
+        ))}
+      </div>
+      
+      <div className="space-y-2">
+        <div>
+          <span className="text-sm font-medium">Other Conditions</span>
+          {isEditing ? (
+            <Switch
+              checked={client.condition_other || false}
+              onCheckedChange={(checked) => onConditionChange?.('condition_other', checked)}
+              className="ml-2"
+            />
+          ) : null}
         </div>
-        {client.condition_other && client.condition_other_info && (
-          <div className="mt-4">
-            <p className="text-sm font-medium">Other Conditions:</p>
-            <p className="text-sm text-muted-foreground">{client.condition_other_info}</p>
-          </div>
+        {(isEditing || client.condition_other) && (
+          <Textarea
+            placeholder="Please specify other conditions..."
+            value={client.condition_other_info || ""}
+            onChange={(e) => onConditionChange?.('condition_other_info', e.target.value)}
+            disabled={!isEditing}
+            className="min-h-[60px]"
+          />
         )}
-        {client.allergies && (
-          <div className="mt-4">
-            <p className="text-sm font-medium">Allergies:</p>
-            <p className="text-sm text-muted-foreground">{client.allergies}</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="space-y-2">
+        <span className="text-sm font-medium">Allergies</span>
+        <Textarea
+          placeholder="List any allergies..."
+          value={client.allergies || ""}
+          onChange={(e) => onConditionChange?.('allergies', e.target.value)}
+          disabled={!isEditing}
+          className="min-h-[60px]"
+        />
+      </div>
+    </div>
   )
 }
