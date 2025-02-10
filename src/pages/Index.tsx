@@ -7,7 +7,6 @@ import { PrescriptionAlertsWidget } from "@/components/dashboard/PrescriptionAle
 import { ShipperOrdersWidget } from "@/components/dashboard/ShipperOrdersWidget"
 import { FinancialOverviewWidget } from "@/components/dashboard/FinancialOverviewWidget"
 import { InventoryAlertsWidget } from "@/components/dashboard/InventoryAlertsWidget"
-import { TeamActivityWidget } from "@/components/dashboard/TeamActivityWidget"
 
 const Index = () => {
   return (
@@ -41,9 +40,6 @@ const Index = () => {
           
           {/* Full width widget */}
           <FinancialOverviewWidget />
-          
-          {/* Full width widget */}
-          <TeamActivityWidget />
         </div>
       </div>
     </div>
