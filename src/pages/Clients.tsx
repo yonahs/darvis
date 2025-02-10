@@ -16,7 +16,7 @@ interface ClientWithOrderCount {
   country: string
   active: boolean
   doctor: string | null
-  mv_client_order_counts: { total_orders: number }[] | null
+  total_orders: number
 }
 
 export default function Clients() {
@@ -56,9 +56,7 @@ export default function Clients() {
         .from("clients")
         .select(`
           *,
-          mv_client_order_counts!clientid (
-            total_orders
-          )
+          total_orders:mv_client_order_counts(total_orders)
         `)
         .order("clientid", { ascending: false })
         
@@ -85,10 +83,10 @@ export default function Clients() {
       
       if (error) throw error
 
-      return (data as ClientWithOrderCount[]).map(client => ({
+      return data.map((client: any) => ({
         ...client,
         total_orders: client.mv_client_order_counts?.[0]?.total_orders || 0
-      }))
+      })) as ClientWithOrderCount[]
     },
   })
 

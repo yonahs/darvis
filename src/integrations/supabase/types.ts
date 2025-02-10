@@ -126,6 +126,13 @@ export type Database = {
             referencedRelation: "clients"
             referencedColumns: ["clientid"]
           },
+          {
+            foreignKeyName: "client_changelog_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "mv_client_order_counts"
+            referencedColumns: ["clientid"]
+          },
         ]
       }
       clientrx: {
@@ -1851,7 +1858,7 @@ export type Database = {
       mv_client_order_counts: {
         Row: {
           clientid: number | null
-          order_count: number | null
+          total_orders: number | null
         }
         Relationships: []
       }
