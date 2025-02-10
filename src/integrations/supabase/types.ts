@@ -60,6 +60,47 @@ export type Database = {
           },
         ]
       }
+      client_changelog: {
+        Row: {
+          changed_at: string | null
+          changed_by: string | null
+          client_id: number
+          comment: string | null
+          field_name: string
+          id: number
+          new_value: string | null
+          old_value: string | null
+        }
+        Insert: {
+          changed_at?: string | null
+          changed_by?: string | null
+          client_id: number
+          comment?: string | null
+          field_name: string
+          id?: number
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Update: {
+          changed_at?: string | null
+          changed_by?: string | null
+          client_id?: number
+          comment?: string | null
+          field_name?: string
+          id?: number
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_changelog_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["clientid"]
+          },
+        ]
+      }
       clientrx: {
         Row: {
           americandr: number | null
