@@ -10,6 +10,9 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ClientOrderTimeline } from "@/components/clients/ClientOrderTimeline"
+import { ClientHealthInfo } from "@/components/clients/ClientHealthInfo"
 
 export default function ClientDetail() {
   const { clientId } = useParams()
@@ -58,45 +61,63 @@ export default function ClientDetail() {
         {client.firstname} {client.lastname}
       </h1>
       
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Contact Information</h2>
-          <div>
-            <p className="text-sm text-muted-foreground">Email</p>
-            <p>{client.email}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Phone</p>
-            <p>{client.mobile || client.dayphone || "N/A"}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Address</p>
-            <p>{client.address}</p>
-            <p>{client.city}, {client.state} {client.zip}</p>
-            <p>{client.country}</p>
-          </div>
-        </div>
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="orders">Order History</TabsTrigger>
+          <TabsTrigger value="health">Health Information</TabsTrigger>
+        </TabsList>
 
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Medical Information</h2>
-          {client.doctor && (
-            <div>
-              <p className="text-sm text-muted-foreground">Doctor</p>
-              <p>{client.doctor}</p>
+        <TabsContent value="overview">
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">Contact Information</h2>
+              <div>
+                <p className="text-sm text-muted-foreground">Email</p>
+                <p>{client.email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Phone</p>
+                <p>{client.mobile || client.dayphone || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Address</p>
+                <p>{client.address}</p>
+                <p>{client.city}, {client.state} {client.zip}</p>
+                <p>{client.country}</p>
+              </div>
             </div>
-          )}
-          {client.drphone && (
-            <div>
-              <p className="text-sm text-muted-foreground">Doctor's Phone</p>
-              <p>{client.drphone}</p>
+
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">Medical Information</h2>
+              {client.doctor && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Doctor</p>
+                  <p>{client.doctor}</p>
+                </div>
+              )}
+              {client.drphone && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Doctor's Phone</p>
+                  <p>{client.drphone}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-sm text-muted-foreground">Status</p>
+                <p>{client.active ? "Active" : "Inactive"}</p>
+              </div>
             </div>
-          )}
-          <div>
-            <p className="text-sm text-muted-foreground">Status</p>
-            <p>{client.active ? "Active" : "Inactive"}</p>
           </div>
-        </div>
-      </div>
+        </TabsContent>
+
+        <TabsContent value="orders">
+          <ClientOrderTimeline clientId={parseInt(clientId || "0")} />
+        </TabsContent>
+
+        <TabsContent value="health">
+          <ClientHealthInfo client={client} />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

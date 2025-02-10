@@ -1504,6 +1504,13 @@ export type Database = {
       }
     }
     Views: {
+      mv_client_order_counts: {
+        Row: {
+          clientid: number | null
+          order_count: number | null
+        }
+        Relationships: []
+      }
       vw_order_details: {
         Row: {
           cancelled: boolean | null
