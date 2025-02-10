@@ -9,9 +9,10 @@ interface PaymentCardProps {
 }
 
 export function PaymentCard({ clientId }: PaymentCardProps) {
-  const { data: paymentMethods } = useQuery({
+  const { data: paymentMethods, error } = useQuery({
     queryKey: ["client-payment-methods", clientId],
     queryFn: async () => {
+      console.log("Fetching payment methods for client:", clientId)
       const { data, error } = await supabase
         .from("payment_methods")
         .select(`
@@ -24,10 +25,19 @@ export function PaymentCard({ clientId }: PaymentCardProps) {
         .eq("client_id", clientId)
         .order("is_default", { ascending: false })
 
-      if (error) throw error
+      if (error) {
+        console.error("Error fetching payment methods:", error)
+        throw error
+      }
+      
+      console.log("Retrieved payment methods:", data)
       return data
     },
   })
+
+  if (error) {
+    console.error("Query error:", error)
+  }
 
   return (
     <Card className="mb-3">
