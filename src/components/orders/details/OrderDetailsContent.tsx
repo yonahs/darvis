@@ -50,7 +50,7 @@ export const OrderDetailsContent = ({
         </div>
 
         <div className="rounded-lg shadow-sm overflow-auto">
-          <OrderItemsCard drugDetails={drugDetails} order={order} allOrderItems={allOrderItems} className="bg-gray-50" />
+          <OrderItemsCard drugDetails={drugDetails} order={order} allOrderItems={allOrderItems} className="bg-blue-50" />
         </div>
 
         <div className="bg-white rounded-lg shadow-sm overflow-auto">
@@ -64,7 +64,7 @@ export const OrderDetailsContent = ({
         </div>
 
         <div className="rounded-lg shadow-sm overflow-auto">
-          <CommentsCard comments={comments} orderId={order?.orderid || 0} className="bg-purple-300" />
+          <CommentsCard comments={comments} orderId={order?.orderid || 0} className="bg-purple-200" />
         </div>
       </div>
     </OrderDetailsGrid>
