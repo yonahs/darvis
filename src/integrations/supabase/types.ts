@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      activity_log: {
+        Row: {
+          action_type: string
+          created_at: string | null
+          details: Json | null
+          entity_id: string
+          entity_type: string
+          id: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string | null
+          details?: Json | null
+          entity_id: string
+          entity_type: string
+          id?: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string | null
+          details?: Json | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+        }
+        Relationships: []
+      }
       bsd_packages: {
         Row: {
           autoid: number
@@ -410,6 +437,30 @@ export type Database = {
           displayname?: string | null
           name?: string | null
           trackinglink?: string | null
+        }
+        Relationships: []
+      }
+      dashboard_preferences: {
+        Row: {
+          created_at: string | null
+          id: string
+          preferences: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          preferences?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          preferences?: Json | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -860,6 +911,177 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          category: string
+          created_at: string | null
+          id: string
+          link: string | null
+          message: string
+          priority: string
+          read: boolean | null
+          title: string
+          type: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          id?: string
+          link?: string | null
+          message: string
+          priority: string
+          read?: boolean | null
+          title: string
+          type: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          id?: string
+          link?: string | null
+          message?: string
+          priority?: string
+          read?: boolean | null
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      order_delays: {
+        Row: {
+          delay_reason: string
+          id: string
+          order_id: number
+          reported_at: string | null
+          reported_by: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+        }
+        Insert: {
+          delay_reason: string
+          id?: string
+          order_id: number
+          reported_at?: string | null
+          reported_by?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Update: {
+          delay_reason?: string
+          id?: string
+          order_id?: number
+          reported_at?: string | null
+          reported_by?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_delays_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_delays_order_id_fkey1"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_stock_issues: {
+        Row: {
+          drug_detail_id: number
+          id: string
+          notes: string | null
+          order_id: number
+          reported_at: string | null
+          reported_by: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+        }
+        Insert: {
+          drug_detail_id: number
+          id?: string
+          notes?: string | null
+          order_id: number
+          reported_at?: string | null
+          reported_by?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Update: {
+          drug_detail_id?: number
+          id?: string
+          notes?: string | null
+          order_id?: number
+          reported_at?: string | null
+          reported_by?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_stock_issues_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_stock_issues_order_id_fkey1"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_warehouse_assignments: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          id: string
+          notes: string | null
+          order_id: number
+          warehouse_id: number
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          notes?: string | null
+          order_id: number
+          warehouse_id: number
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: number
+          warehouse_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_warehouse_assignments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_warehouse_assignments_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ordercomments: {
         Row: {
           asanataskid: number | null
@@ -1229,6 +1451,54 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_tracking: {
+        Row: {
+          amount: number
+          id: string
+          last_attempt: string | null
+          notes: string | null
+          order_id: number
+          reminder_sent_at: string | null
+          retry_count: number | null
+          status: string
+        }
+        Insert: {
+          amount: number
+          id?: string
+          last_attempt?: string | null
+          notes?: string | null
+          order_id: number
+          reminder_sent_at?: string | null
+          retry_count?: number | null
+          status: string
+        }
+        Update: {
+          amount?: number
+          id?: string
+          last_attempt?: string | null
+          notes?: string | null
+          order_id?: number
+          reminder_sent_at?: string | null
+          retry_count?: number | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_tracking_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_tracking_order_id_fkey1"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       processor: {
         Row: {
           abbrev: string | null
@@ -1492,6 +1762,39 @@ export type Database = {
         }
         Relationships: []
       }
+      warehouses: {
+        Row: {
+          address: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          id: number
+          is_active: boolean | null
+          name: string
+          state: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          id?: never
+          is_active?: boolean | null
+          name: string
+          state?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          id?: never
+          is_active?: boolean | null
+          name?: string
+          state?: string | null
+        }
+        Relationships: []
+      }
       websites: {
         Row: {
           abbrev: string | null
@@ -1552,6 +1855,22 @@ export type Database = {
         }
         Relationships: []
       }
+      mv_dashboard_metrics: {
+        Row: {
+          avg_order_value: number | null
+          new_clients_month: number | null
+          orders_month: number | null
+          orders_today: number | null
+          orders_week: number | null
+          revenue_month: number | null
+          revenue_today: number | null
+          revenue_week: number | null
+          total_clients: number | null
+          total_orders: number | null
+          total_revenue: number | null
+        }
+        Relationships: []
+      }
       vw_order_details: {
         Row: {
           cancelled: boolean | null
@@ -1570,6 +1889,43 @@ export type Database = {
           website: string | null
         }
         Relationships: []
+      }
+      vw_order_extended_details: {
+        Row: {
+          cancelled: boolean | null
+          clientid: number | null
+          clientname: string | null
+          country: string | null
+          delay_reason: string | null
+          delay_reported_at: string | null
+          has_stock_issues: boolean | null
+          is_delayed: boolean | null
+          last_payment_attempt: string | null
+          orderbilled: number | null
+          orderdate: string | null
+          orderid: number | null
+          orderstatus: string | null
+          payment: string | null
+          payment_retry_count: number | null
+          payment_status: string | null
+          prioritize: number | null
+          reminder_sent_at: string | null
+          shipper: string | null
+          state: string | null
+          totalsale: number | null
+          warehouse_id: number | null
+          warehouse_name: string | null
+          website: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_warehouse_assignments_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vw_order_prescriptions: {
         Row: {

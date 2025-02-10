@@ -1,6 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query"
-import { CalendarClock, Package, CreditCard, AlertCircle } from "lucide-react"
+import { CalendarClock, Package, CreditCard, AlertCircle, Box } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -10,6 +10,17 @@ interface OrderComment {
   commentdate: string
   author: string
   orderid: number
+}
+
+interface OrderItem {
+  drugdetailid: number
+  amount: number
+  nameil?: string
+  strength?: string
+  drugDetails?: {
+    nameil: string
+    strength: string
+  }
 }
 
 interface Order {
@@ -22,6 +33,7 @@ interface Order {
   outofstock: boolean
   problemorder: boolean
   ordercomments: OrderComment[]
+  items?: OrderItem[]
 }
 
 interface ClientOrderTimelineProps {
@@ -43,14 +55,34 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
           shipstatus,
           cancelled,
           outofstock,
-          problemorder
+          problemorder,
+          drugdetailid,
+          amount
         `)
         .eq("clientid", clientId)
         .order("orderdate", { ascending: false })
         .limit(50)
 
       if (error) throw error
-      return data as Omit<Order, "ordercomments">[]
+      return data as Omit<Order, "ordercomments" | "items">[]
+    },
+  })
+
+  // Fetch drug details for all orders
+  const { data: drugDetails, isLoading: drugDetailsLoading } = useQuery({
+    queryKey: ["order-drug-details", orders],
+    enabled: !!orders?.length,
+    queryFn: async () => {
+      const drugDetailIds = orders?.map(order => order.drugdetailid).filter(Boolean) || []
+      if (!drugDetailIds.length) return []
+
+      const { data, error } = await supabase
+        .from("newdrugdetails")
+        .select("id, nameil, strength")
+        .in("id", drugDetailIds)
+
+      if (error) throw error
+      return data
     },
   })
 
@@ -73,21 +105,29 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
     enabled: !!orders?.length,
   })
 
-  const isLoading = ordersLoading || commentsLoading
+  const isLoading = ordersLoading || commentsLoading || drugDetailsLoading
 
   if (isLoading) {
-    return <div className="space-y-4">
+    return <div className="space-y-3">
       {[1,2,3].map(i => (
         <Skeleton key={i} className="h-24 w-full" />
       ))}
     </div>
   }
 
-  // Combine orders with their comments
-  const ordersWithComments = orders?.map(order => ({
-    ...order,
-    ordercomments: comments?.filter(comment => comment.orderid === order.orderid) || []
-  }))
+  // Combine orders with their comments and drug details
+  const ordersWithDetails = orders?.map(order => {
+    const orderDrugDetails = drugDetails?.find(d => d.id === order.drugdetailid)
+    return {
+      ...order,
+      ordercomments: comments?.filter(comment => comment.orderid === order.orderid) || [],
+      items: [{
+        drugdetailid: order.drugdetailid,
+        amount: order.amount,
+        drugDetails: orderDrugDetails
+      }]
+    }
+  })
 
   const getStatusIcon = (order: Order) => {
     if (order.cancelled) return <AlertCircle className="h-4 w-4 text-red-500" />
@@ -100,15 +140,15 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
   const getStatusText = (order: Order) => {
     if (order.cancelled) return "Order Cancelled"
     if (order.problemorder) return "Problem Order"
-    if (order.shipstatus === 2) return "Shipped"
+    if (order.shipstatus === 2) return "Delivered"
     if (order.orderbilled) return "Paid"
     return "Order Placed"
   }
 
   return (
-    <div className="space-y-4">
-      {ordersWithComments?.map((order) => (
-        <div key={order.orderid} className="relative pl-6 pb-4 border-l-2 border-gray-200 last:border-l-0 last:pb-0">
+    <div className="space-y-3">
+      {ordersWithDetails?.map((order) => (
+        <div key={order.orderid} className="relative pl-6 pb-3 border-l-2 border-gray-200 last:border-l-0 last:pb-0">
           <div className="absolute -left-[11px] top-0 w-5 h-5 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center">
             {getStatusIcon(order)}
           </div>
@@ -116,19 +156,40 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">Order #{order.orderid}</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {new Date(order.orderdate).toLocaleDateString()}
                 </p>
               </div>
               <div className="text-right">
                 <p className="text-sm font-medium">${order.totalsale?.toFixed(2)}</p>
-                <p className="text-sm text-muted-foreground">{getStatusText(order)}</p>
+                <p className="text-xs text-muted-foreground">{getStatusText(order)}</p>
               </div>
             </div>
+
+            {/* Order Items */}
+            <div className="bg-gray-50 rounded-md p-2">
+              <div className="flex items-center gap-2 text-xs">
+                <Box className="h-3 w-3 text-gray-500" />
+                <div>
+                  <span className="font-medium">
+                    {order.items?.[0]?.drugDetails?.nameil || "Unknown Product"}
+                  </span>
+                  {order.items?.[0]?.drugDetails?.strength && (
+                    <span className="text-muted-foreground">
+                      {" - "}{order.items?.[0]?.drugDetails?.strength}
+                    </span>
+                  )}
+                  <span className="text-muted-foreground ml-1">
+                    x {order.items?.[0]?.amount || 0} units
+                  </span>
+                </div>
+              </div>
+            </div>
+
             {order.ordercomments?.length > 0 && (
-              <div className="bg-gray-50 p-3 rounded-md space-y-2">
+              <div className="bg-gray-50 p-2 rounded-md space-y-1">
                 {order.ordercomments.map((comment) => (
-                  <div key={comment.id} className="text-sm">
+                  <div key={comment.id} className="text-xs">
                     <span className="font-medium">{comment.author}:</span>{" "}
                     <span className="text-muted-foreground">{comment.comment}</span>
                   </div>
