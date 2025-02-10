@@ -52,12 +52,10 @@ export default function Clients() {
   const { data: clients = [], isLoading } = useQuery({
     queryKey: ["clients", search, statusFilter, prescriptionFilter],
     queryFn: async () => {
+      // First get the filtered clients
       let query = supabase
         .from("clients")
-        .select(`
-          *,
-          mv_client_order_counts!inner(total_orders)
-        `)
+        .select()
         .order("clientid", { ascending: false })
         
       if (statusFilter !== "all") {
@@ -79,13 +77,22 @@ export default function Clients() {
         )
       }
       
-      const { data, error } = await query.limit(100)
+      const { data: clientsData, error: clientsError } = await query.limit(100)
       
-      if (error) throw error
+      if (clientsError) throw clientsError
 
-      return data.map((client: any) => ({
+      // Then get the order counts for these clients
+      const { data: orderCounts, error: orderCountsError } = await supabase
+        .from("mv_client_order_counts")
+        .select("clientid, total_orders")
+        .in("clientid", clientsData.map(c => c.clientid))
+
+      if (orderCountsError) throw orderCountsError
+
+      // Merge the data
+      return clientsData.map(client => ({
         ...client,
-        total_orders: client.mv_client_order_counts?.total_orders || 0
+        total_orders: orderCounts?.find(oc => oc.clientid === client.clientid)?.total_orders || 0
       })) as ClientWithOrderCount[]
     },
   })
