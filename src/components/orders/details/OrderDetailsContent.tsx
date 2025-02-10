@@ -50,7 +50,7 @@ export const OrderDetailsContent = ({
         </div>
 
         <div className="rounded-lg shadow-sm overflow-auto">
-          <OrderItemsCard drugDetails={drugDetails} order={order} allOrderItems={allOrderItems} className="bg-purple-200" />
+          <OrderItemsCard drugDetails={drugDetails} order={order} allOrderItems={allOrderItems} className="bg-gray-50" />
         </div>
 
         <div className="bg-white rounded-lg shadow-sm overflow-auto">
