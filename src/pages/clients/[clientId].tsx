@@ -17,7 +17,7 @@ import { ClientHealthInfo } from "@/components/clients/ClientHealthInfo"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { useToast } from "@/components/ui/use-toast"
-import { Package, DollarSign, Stethoscope } from "lucide-react"
+import { Package, DollarSign, Stethoscope, CreditCard, Phone, Mail, Home } from "lucide-react"
 
 export default function ClientDetail() {
   const { clientId } = useParams()
@@ -210,115 +210,158 @@ export default function ClientDetail() {
         )}
       </div>
 
-      <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
-        <div className="space-y-3">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div>
-                <p className="text-sm text-muted-foreground">Email</p>
-                {isEditing ? (
-                  <Input
-                    value={editedClient?.email || ""}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                  />
-                ) : (
-                  <p>{client.email}</p>
-                )}
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Phone</p>
-                {isEditing ? (
-                  <div className="space-y-2">
+      <div className="grid gap-3 lg:grid-cols-2">
+        <div>
+          {/* Left Column */}
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            {/* Contact Information */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  Contact Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div>
+                  <p className="text-sm text-muted-foreground">Email</p>
+                  {isEditing ? (
                     <Input
-                      placeholder="Mobile"
-                      value={editedClient?.mobile || ""}
-                      onChange={(e) => handleInputChange("mobile", e.target.value)}
+                      value={editedClient?.email || ""}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
                     />
-                    <Input
-                      placeholder="Day Phone"
-                      value={editedClient?.dayphone || ""}
-                      onChange={(e) => handleInputChange("dayphone", e.target.value)}
-                    />
-                  </div>
-                ) : (
-                  <p>{client.mobile || client.dayphone || "N/A"}</p>
-                )}
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Address</p>
-                {isEditing ? (
-                  <div className="space-y-2">
-                    <Input
-                      value={editedClient?.address || ""}
-                      onChange={(e) => handleInputChange("address", e.target.value)}
-                    />
-                    <Input
-                      value={editedClient?.city || ""}
-                      onChange={(e) => handleInputChange("city", e.target.value)}
-                    />
-                    <div className="grid grid-cols-3 gap-2">
+                  ) : (
+                    <p className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      {client.email}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Phone</p>
+                  {isEditing ? (
+                    <div className="space-y-2">
                       <Input
-                        value={editedClient?.state || ""}
-                        onChange={(e) => handleInputChange("state", e.target.value)}
+                        placeholder="Mobile"
+                        value={editedClient?.mobile || ""}
+                        onChange={(e) => handleInputChange("mobile", e.target.value)}
                       />
                       <Input
-                        value={editedClient?.zip || ""}
-                        onChange={(e) => handleInputChange("zip", e.target.value)}
-                      />
-                      <Input
-                        value={editedClient?.country || ""}
-                        onChange={(e) => handleInputChange("country", e.target.value)}
+                        placeholder="Day Phone"
+                        value={editedClient?.dayphone || ""}
+                        onChange={(e) => handleInputChange("dayphone", e.target.value)}
                       />
                     </div>
-                  </div>
-                ) : (
-                  <>
-                    <p>{client.address}</p>
-                    <p>{client.city}, {client.state} {client.zip}</p>
-                    <p>{client.country}</p>
-                  </>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  ) : (
+                    <p className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      {client.mobile || client.dayphone || "N/A"}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Address</p>
+                  {isEditing ? (
+                    <div className="space-y-2">
+                      <Input
+                        value={editedClient?.address || ""}
+                        onChange={(e) => handleInputChange("address", e.target.value)}
+                      />
+                      <Input
+                        value={editedClient?.city || ""}
+                        onChange={(e) => handleInputChange("city", e.target.value)}
+                      />
+                      <div className="grid grid-cols-3 gap-2">
+                        <Input
+                          value={editedClient?.state || ""}
+                          onChange={(e) => handleInputChange("state", e.target.value)}
+                        />
+                        <Input
+                          value={editedClient?.zip || ""}
+                          onChange={(e) => handleInputChange("zip", e.target.value)}
+                        />
+                        <Input
+                          value={editedClient?.country || ""}
+                          onChange={(e) => handleInputChange("country", e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-start gap-2">
+                      <Home className="h-4 w-4 text-muted-foreground mt-1" />
+                      <div>
+                        <p>{client.address}</p>
+                        <p>{client.city}, {client.state} {client.zip}</p>
+                        <p>{client.country}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
-          <Card>
+            {/* Medical Information */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2">
+                  <Stethoscope className="h-4 w-4" />
+                  Medical Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div>
+                  <p className="text-sm text-muted-foreground">Doctor</p>
+                  {isEditing ? (
+                    <Input
+                      value={editedClient?.doctor || ""}
+                      onChange={(e) => handleInputChange("doctor", e.target.value)}
+                    />
+                  ) : (
+                    <p>{client.doctor || "N/A"}</p>
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Doctor's Phone</p>
+                  {isEditing ? (
+                    <Input
+                      value={editedClient?.drphone || ""}
+                      onChange={(e) => handleInputChange("drphone", e.target.value)}
+                    />
+                  ) : (
+                    <p>{client.drphone || "N/A"}</p>
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p>{client.active ? "Active" : "Inactive"}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Payment Information */}
+          <Card className="mb-3">
             <CardHeader className="pb-2">
-              <CardTitle>Medical Information</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-4 w-4" />
+                Payment Information
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div>
-                <p className="text-sm text-muted-foreground">Doctor</p>
-                {isEditing ? (
-                  <Input
-                    value={editedClient?.doctor || ""}
-                    onChange={(e) => handleInputChange("doctor", e.target.value)}
-                  />
-                ) : (
-                  <p>{client.doctor || "N/A"}</p>
-                )}
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Doctor's Phone</p>
-                {isEditing ? (
-                  <Input
-                    value={editedClient?.drphone || ""}
-                    onChange={(e) => handleInputChange("drphone", e.target.value)}
-                  />
-                ) : (
-                  <p>{client.drphone || "N/A"}</p>
-                )}
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Status</p>
-                <p>{client.active ? "Active" : "Inactive"}</p>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Lifetime Value</p>
+                  <p className="text-xl font-semibold">${clientStats?.lifetimeValue.toFixed(2) || "0.00"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Orders</p>
+                  <p className="text-xl font-semibold">{clientStats?.orderCount || 0}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
+          {/* Health Conditions */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle>Health Conditions</CardTitle>
@@ -333,6 +376,7 @@ export default function ClientDetail() {
           </Card>
         </div>
 
+        {/* Right Column - Order History */}
         <div className="space-y-3">
           <div className="grid grid-cols-3 gap-3">
             <Card>
@@ -391,4 +435,3 @@ export default function ClientDetail() {
     </div>
   )
 }
-
