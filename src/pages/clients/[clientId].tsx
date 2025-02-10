@@ -117,11 +117,7 @@ export default function ClientDetail() {
             />
           </div>
 
-          <PaymentCard
-            clientId={parseInt(clientId)}
-            lifetimeValue={clientStats?.lifetimeValue || 0}
-            orderCount={clientStats?.orderCount || 0}
-          />
+          <PaymentCard clientId={parseInt(clientId)} />
 
           <Card>
             <CardHeader className="pb-2">

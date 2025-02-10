@@ -6,11 +6,9 @@ import { supabase } from "@/integrations/supabase/client"
 
 interface PaymentCardProps {
   clientId: number
-  lifetimeValue: number
-  orderCount: number
 }
 
-export function PaymentCard({ clientId, lifetimeValue, orderCount }: PaymentCardProps) {
+export function PaymentCard({ clientId }: PaymentCardProps) {
   const { data: paymentMethods } = useQuery({
     queryKey: ["client-payment-methods", clientId],
     queryFn: async () => {
@@ -31,8 +29,6 @@ export function PaymentCard({ clientId, lifetimeValue, orderCount }: PaymentCard
     },
   })
 
-  const defaultPayment = paymentMethods?.find(pm => pm.is_default)
-
   return (
     <Card className="mb-3">
       <CardHeader className="pb-2">
@@ -42,18 +38,7 @@ export function PaymentCard({ clientId, lifetimeValue, orderCount }: PaymentCard
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Lifetime Value</p>
-            <p className="text-xl font-semibold">${lifetimeValue.toFixed(2) || "0.00"}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Total Orders</p>
-            <p className="text-xl font-semibold">{orderCount || 0}</p>
-          </div>
-        </div>
-
-        <div className="mt-4">
+        <div>
           <p className="text-sm text-muted-foreground mb-2">Payment Methods</p>
           {paymentMethods?.length ? (
             <div className="space-y-2">
