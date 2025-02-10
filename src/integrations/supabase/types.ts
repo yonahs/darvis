@@ -2026,6 +2026,45 @@ export type Database = {
         }
         Relationships: []
       }
+      trustpilot_reviews: {
+        Row: {
+          content: string
+          created_at: string | null
+          customer_name: string | null
+          id: string
+          rating: number
+          replied_at: string | null
+          reply: string | null
+          requires_attention: boolean | null
+          status: string | null
+          title: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          customer_name?: string | null
+          id?: string
+          rating: number
+          replied_at?: string | null
+          reply?: string | null
+          requires_attention?: boolean | null
+          status?: string | null
+          title?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          customer_name?: string | null
+          id?: string
+          rating?: number
+          replied_at?: string | null
+          reply?: string | null
+          requires_attention?: boolean | null
+          status?: string | null
+          title?: string | null
+        }
+        Relationships: []
+      }
       warehouses: {
         Row: {
           address: string | null

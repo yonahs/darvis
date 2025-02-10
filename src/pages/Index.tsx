@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { SlackAlertsWidget } from "@/components/dashboard/SlackAlertsWidget";
+import { TrustpilotCard } from "@/components/dashboard/TrustpilotCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package2, Stethoscope, DollarSign, Users, PackageCheck, MessagesSquare, Clock, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,21 +30,23 @@ const Index = () => {
         .from('orders')
         .select(`
           shipperid,
-          shippers!inner (
+          shippers(
             display_name
           )
         `)
         .eq('cancelled', false)
-        .eq('shipstatus', 1); // Pending status
+        .eq('shipstatus', 1);
 
       if (error) throw error;
 
       // Count orders per shipper
       const shipperCounts = data.reduce((acc, order) => {
-        const shipperName = order.shippers.display_name;
-        acc[shipperName] = (acc[shipperName] || 0) + 1;
+        const shipperName = order.shippers?.display_name;
+        if (shipperName) {
+          acc[shipperName] = (acc[shipperName] || 0) + 1;
+        }
         return acc;
-      }, {});
+      }, {} as Record<string, number>);
 
       // Convert to array and sort by count
       return Object.entries(shipperCounts)
@@ -58,6 +61,11 @@ const Index = () => {
         {/* Slack Alerts */}
         <div className="col-span-1">
           <SlackAlertsWidget />
+        </div>
+
+        {/* Trustpilot Card */}
+        <div className="col-span-1">
+          <TrustpilotCard />
         </div>
 
         {/* Client Stats */}
