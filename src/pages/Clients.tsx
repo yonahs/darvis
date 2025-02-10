@@ -108,21 +108,17 @@ export default function Clients() {
         riskData.map(risk => [risk.clientid, risk])
       )
 
-      // Get order counts using raw SQL count
-      const { data: orderCounts, error: orderCountError } = await supabase
-        .rpc<OrderCount>("get_client_order_counts", {
-          client_ids: clientsData.map(c => c.clientid)
-        })
+      // Get order counts using RPC function
+      const { data: orderCounts } = await supabase.rpc<OrderCount>(
+        "get_client_order_counts",
+        { client_ids: clientsData.map(c => c.clientid) }
+      )
 
-      if (orderCountError) throw orderCountError
-
-      // Get lifetime values using raw SQL sum
-      const { data: lifetimeValues, error: lifetimeValuesError } = await supabase
-        .rpc<LifetimeValue>("get_client_lifetime_values", {
-          client_ids: clientsData.map(c => c.clientid)
-        })
-
-      if (lifetimeValuesError) throw lifetimeValuesError
+      // Get lifetime values using RPC function
+      const { data: lifetimeValues } = await supabase.rpc<LifetimeValue>(
+        "get_client_lifetime_values",
+        { client_ids: clientsData.map(c => c.clientid) }
+      )
 
       // Create lookup maps for order counts and lifetime values
       const orderCountMap = Object.fromEntries(
