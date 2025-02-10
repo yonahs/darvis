@@ -98,33 +98,29 @@ export default function Clients() {
         riskData.map(risk => [risk.clientid, risk])
       )
 
-      // Get order counts for non-cancelled orders
+      // Get order counts using raw SQL count
       const { data: orderCounts, error: orderCountError } = await supabase
-        .from('orders')
-        .select('clientid, count(*)')
-        .eq('cancelled', false)
-        .in('clientid', clientsData.map(c => c.clientid))
-        .groupBy('clientid')
+        .rpc('get_client_order_counts', {
+          client_ids: clientsData.map(c => c.clientid)
+        })
 
       if (orderCountError) throw orderCountError
 
-      // Get lifetime values excluding cancelled orders
+      // Get lifetime values using raw SQL sum
       const { data: lifetimeValues, error: lifetimeValuesError } = await supabase
-        .from('orders')
-        .select('clientid, sum(totalsale) as total')
-        .eq('cancelled', false)
-        .in('clientid', clientsData.map(c => c.clientid))
-        .groupBy('clientid')
+        .rpc('get_client_lifetime_values', {
+          client_ids: clientsData.map(c => c.clientid)
+        })
 
       if (lifetimeValuesError) throw lifetimeValuesError
 
       // Create lookup maps for order counts and lifetime values
       const orderCountMap = Object.fromEntries(
-        orderCounts.map(({ clientid, count }) => [clientid, parseInt(count)])
+        (orderCounts || []).map(({ clientid, count }) => [clientid, parseInt(count)])
       )
 
       const lifetimeValueMap = Object.fromEntries(
-        lifetimeValues.map(({ clientid, total }) => [clientid, parseFloat(total) || 0])
+        (lifetimeValues || []).map(({ clientid, total }) => [clientid, parseFloat(total) || 0])
       )
 
       // Merge all the data
