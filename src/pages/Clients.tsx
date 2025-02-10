@@ -109,16 +109,22 @@ export default function Clients() {
       )
 
       // Get order counts using RPC function
-      const { data: orderCounts } = await supabase.rpc<OrderCount>(
+      const { data: orderCounts } = await supabase.rpc<
         "get_client_order_counts",
-        { client_ids: clientsData.map(c => c.clientid) }
-      )
+        { client_ids: number[] },
+        { clientid: number; count: string }[]
+      >("get_client_order_counts", {
+        client_ids: clientsData.map(c => c.clientid)
+      })
 
       // Get lifetime values using RPC function
-      const { data: lifetimeValues } = await supabase.rpc<LifetimeValue>(
+      const { data: lifetimeValues } = await supabase.rpc<
         "get_client_lifetime_values",
-        { client_ids: clientsData.map(c => c.clientid) }
-      )
+        { client_ids: number[] },
+        { clientid: number; total: string }[]
+      >("get_client_lifetime_values", {
+        client_ids: clientsData.map(c => c.clientid)
+      })
 
       // Create lookup maps for order counts and lifetime values
       const orderCountMap = Object.fromEntries(
