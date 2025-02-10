@@ -1113,6 +1113,44 @@ export type Database = {
           },
         ]
       }
+      order_status_changes: {
+        Row: {
+          changed_at: string | null
+          changed_by: string | null
+          id: string
+          new_status: number
+          notes: string | null
+          old_status: number | null
+          order_id: number
+        }
+        Insert: {
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          new_status: number
+          notes?: string | null
+          old_status?: number | null
+          order_id: number
+        }
+        Update: {
+          changed_at?: string | null
+          changed_by?: string | null
+          id?: string
+          new_status?: number
+          notes?: string | null
+          old_status?: number | null
+          order_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_status_changes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_stock_issues: {
         Row: {
           drug_detail_id: number
