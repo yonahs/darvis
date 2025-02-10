@@ -29,39 +29,49 @@ export function ClientHealthInfo({ client, isEditing = false, onConditionChange 
     { key: 'condition_weight_loss', label: 'Weight Loss' },
   ]
 
+  const StatusIcon = ({ value }: { value: boolean }) => (
+    value ? (
+      <Check className="h-4 w-4 text-green-600 mr-2" />
+    ) : (
+      <X className="h-4 w-4 text-red-500 mr-2" />
+    )
+  )
+
   return (
     <div className="space-y-4">
       <div>
         <h3 className="text-sm font-medium mb-2">Health Status</h3>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Pregnant</span>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+          <div className="flex items-center">
             {isEditing ? (
-              <Switch
-                checked={client.pregnant || false}
-                onCheckedChange={(checked) => onConditionChange?.('pregnant', checked)}
-              />
+              <div className="flex items-center justify-between w-full">
+                <span className="text-sm">Pregnant</span>
+                <Switch
+                  checked={client.pregnant || false}
+                  onCheckedChange={(checked) => onConditionChange?.('pregnant', checked)}
+                />
+              </div>
             ) : (
-              client.pregnant ? (
-                <Check className="h-4 w-4 text-green-500" />
-              ) : (
-                <X className="h-4 w-4 text-gray-300" />
-              )
+              <div className="flex items-center">
+                <StatusIcon value={client.pregnant || false} />
+                <span className="text-sm">Pregnant</span>
+              </div>
             )}
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Nursing</span>
+          <div className="flex items-center">
             {isEditing ? (
-              <Switch
-                checked={client.nursing || false}
-                onCheckedChange={(checked) => onConditionChange?.('nursing', checked)}
-              />
+              <div className="flex items-center justify-between w-full">
+                <span className="text-sm">Nursing</span>
+                <Switch
+                  checked={client.nursing || false}
+                  onCheckedChange={(checked) => onConditionChange?.('nursing', checked)}
+                />
+              </div>
             ) : (
-              client.nursing ? (
-                <Check className="h-4 w-4 text-green-500" />
-              ) : (
-                <X className="h-4 w-4 text-gray-300" />
-              )
+              <div className="flex items-center">
+                <StatusIcon value={client.nursing || false} />
+                <span className="text-sm">Nursing</span>
+              </div>
             )}
           </div>
         </div>
@@ -71,19 +81,20 @@ export function ClientHealthInfo({ client, isEditing = false, onConditionChange 
 
       <div>
         <h3 className="text-sm font-medium mb-2">Medications</h3>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-sm">Taking Medications</span>
+        <div className="flex items-center mb-2">
           {isEditing ? (
-            <Switch
-              checked={client.rdomedications || false}
-              onCheckedChange={(checked) => onConditionChange?.('rdomedications', checked)}
-            />
+            <div className="flex items-center justify-between w-full">
+              <span className="text-sm">Taking Medications</span>
+              <Switch
+                checked={client.rdomedications || false}
+                onCheckedChange={(checked) => onConditionChange?.('rdomedications', checked)}
+              />
+            </div>
           ) : (
-            client.rdomedications ? (
-              <Check className="h-4 w-4 text-green-500" />
-            ) : (
-              <X className="h-4 w-4 text-gray-300" />
-            )
+            <div className="flex items-center">
+              <StatusIcon value={client.rdomedications || false} />
+              <span className="text-sm">Taking Medications</span>
+            </div>
           )}
         </div>
         <Textarea
@@ -99,21 +110,22 @@ export function ClientHealthInfo({ client, isEditing = false, onConditionChange 
 
       <div>
         <h3 className="text-sm font-medium mb-2">Medical Conditions</h3>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
           {conditions.map(({ key, label }) => (
-            <div key={key} className="flex items-center justify-between">
-              <span className="text-sm">{label}</span>
+            <div key={key} className="flex items-center">
               {isEditing ? (
-                <Switch
-                  checked={client[key] || false}
-                  onCheckedChange={(checked) => onConditionChange?.(key, checked)}
-                />
+                <div className="flex items-center justify-between w-full">
+                  <span className="text-sm">{label}</span>
+                  <Switch
+                    checked={client[key] || false}
+                    onCheckedChange={(checked) => onConditionChange?.(key, checked)}
+                  />
+                </div>
               ) : (
-                client[key] ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <X className="h-4 w-4 text-gray-300" />
-                )
+                <div className="flex items-center">
+                  <StatusIcon value={client[key] || false} />
+                  <span className="text-sm">{label}</span>
+                </div>
               )}
             </div>
           ))}
@@ -121,15 +133,23 @@ export function ClientHealthInfo({ client, isEditing = false, onConditionChange 
       </div>
       
       <div className="space-y-2">
-        <div>
-          <span className="text-sm font-medium">Other Conditions</span>
+        <div className="flex items-center">
           {isEditing ? (
-            <Switch
-              checked={client.condition_other || false}
-              onCheckedChange={(checked) => onConditionChange?.('condition_other', checked)}
-              className="ml-2"
-            />
-          ) : null}
+            <div className="flex items-center justify-between w-full">
+              <span className="text-sm font-medium">Other Conditions</span>
+              <Switch
+                checked={client.condition_other || false}
+                onCheckedChange={(checked) => onConditionChange?.('condition_other', checked)}
+              />
+            </div>
+          ) : (
+            client.condition_other && (
+              <div className="flex items-center">
+                <StatusIcon value={client.condition_other || false} />
+                <span className="text-sm font-medium">Other Conditions</span>
+              </div>
+            )
+          )}
         </div>
         {(isEditing || client.condition_other) && (
           <Textarea
@@ -145,19 +165,20 @@ export function ClientHealthInfo({ client, isEditing = false, onConditionChange 
       <Separator />
 
       <div className="space-y-2">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-sm font-medium">Has Allergies</span>
+        <div className="flex items-center mb-2">
           {isEditing ? (
-            <Switch
-              checked={client.rdoallergies || false}
-              onCheckedChange={(checked) => onConditionChange?.('rdoallergies', checked)}
-            />
+            <div className="flex items-center justify-between w-full">
+              <span className="text-sm font-medium">Has Allergies</span>
+              <Switch
+                checked={client.rdoallergies || false}
+                onCheckedChange={(checked) => onConditionChange?.('rdoallergies', checked)}
+              />
+            </div>
           ) : (
-            client.rdoallergies ? (
-              <Check className="h-4 w-4 text-green-500" />
-            ) : (
-              <X className="h-4 w-4 text-gray-300" />
-            )
+            <div className="flex items-center">
+              <StatusIcon value={client.rdoallergies || false} />
+              <span className="text-sm font-medium">Has Allergies</span>
+            </div>
           )}
         </div>
         <Textarea
