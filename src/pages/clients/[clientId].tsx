@@ -10,7 +10,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ClientOrderTimeline } from "@/components/clients/ClientOrderTimeline"
 import { ClientHealthInfo } from "@/components/clients/ClientHealthInfo"
 
@@ -60,64 +60,72 @@ export default function ClientDetail() {
       <h1 className="text-2xl font-bold mb-6">
         {client.firstname} {client.lastname}
       </h1>
-      
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="orders">Order History</TabsTrigger>
-          <TabsTrigger value="health">Health Information</TabsTrigger>
-        </TabsList>
 
-        <TabsContent value="overview">
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold">Contact Information</h2>
-              <div>
-                <p className="text-sm text-muted-foreground">Email</p>
-                <p>{client.email}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Phone</p>
-                <p>{client.mobile || client.dayphone || "N/A"}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Address</p>
-                <p>{client.address}</p>
-                <p>{client.city}, {client.state} {client.zip}</p>
-                <p>{client.country}</p>
-              </div>
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Contact Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Email</p>
+              <p>{client.email}</p>
             </div>
-
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold">Medical Information</h2>
-              {client.doctor && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Doctor</p>
-                  <p>{client.doctor}</p>
-                </div>
-              )}
-              {client.drphone && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Doctor's Phone</p>
-                  <p>{client.drphone}</p>
-                </div>
-              )}
-              <div>
-                <p className="text-sm text-muted-foreground">Status</p>
-                <p>{client.active ? "Active" : "Inactive"}</p>
-              </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Phone</p>
+              <p>{client.mobile || client.dayphone || "N/A"}</p>
             </div>
-          </div>
-        </TabsContent>
+            <div>
+              <p className="text-sm text-muted-foreground">Address</p>
+              <p>{client.address}</p>
+              <p>{client.city}, {client.state} {client.zip}</p>
+              <p>{client.country}</p>
+            </div>
+          </CardContent>
+        </Card>
 
-        <TabsContent value="orders">
-          <ClientOrderTimeline clientId={parseInt(clientId || "0")} />
-        </TabsContent>
+        <Card>
+          <CardHeader>
+            <CardTitle>Medical Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {client.doctor && (
+              <div>
+                <p className="text-sm text-muted-foreground">Doctor</p>
+                <p>{client.doctor}</p>
+              </div>
+            )}
+            {client.drphone && (
+              <div>
+                <p className="text-sm text-muted-foreground">Doctor's Phone</p>
+                <p>{client.drphone}</p>
+              </div>
+            )}
+            <div>
+              <p className="text-sm text-muted-foreground">Status</p>
+              <p>{client.active ? "Active" : "Inactive"}</p>
+            </div>
+          </CardContent>
+        </Card>
 
-        <TabsContent value="health">
-          <ClientHealthInfo client={client} />
-        </TabsContent>
-      </Tabs>
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle>Health Conditions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ClientHealthInfo client={client} />
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle>Order History</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ClientOrderTimeline clientId={parseInt(clientId || "0")} />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
