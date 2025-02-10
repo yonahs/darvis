@@ -56,7 +56,7 @@ export default function Clients() {
         .from("clients")
         .select(`
           *,
-          total_orders:mv_client_order_counts(total_orders)
+          mv_client_order_counts!inner(total_orders)
         `)
         .order("clientid", { ascending: false })
         
@@ -85,7 +85,7 @@ export default function Clients() {
 
       return data.map((client: any) => ({
         ...client,
-        total_orders: client.mv_client_order_counts?.[0]?.total_orders || 0
+        total_orders: client.mv_client_order_counts?.total_orders || 0
       })) as ClientWithOrderCount[]
     },
   })
