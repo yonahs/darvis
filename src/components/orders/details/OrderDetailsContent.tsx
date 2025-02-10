@@ -64,7 +64,7 @@ export const OrderDetailsContent = ({
         </div>
 
         <div className="rounded-lg shadow-sm overflow-auto">
-          <CommentsCard comments={comments} orderId={order?.orderid || 0} className="bg-purple-200" />
+          <CommentsCard comments={comments} orderId={order?.orderid || 0} className="bg-green-50" />
         </div>
       </div>
     </OrderDetailsGrid>
