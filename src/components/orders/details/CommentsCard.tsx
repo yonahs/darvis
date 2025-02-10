@@ -1,7 +1,8 @@
+
 import React, { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { MessageCircle, SendHorizontal, UserRound } from "lucide-react"
+import { MessageCircle, SendHorizontal, ExternalLink } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -78,31 +79,46 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
       .slice(0, 2)
   }
 
+  const getStatusIcon = (comment: Comment) => {
+    const authorLower = comment.author?.toLowerCase() || ""
+    if (authorLower.includes("zendesk")) return "🎫"
+    if (authorLower.includes("pharmacy")) return "🔬"
+    if (authorLower.includes("customer")) return "👤"
+    return "💬"
+  }
+
+  const handleCommentClick = (comment: Comment) => {
+    // This would need to be configured with your actual Zendesk domain and ticket format
+    if (comment.asanataskid) {
+      window.open(`https://your-zendesk-domain.zendesk.com/agent/tickets/${comment.asanataskid}`, '_blank')
+    }
+  }
+
   return (
     <Card className="h-full flex flex-col bg-[#F8F9FA]">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3">
         <CardTitle className="text-sm font-medium text-gray-700">
-          Comments ({comments?.length || 0})
+          Activity Timeline ({comments?.length || 0})
         </CardTitle>
         <MessageCircle className="h-4 w-4 text-gray-500" />
       </CardHeader>
       <CardContent className="flex-1 flex flex-col p-3">
         <ScrollArea className="flex-1 pr-2 mb-3">
           {comments?.length ? (
-            <div className="space-y-3">
+            <div className="space-y-0">
               {comments.map((comment) => (
-                <div 
-                  key={comment.id} 
-                  className="flex space-x-2 group hover:bg-gray-50 p-2 rounded-md transition-colors"
+                <div
+                  key={comment.id}
+                  onClick={() => handleCommentClick(comment)}
+                  className={`relative pl-6 pb-4 border-l-2 border-gray-200 last:border-l-0 last:pb-0 group 
+                    ${comment.asanataskid ? 'cursor-pointer hover:bg-gray-50' : ''}`}
                 >
-                  <Avatar className="h-8 w-8 bg-[#E5DEFF]">
-                    <AvatarFallback className="text-xs font-medium text-[#6B46C1]">
-                      {getInitials(comment.author || 'CS')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2">
-                      <p className="text-sm font-medium text-gray-900">{comment.author}</p>
+                  <div className="absolute -left-[11px] top-0 w-5 h-5 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center text-xs">
+                    {getStatusIcon(comment)}
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-900">{comment.author}</span>
                       <time className="text-xs text-gray-500">
                         {comment.commentdate
                           ? formatDistanceToNow(new Date(comment.commentdate), {
@@ -110,6 +126,9 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
                             })
                           : "Unknown date"}
                       </time>
+                      {comment.asanataskid && (
+                        <ExternalLink className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
                     </div>
                     <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
                       {comment.comment}
