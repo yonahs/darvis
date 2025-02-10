@@ -1,20 +1,14 @@
 
 import { useShipperStats } from "@/hooks/useShipperStats"
 import { ShipperCard } from "@/components/logistics/ShipperCard"
-import { OrdersTableView } from "@/components/logistics/OrdersTableView"
 import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Package2, Upload, Clock, AlertTriangle, Plane, DollarSign } from "lucide-react"
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet"
+import { useNavigate } from "react-router-dom"
 
 const Logistics = () => {
   const { data: shipperStats, isLoading } = useShipperStats()
-  const [selectedShipper, setSelectedShipper] = useState<{id: number, name: string} | null>(null)
+  const navigate = useNavigate()
 
   // Calculate totals
   const totals = shipperStats?.reduce(
@@ -176,25 +170,11 @@ const Logistics = () => {
               internationalOrders={stats.internationalOrders}
               avgShippingCost={stats.avgShippingCost}
               isInternational={stats.isInternational}
-              onClick={() => setSelectedShipper({ id: stats.shipperid, name: stats.name })}
+              onClick={() => navigate(`/logistics/shipper/${stats.shipperid}`)}
             />
           ))}
         </div>
       )}
-
-      <Sheet open={!!selectedShipper} onOpenChange={() => setSelectedShipper(null)}>
-        <SheetContent className="w-full sm:max-w-3xl overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>Shipper Orders</SheetTitle>
-          </SheetHeader>
-          {selectedShipper && (
-            <OrdersTableView 
-              shipperId={selectedShipper.id} 
-              shipperName={selectedShipper.name}
-            />
-          )}
-        </SheetContent>
-      </Sheet>
     </div>
   )
 }
