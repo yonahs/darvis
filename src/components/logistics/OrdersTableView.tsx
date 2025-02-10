@@ -29,7 +29,7 @@ interface OrdersTableViewProps {
 
 export const OrdersTableView = ({ shipperId, shipperName }: OrdersTableViewProps) => {
   const [search, setSearch] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
+  const [statusFilter, setStatusFilter] = useState("1") // Set default to pending (1)
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ["shipper-orders", shipperId, search, statusFilter],
