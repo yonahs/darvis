@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 interface OrdersTableViewProps {
   shipperId: number | null
@@ -30,6 +31,7 @@ interface OrdersTableViewProps {
 export const OrdersTableView = ({ shipperId, shipperName }: OrdersTableViewProps) => {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("1") // Set default to pending (1)
+  const navigate = useNavigate()
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ["shipper-orders", shipperId, search, statusFilter],
@@ -57,6 +59,8 @@ export const OrdersTableView = ({ shipperId, shipperName }: OrdersTableViewProps
         `)
         .eq("shipperid", shipperId)
         .order("orderdate", { ascending: false })
+        // Only show orders from the last 30 days
+        .gte("orderdate", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
 
       // Apply status filter
       if (statusFilter !== "all") {
@@ -147,7 +151,11 @@ export const OrdersTableView = ({ shipperId, shipperName }: OrdersTableViewProps
               </TableRow>
             ) : orders && orders.length > 0 ? (
               orders.map((order) => (
-                <TableRow key={order.orderid}>
+                <TableRow 
+                  key={order.orderid}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => navigate(`/orders/${order.orderid}`)}
+                >
                   <TableCell className="font-medium">#{order.orderid}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
