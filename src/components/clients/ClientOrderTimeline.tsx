@@ -9,6 +9,7 @@ interface OrderComment {
   comment: string
   commentdate: string
   author: string
+  orderid: number
 }
 
 interface Order {
@@ -28,7 +29,8 @@ interface ClientOrderTimelineProps {
 }
 
 export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
-  const { data: orders, isLoading } = useQuery({
+  // Fetch orders
+  const { data: orders, isLoading: ordersLoading } = useQuery({
     queryKey: ["client-orders", clientId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -41,22 +43,37 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
           shipstatus,
           cancelled,
           outofstock,
-          problemorder,
-          ordercomments (
-            id,
-            comment,
-            commentdate,
-            author
-          )
+          problemorder
         `)
         .eq("clientid", clientId)
         .order("orderdate", { ascending: false })
-        .limit(50) // Limit to recent orders for performance
+        .limit(50)
 
       if (error) throw error
-      return data as Order[]
+      return data as Omit<Order, "ordercomments">[]
     },
   })
+
+  // Fetch comments
+  const { data: comments, isLoading: commentsLoading } = useQuery({
+    queryKey: ["order-comments", clientId],
+    queryFn: async () => {
+      if (!orders?.length) return []
+      
+      const orderIds = orders.map(order => order.orderid)
+      const { data, error } = await supabase
+        .from("ordercomments")
+        .select("*")
+        .in("orderid", orderIds)
+        .order("commentdate", { ascending: false })
+
+      if (error) throw error
+      return data as OrderComment[]
+    },
+    enabled: !!orders?.length,
+  })
+
+  const isLoading = ordersLoading || commentsLoading
 
   if (isLoading) {
     return <div className="space-y-4">
@@ -65,6 +82,12 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
       ))}
     </div>
   }
+
+  // Combine orders with their comments
+  const ordersWithComments = orders?.map(order => ({
+    ...order,
+    ordercomments: comments?.filter(comment => comment.orderid === order.orderid) || []
+  }))
 
   const getStatusIcon = (order: Order) => {
     if (order.cancelled) return <AlertCircle className="h-4 w-4 text-red-500" />
@@ -84,7 +107,7 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
 
   return (
     <div className="space-y-4">
-      {orders?.map((order) => (
+      {ordersWithComments?.map((order) => (
         <div key={order.orderid} className="relative pl-6 pb-4 border-l-2 border-gray-200 last:border-l-0 last:pb-0">
           <div className="absolute -left-[11px] top-0 w-5 h-5 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center">
             {getStatusIcon(order)}
