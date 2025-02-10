@@ -147,6 +147,13 @@ export type Database = {
             referencedRelation: "clientrx"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_clientrx"
+            columns: ["rxid"]
+            isOneToOne: false
+            referencedRelation: "vw_order_prescriptions"
+            referencedColumns: ["rx_id"]
+          },
         ]
       }
       clients: {
@@ -1503,24 +1510,31 @@ export type Database = {
           clientid: number | null
           clientname: string | null
           country: string | null
-          delaydate: string | null
-          drugamounts: string | null
-          drugdetailids: string | null
-          drugnames: string | null
-          drugstrengths: string | null
           orderbilled: number | null
           orderdate: string | null
           orderid: number | null
           orderstatus: string | null
-          outofstock: number | null
           payment: string | null
           prioritize: number | null
           shipper: string | null
           state: string | null
           totalsale: number | null
-          uploaded: number | null
-          ups: string | null
           website: string | null
+        }
+        Relationships: []
+      }
+      vw_order_prescriptions: {
+        Row: {
+          clientid: number | null
+          dateuploaded: string | null
+          duration: string | null
+          filled: number | null
+          orderid: number | null
+          refills: number | null
+          rx_id: number | null
+          rx_image: string | null
+          rxdate: string | null
+          strength: string | null
         }
         Relationships: []
       }
