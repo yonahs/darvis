@@ -1557,6 +1557,34 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "mv_client_lifetime_value"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "mv_client_order_counts"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "vw_client_risk_summary"
+            referencedColumns: ["clientid"]
+          },
+          {
             foreignKeyName: "fk_orders_processor"
             columns: ["processorid"]
             isOneToOne: false
@@ -2101,7 +2129,36 @@ export type Database = {
           totalsale: number | null
           website: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "mv_client_lifetime_value"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "mv_client_order_counts"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "vw_client_risk_summary"
+            referencedColumns: ["clientid"]
+          },
+        ]
       }
       vw_client_risk_summary: {
         Row: {
@@ -2134,7 +2191,36 @@ export type Database = {
           totalsale: number | null
           website: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "mv_client_lifetime_value"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "mv_client_order_counts"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "vw_client_risk_summary"
+            referencedColumns: ["clientid"]
+          },
+        ]
       }
       vw_order_prescriptions: {
         Row: {
@@ -2149,7 +2235,36 @@ export type Database = {
           rxdate: string | null
           strength: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "mv_client_lifetime_value"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "mv_client_order_counts"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "vw_client_risk_summary"
+            referencedColumns: ["clientid"]
+          },
+        ]
       }
       vw_product_catalog: {
         Row: {
