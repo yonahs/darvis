@@ -17,6 +17,7 @@ interface ClientWithOrderCount {
   active: boolean
   doctor: string | null
   total_orders: number
+  lifetime_value: number
 }
 
 export default function Clients() {
@@ -81,7 +82,7 @@ export default function Clients() {
       
       if (clientsError) throw clientsError
 
-      // Then get the order counts for these clients
+      // Get order counts
       const { data: orderCounts, error: orderCountsError } = await supabase
         .from("mv_client_order_counts")
         .select("clientid, total_orders")
@@ -89,10 +90,19 @@ export default function Clients() {
 
       if (orderCountsError) throw orderCountsError
 
+      // Get lifetime values
+      const { data: lifetimeValues, error: lifetimeValuesError } = await supabase
+        .from("mv_client_lifetime_value")
+        .select("clientid, lifetime_value")
+        .in("clientid", clientsData.map(c => c.clientid))
+
+      if (lifetimeValuesError) throw lifetimeValuesError
+
       // Merge the data
       return clientsData.map(client => ({
         ...client,
-        total_orders: orderCounts?.find(oc => oc.clientid === client.clientid)?.total_orders || 0
+        total_orders: orderCounts?.find(oc => oc.clientid === client.clientid)?.total_orders || 0,
+        lifetime_value: lifetimeValues?.find(lv => lv.clientid === client.clientid)?.lifetime_value || 0
       })) as ClientWithOrderCount[]
     },
   })

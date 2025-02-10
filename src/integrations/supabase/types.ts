@@ -130,6 +130,13 @@ export type Database = {
             foreignKeyName: "client_changelog_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
+            referencedRelation: "mv_client_lifetime_value"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "client_changelog_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "mv_client_order_counts"
             referencedColumns: ["clientid"]
           },
@@ -1855,6 +1862,13 @@ export type Database = {
       }
     }
     Views: {
+      mv_client_lifetime_value: {
+        Row: {
+          clientid: number | null
+          lifetime_value: number | null
+        }
+        Relationships: []
+      }
       mv_client_order_counts: {
         Row: {
           clientid: number | null

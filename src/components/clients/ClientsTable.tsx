@@ -20,6 +20,7 @@ interface Client {
   active: boolean
   doctor: string | null
   total_orders?: number
+  lifetime_value?: number
 }
 
 interface ClientsTableProps {
@@ -29,6 +30,13 @@ interface ClientsTableProps {
 
 export function ClientsTable({ clients, isLoading }: ClientsTableProps) {
   const navigate = useNavigate()
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(value)
+  }
 
   return (
     <div className="rounded-md border">
@@ -42,18 +50,19 @@ export function ClientsTable({ clients, isLoading }: ClientsTableProps) {
             <TableHead>Country</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Total Orders</TableHead>
+            <TableHead>Lifetime Value</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center">
+              <TableCell colSpan={8} className="text-center">
                 Loading...
               </TableCell>
             </TableRow>
           ) : clients.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center">
+              <TableCell colSpan={8} className="text-center">
                 No clients found
               </TableCell>
             </TableRow>
@@ -80,6 +89,9 @@ export function ClientsTable({ clients, isLoading }: ClientsTableProps) {
                 </TableCell>
                 <TableCell>
                   {client.total_orders || 0}
+                </TableCell>
+                <TableCell>
+                  {formatCurrency(client.lifetime_value || 0)}
                 </TableCell>
               </TableRow>
             ))
