@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
@@ -52,33 +51,17 @@ export default function Clients() {
   const { data: clientStats } = useQuery({
     queryKey: ["clientStats"],
     queryFn: async () => {
-      // Get a count of total unique clients
-      const { count: totalCount, error: countError } = await supabase
-        .from('clients')
-        .select('clientid', { count: 'exact', head: true })
+      const { data, error } = await supabase
+        .from('mv_client_statistics')
+        .select('*')
+        .single()
       
-      if (countError) throw countError
-
-      // Get a count of active clients
-      const { count: activeCount, error: activeError } = await supabase
-        .from('clients')
-        .select('clientid', { count: 'exact', head: true })
-        .eq('active', true)
-      
-      if (activeError) throw activeError
-
-      // Get a count of clients with prescriptions
-      const { count: prescriptionCount, error: prescriptionError } = await supabase
-        .from('clients')
-        .select('clientid', { count: 'exact', head: true })
-        .not('doctor', 'is', null)
-      
-      if (prescriptionError) throw prescriptionError
+      if (error) throw error
 
       return {
-        total: totalCount || 0,
-        active: activeCount || 0,
-        withPrescriptions: prescriptionCount || 0,
+        total: data.total_clients,
+        active: data.active_clients,
+        withPrescriptions: data.clients_with_prescriptions,
       }
     },
   })

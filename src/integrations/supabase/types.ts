@@ -2052,6 +2052,14 @@ export type Database = {
         }
         Relationships: []
       }
+      mv_client_statistics: {
+        Row: {
+          active_clients: number | null
+          clients_with_prescriptions: number | null
+          total_clients: number | null
+        }
+        Relationships: []
+      }
       mv_dashboard_metrics: {
         Row: {
           avg_order_value: number | null
