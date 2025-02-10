@@ -1,3 +1,4 @@
+
 import {
   LayoutDashboard,
   Package,
@@ -19,8 +20,8 @@ import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -36,6 +37,11 @@ const menuItems = [
     title: "Orders",
     icon: ShoppingCart,
     href: "/orders",
+  },
+  {
+    title: "Clients",
+    icon: Users,
+    href: "/clients",
   },
   {
     title: "Logistics",

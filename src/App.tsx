@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/sonner';
@@ -9,6 +10,7 @@ import Logistics from '@/pages/Logistics';
 import Pharmacy from '@/pages/Pharmacy';
 import Products from '@/pages/Products';
 import StockCount from '@/pages/StockCount';
+import Clients from '@/pages/Clients';
 import NotFound from '@/pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -26,6 +28,7 @@ const App = () => {
             <Route path="/pharmacy" element={<Pharmacy />} />
             <Route path="/products" element={<Products />} />
             <Route path="/stockcount" element={<StockCount />} />
+            <Route path="/clients" element={<Clients />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </DashboardLayout>
