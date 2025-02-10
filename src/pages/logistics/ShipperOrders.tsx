@@ -16,8 +16,8 @@ const ShipperOrders = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("shippers")
-        .select("name")
-        .eq("shipperid", shipperId)
+        .select("display_name")
+        .eq("shipperid", parseInt(shipperId as string))
         .single()
 
       if (error) throw error
@@ -36,16 +36,17 @@ const ShipperOrders = () => {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-2xl font-semibold tracking-tight">
-          {shipper?.name || "Shipper"} Orders
+          {shipper?.display_name || "Shipper"} Orders
         </h1>
       </div>
 
       <OrdersTableView
         shipperId={Number(shipperId)}
-        shipperName={shipper?.name}
+        shipperName={shipper?.display_name}
       />
     </div>
   )
 }
 
 export default ShipperOrders
+
