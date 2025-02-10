@@ -85,7 +85,7 @@ export default function Clients() {
       
       if (error) throw error
 
-      return data.map(client => ({
+      return (data as ClientWithOrderCount[]).map(client => ({
         ...client,
         total_orders: client.mv_client_order_counts?.[0]?.total_orders || 0
       }))
