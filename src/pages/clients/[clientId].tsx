@@ -231,6 +231,7 @@ export default function ClientDetail() {
           </div>
 
           <PaymentCard
+            clientId={parseInt(clientId || "0")}
             lifetimeValue={clientStats?.lifetimeValue || 0}
             orderCount={clientStats?.orderCount || 0}
           />

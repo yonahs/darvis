@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query"
 import { CalendarClock, Package, CreditCard, AlertCircle, Box, ExternalLink } from "lucide-react"
 import { Link } from "react-router-dom"
@@ -44,6 +43,12 @@ interface Order extends TrackingInfo {
   problemorder: boolean
   ordercomments: OrderComment[]
   items?: OrderItem[]
+  processorid?: number
+  processor?: {
+    name: string
+    displayname: string
+    abbrev: string
+  }
 }
 
 interface OrderData extends Omit<Order, "ordercomments" | "items" | "courier"> {
@@ -74,7 +79,8 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
           drugdetailid,
           amount,
           ups,
-          courierid
+          courierid,
+          processorid
         `)
         .eq("clientid", clientId)
         .order("orderdate", { ascending: false })
@@ -135,7 +141,20 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
     },
   })
 
-  const isLoading = ordersLoading || commentsLoading || drugDetailsLoading || couriersLoading
+  // Fetch processor information
+  const { data: processors, isLoading: processorsLoading } = useQuery({
+    queryKey: ["processors"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("processor")
+        .select("autoid, name, displayname, abbrev")
+
+      if (error) throw error
+      return data
+    },
+  })
+
+  const isLoading = ordersLoading || commentsLoading || drugDetailsLoading || couriersLoading || processorsLoading
 
   if (isLoading) {
     return <div className="space-y-3">
@@ -149,6 +168,7 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
   const ordersWithDetails = orders?.map(order => {
     const orderDrugDetails = drugDetails?.find(d => d.id === order.drugdetailid)
     const orderCourier = couriers?.find(c => c.courierid === order.courierid)
+    const orderProcessor = processors?.find(p => p.autoid === order.processorid)
     return {
       ...order,
       ordercomments: comments?.filter(comment => comment.orderid === order.orderid) || [],
@@ -157,7 +177,8 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
         amount: order.amount,
         drugDetails: orderDrugDetails
       }],
-      courier: orderCourier
+      courier: orderCourier,
+      processor: orderProcessor
     }
   })
 
@@ -204,7 +225,14 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium">${order.totalsale?.toFixed(2)}</p>
-                  <p className="text-xs text-muted-foreground">{getStatusText(order)}</p>
+                  <div className="flex items-center gap-1 justify-end">
+                    <p className="text-xs text-muted-foreground">{getStatusText(order)}</p>
+                    {order.processor && (
+                      <span className="text-xs px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded">
+                        {order.processor.abbrev || order.processor.displayname}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 

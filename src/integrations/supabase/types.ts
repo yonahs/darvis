@@ -1572,6 +1572,75 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_methods: {
+        Row: {
+          client_id: number
+          created_at: string | null
+          id: string
+          is_default: boolean | null
+          masked_number: string | null
+          metadata: Json | null
+          payment_type: string
+          processor_id: number | null
+        }
+        Insert: {
+          client_id: number
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          masked_number?: string | null
+          metadata?: Json | null
+          payment_type: string
+          processor_id?: number | null
+        }
+        Update: {
+          client_id?: number
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          masked_number?: string | null
+          metadata?: Json | null
+          payment_type?: string
+          processor_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_methods_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "payment_methods_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "mv_client_lifetime_value"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "payment_methods_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "mv_client_order_counts"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "payment_methods_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_risk_summary"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "payment_methods_processor_id_fkey"
+            columns: ["processor_id"]
+            isOneToOne: false
+            referencedRelation: "processor"
+            referencedColumns: ["autoid"]
+          },
+        ]
+      }
       payment_tracking: {
         Row: {
           amount: number
