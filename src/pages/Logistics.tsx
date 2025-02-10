@@ -1,7 +1,6 @@
-
 import { useShipperStats } from "@/hooks/useShipperStats"
 import { ShipperCard } from "@/components/logistics/ShipperCard"
-import { OrdersDialog } from "@/components/logistics/OrdersDialog"
+import { OrdersTableView } from "@/components/logistics/OrdersTableView"
 import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Package2, Upload, Clock, AlertTriangle, Plane, DollarSign } from "lucide-react"
@@ -176,11 +175,11 @@ const Logistics = () => {
         </div>
       )}
 
-      <OrdersDialog
-        isOpen={!!selectedShipperId}
-        onOpenChange={() => setSelectedShipperId(null)}
-        shipperId={selectedShipperId}
-      />
+      {selectedShipperId && (
+        <div className="mt-8">
+          <OrdersTableView shipperId={selectedShipperId} />
+        </div>
+      )}
     </div>
   )
 }
