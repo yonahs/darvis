@@ -43,26 +43,26 @@ export function ClientsTable({ clients, isLoading }: ClientsTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Client ID</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Phone</TableHead>
-            <TableHead>Country</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Total Orders</TableHead>
-            <TableHead>Lifetime Value</TableHead>
+            <TableHead className="w-[100px] py-4">Client ID</TableHead>
+            <TableHead className="min-w-[150px] py-4">Name</TableHead>
+            <TableHead className="min-w-[200px] py-4">Email</TableHead>
+            <TableHead className="min-w-[150px] py-4">Phone</TableHead>
+            <TableHead className="min-w-[120px] py-4">Country</TableHead>
+            <TableHead className="w-[100px] py-4">Status</TableHead>
+            <TableHead className="w-[120px] text-right py-4">Total Orders</TableHead>
+            <TableHead className="w-[150px] text-right py-4">Lifetime Value</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={8} className="text-center">
+              <TableCell colSpan={8} className="text-center py-8">
                 Loading...
               </TableCell>
             </TableRow>
           ) : clients.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} className="text-center">
+              <TableCell colSpan={8} className="text-center py-8">
                 No clients found
               </TableCell>
             </TableRow>
@@ -73,24 +73,24 @@ export function ClientsTable({ clients, isLoading }: ClientsTableProps) {
                 className="cursor-pointer hover:bg-muted/50"
                 onClick={() => navigate(`/clients/${client.clientid}`)}
               >
-                <TableCell>{client.clientid}</TableCell>
-                <TableCell>
+                <TableCell className="py-3 font-medium">{client.clientid}</TableCell>
+                <TableCell className="py-3">
                   {client.firstname} {client.lastname}
                 </TableCell>
-                <TableCell>{client.email}</TableCell>
-                <TableCell>{client.mobile || client.dayphone}</TableCell>
-                <TableCell>{client.country}</TableCell>
-                <TableCell>
+                <TableCell className="py-3">{client.email}</TableCell>
+                <TableCell className="py-3">{client.mobile || client.dayphone}</TableCell>
+                <TableCell className="py-3">{client.country}</TableCell>
+                <TableCell className="py-3">
                   <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
                     client.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
                   }`}>
                     {client.active ? 'Active' : 'Inactive'}
                   </span>
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-3 text-right">
                   {client.total_orders || 0}
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-3 text-right font-medium">
                   {formatCurrency(client.lifetime_value || 0)}
                 </TableCell>
               </TableRow>
