@@ -1,6 +1,8 @@
+
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { SlackAlertsWidget } from "@/components/dashboard/SlackAlertsWidget";
 
 const Index = () => {
   const { data: orders } = useQuery({
@@ -27,6 +29,9 @@ const Index = () => {
             <p className="text-sm text-gray-600">${order.totalsale}</p>
           </Card>
         ))}
+      </div>
+      <div className="mt-6">
+        <SlackAlertsWidget />
       </div>
     </div>
   );
