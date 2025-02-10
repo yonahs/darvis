@@ -1,3 +1,4 @@
+
 import React from "react"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
@@ -40,11 +41,11 @@ const statuses = [
 ]
 
 export const OrdersSearch = ({
-  search,
+  search = "",
   onSearchChange,
   statusFilter = [],
   onStatusFilterChange,
-  dateRange,
+  dateRange = { from: undefined, to: undefined },
   onDateRangeChange,
   shipperFilter = [],
   onShipperFilterChange,
@@ -72,7 +73,7 @@ export const OrdersSearch = ({
   })
 
   const toggleStatus = (status: string) => {
-    const currentFilters = [...(statusFilter || [])]
+    const currentFilters = Array.isArray(statusFilter) ? [...statusFilter] : []
     const index = currentFilters.indexOf(status)
     if (index > -1) {
       currentFilters.splice(index, 1)
@@ -83,7 +84,7 @@ export const OrdersSearch = ({
   }
 
   const toggleShipper = (shipperId: string) => {
-    const currentFilters = [...(shipperFilter || [])]
+    const currentFilters = Array.isArray(shipperFilter) ? [...shipperFilter] : []
     const index = currentFilters.indexOf(shipperId)
     if (index > -1) {
       currentFilters.splice(index, 1)
@@ -92,6 +93,10 @@ export const OrdersSearch = ({
     }
     onShipperFilterChange(currentFilters)
   }
+
+  // Ensure filters are arrays
+  const safeStatusFilter = Array.isArray(statusFilter) ? statusFilter : []
+  const safeShipperFilter = Array.isArray(shipperFilter) ? shipperFilter : []
 
   return (
     <div className="flex flex-col gap-4">
@@ -120,9 +125,9 @@ export const OrdersSearch = ({
                 className="min-w-[200px] justify-between"
                 disabled={isLoadingShippers}
               >
-                {shipperFilter.length === 0
+                {safeShipperFilter.length === 0
                   ? "Filter by shipper"
-                  : `${shipperFilter.length} shipper${shipperFilter.length > 1 ? 's' : ''} selected`}
+                  : `${safeShipperFilter.length} shipper${safeShipperFilter.length > 1 ? 's' : ''} selected`}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
@@ -140,7 +145,7 @@ export const OrdersSearch = ({
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          shipperFilter.includes(shipper.shipperid.toString()) ? "opacity-100" : "opacity-0"
+                          safeShipperFilter.includes(shipper.shipperid.toString()) ? "opacity-100" : "opacity-0"
                         )}
                       />
                       {shipper.display_name}
@@ -159,9 +164,9 @@ export const OrdersSearch = ({
                 aria-expanded={openStatus}
                 className="min-w-[200px] justify-between"
               >
-                {statusFilter.length === 0
+                {safeStatusFilter.length === 0
                   ? "Filter by status"
-                  : `${statusFilter.length} status${statusFilter.length > 1 ? 'es' : ''} selected`}
+                  : `${safeStatusFilter.length} status${safeStatusFilter.length > 1 ? 'es' : ''} selected`}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
@@ -179,7 +184,7 @@ export const OrdersSearch = ({
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          statusFilter.includes(status) ? "opacity-100" : "opacity-0"
+                          safeStatusFilter.includes(status) ? "opacity-100" : "opacity-0"
                         )}
                       />
                       {status}
