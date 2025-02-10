@@ -1,5 +1,4 @@
-
-import { useParams, Link } from "react-router-dom"
+import { useParams, Link, useLocation } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
@@ -34,6 +33,8 @@ interface OrderItemWithDetails extends Order {
 
 const OrderDetail = () => {
   const { orderId } = useParams()
+  const location = useLocation()
+  const isFromLogistics = location.state?.from === 'logistics' || location.pathname.includes('logistics')
 
   // Fetch order details - now handling split orders
   const { data: orderData, isLoading: orderLoading } = useQuery({
@@ -203,12 +204,31 @@ const OrderDetail = () => {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to="/orders" className="flex items-center gap-1">
-                <ChevronLeft className="h-4 w-4" />
-                Orders
-              </Link>
+              {isFromLogistics ? (
+                <Link to="/logistics" className="flex items-center gap-1">
+                  <ChevronLeft className="h-4 w-4" />
+                  Logistics
+                </Link>
+              ) : (
+                <Link to="/orders" className="flex items-center gap-1">
+                  <ChevronLeft className="h-4 w-4" />
+                  Orders
+                </Link>
+              )}
             </BreadcrumbLink>
           </BreadcrumbItem>
+          {isFromLogistics && orderData?.shipperid && (
+            <>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to={`/logistics/shipper/${orderData.shipperid}`}>
+                    Shipper Orders
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            </>
+          )}
           {clientData && (
             <>
               <BreadcrumbSeparator />

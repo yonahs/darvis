@@ -154,7 +154,7 @@ export const OrdersTableView = ({ shipperId, shipperName }: OrdersTableViewProps
                 <TableRow 
                   key={order.orderid}
                   className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => navigate(`/orders/${order.orderid}`)}
+                  onClick={() => navigate(`/orders/${order.orderid}`, { state: { from: 'logistics' } })}
                 >
                   <TableCell className="font-medium">#{order.orderid}</TableCell>
                   <TableCell>
