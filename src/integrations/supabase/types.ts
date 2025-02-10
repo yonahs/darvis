@@ -140,6 +140,113 @@ export type Database = {
             referencedRelation: "mv_client_order_counts"
             referencedColumns: ["clientid"]
           },
+          {
+            foreignKeyName: "client_changelog_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_risk_summary"
+            referencedColumns: ["clientid"]
+          },
+        ]
+      }
+      client_risk_assessments: {
+        Row: {
+          assessed_by: string | null
+          client_id: number
+          created_at: string | null
+          id: string
+          is_flagged: boolean | null
+          last_assessed_at: string | null
+          notes: string | null
+          risk_level: number
+          updated_at: string | null
+        }
+        Insert: {
+          assessed_by?: string | null
+          client_id: number
+          created_at?: string | null
+          id?: string
+          is_flagged?: boolean | null
+          last_assessed_at?: string | null
+          notes?: string | null
+          risk_level?: number
+          updated_at?: string | null
+        }
+        Update: {
+          assessed_by?: string | null
+          client_id?: number
+          created_at?: string | null
+          id?: string
+          is_flagged?: boolean | null
+          last_assessed_at?: string | null
+          notes?: string | null
+          risk_level?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_risk_assessments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "client_risk_assessments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "mv_client_lifetime_value"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "client_risk_assessments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "mv_client_order_counts"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "client_risk_assessments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_risk_summary"
+            referencedColumns: ["clientid"]
+          },
+        ]
+      }
+      client_risk_factors: {
+        Row: {
+          assessment_id: string | null
+          created_at: string | null
+          description: string | null
+          factor_type: Database["public"]["Enums"]["risk_factor_type"]
+          id: string
+          impact_score: number
+        }
+        Insert: {
+          assessment_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          factor_type: Database["public"]["Enums"]["risk_factor_type"]
+          id?: string
+          impact_score: number
+        }
+        Update: {
+          assessment_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          factor_type?: Database["public"]["Enums"]["risk_factor_type"]
+          id?: string
+          impact_score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_risk_factors_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "client_risk_assessments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       clientrx: {
@@ -1911,6 +2018,20 @@ export type Database = {
         }
         Relationships: []
       }
+      vw_client_risk_summary: {
+        Row: {
+          clientid: number | null
+          email: string | null
+          firstname: string | null
+          is_flagged: boolean | null
+          last_assessed_at: string | null
+          lastname: string | null
+          risk_level: number | null
+          risk_types: string | null
+          total_risk_factors: number | null
+        }
+        Relationships: []
+      }
       vw_order_details: {
         Row: {
           cancelled: boolean | null
@@ -1999,7 +2120,13 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      risk_factor_type:
+        | "payment_failure"
+        | "chargeback"
+        | "multiple_addresses"
+        | "prescription_issues"
+        | "suspicious_ordering_pattern"
+        | "failed_verification"
     }
     CompositeTypes: {
       [_ in never]: never

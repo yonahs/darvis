@@ -18,6 +18,9 @@ interface ClientWithOrderCount {
   doctor: string | null
   total_orders: number
   lifetime_value: number
+  risk_level?: number
+  risk_factors?: string[]
+  is_flagged?: boolean
 }
 
 export default function Clients() {
@@ -56,7 +59,7 @@ export default function Clients() {
       // First get the filtered clients
       let query = supabase
         .from("clients")
-        .select()
+        .select("*, vw_client_risk_summary!inner(*)")
         .order("clientid", { ascending: false })
         
       if (statusFilter !== "all") {
@@ -83,43 +86,41 @@ export default function Clients() {
       if (clientsError) throw clientsError
 
       // Get order counts for non-cancelled orders
-      const orderPromises = clientsData.map(client => 
-        supabase
-          .from("orders")
-          .select("*", { count: "exact" })
-          .eq("clientid", client.clientid)
-          .eq("cancelled", false)
-      )
+      const { data: orderCounts, error: orderCountError } = await supabase
+        .from('orders')
+        .select('clientid, count(*)')
+        .eq('cancelled', false)
+        .in('clientid', clientsData.map(c => c.clientid))
+        .group('clientid')
 
-      const orderResults = await Promise.all(orderPromises)
-      const orderCountByClient = Object.fromEntries(
-        orderResults.map((result, index) => [
-          clientsData[index].clientid,
-          result.count || 0
-        ])
-      )
+      if (orderCountError) throw orderCountError
 
       // Get lifetime values excluding cancelled orders
       const { data: lifetimeValues, error: lifetimeValuesError } = await supabase
-        .from("orders")
-        .select("clientid, totalsale")
+        .from('orders')
+        .select('clientid, sum(totalsale) as total')
         .eq('cancelled', false)
-        .in("clientid", clientsData.map(c => c.clientid))
+        .in('clientid', clientsData.map(c => c.clientid))
+        .group('clientid')
 
       if (lifetimeValuesError) throw lifetimeValuesError
 
-      // Calculate lifetime value per client
-      const lifetimeValueByClient = lifetimeValues.reduce((acc, order) => {
-        if (!acc[order.clientid]) acc[order.clientid] = 0
-        acc[order.clientid] += order.totalsale || 0
-        return acc
-      }, {} as Record<number, number>)
+      // Create lookup maps
+      const orderCountMap = Object.fromEntries(
+        orderCounts.map(({ clientid, count }) => [clientid, count])
+      )
+      const lifetimeValueMap = Object.fromEntries(
+        lifetimeValues.map(({ clientid, total }) => [clientid, total])
+      )
 
       // Merge all the data
       return clientsData.map(client => ({
         ...client,
-        total_orders: orderCountByClient[client.clientid] || 0,
-        lifetime_value: lifetimeValueByClient[client.clientid] || 0
+        total_orders: orderCountMap[client.clientid] || 0,
+        lifetime_value: lifetimeValueMap[client.clientid] || 0,
+        risk_level: client.vw_client_risk_summary?.risk_level || 0,
+        risk_factors: client.vw_client_risk_summary?.risk_types?.split(', ') || [],
+        is_flagged: client.vw_client_risk_summary?.is_flagged || false
       })) as ClientWithOrderCount[]
     },
   })
