@@ -88,7 +88,7 @@ export default function Clients() {
         .select("clientid, count", { count: 'exact' })
         .eq('cancelled', false)
         .in("clientid", clientsData.map(c => c.clientid))
-        .group_by('clientid')
+        .groupBy('clientid')
 
       if (orderCountsError) throw orderCountsError
 
