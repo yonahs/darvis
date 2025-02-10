@@ -9,10 +9,50 @@ interface PaymentCardProps {
 }
 
 export function PaymentCard({ clientId }: PaymentCardProps) {
-  const { data: paymentMethods, error } = useQuery({
+  // First query to get distinct payment methods from orders
+  const { data: orderPayments, error: orderError } = useQuery({
+    queryKey: ["client-order-payments", clientId],
+    queryFn: async () => {
+      console.log("Fetching payment processors from orders for client:", clientId)
+      const { data, error } = await supabase
+        .from("orders")
+        .select(`
+          processorid,
+          processor:processor!inner (
+            autoid,
+            name,
+            displayname,
+            marker,
+            abbrev
+          )
+        `)
+        .eq("clientid", clientId)
+        .not("processorid", "is", null)
+        .order("orderdate", { ascending: false })
+        
+      if (error) {
+        console.error("Error fetching order payments:", error)
+        throw error
+      }
+      
+      // Remove duplicates by processor ID
+      const uniqueProcessors = data.reduce((acc: any[], curr) => {
+        if (!acc.find(p => p.processor.autoid === curr.processor.autoid)) {
+          acc.push(curr)
+        }
+        return acc
+      }, [])
+      
+      console.log("Retrieved unique processors:", uniqueProcessors)
+      return uniqueProcessors
+    },
+  })
+
+  // Second query to get stored payment methods
+  const { data: paymentMethods, error: methodsError } = useQuery({
     queryKey: ["client-payment-methods", clientId],
     queryFn: async () => {
-      console.log("Fetching payment methods for client:", clientId)
+      console.log("Fetching stored payment methods for client:", clientId)
       const { data, error } = await supabase
         .from("payment_methods")
         .select(`
@@ -35,8 +75,8 @@ export function PaymentCard({ clientId }: PaymentCardProps) {
     },
   })
 
-  if (error) {
-    console.error("Query error:", error)
+  if (orderError || methodsError) {
+    console.error("Query error:", orderError || methodsError)
   }
 
   return (
@@ -49,24 +89,28 @@ export function PaymentCard({ clientId }: PaymentCardProps) {
       </CardHeader>
       <CardContent>
         <div>
-          <p className="text-sm text-muted-foreground mb-2">Payment Methods</p>
-          {paymentMethods?.length ? (
+          <p className="text-sm text-muted-foreground mb-2">Payment Methods Used</p>
+          {orderPayments?.length ? (
             <div className="space-y-2">
-              {paymentMethods.map((pm) => (
+              {orderPayments.map((payment) => (
                 <div 
-                  key={pm.id} 
+                  key={payment.processor.autoid} 
                   className="flex items-center justify-between p-2 rounded-md bg-muted/50"
                 >
                   <div className="flex items-center gap-2">
                     <CreditCard className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">
-                        {pm.processor?.displayname || pm.payment_type}
-                        {pm.is_default && <span className="ml-2 text-xs text-muted-foreground">(Default)</span>}
+                        {payment.processor.displayname || payment.processor.name}
+                        {payment.processor.marker && (
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            ({payment.processor.marker})
+                          </span>
+                        )}
                       </p>
-                      {pm.masked_number && (
+                      {payment.processor.abbrev && (
                         <p className="text-xs text-muted-foreground">
-                          {pm.masked_number}
+                          Code: {payment.processor.abbrev}
                         </p>
                       )}
                     </div>
@@ -75,7 +119,36 @@ export function PaymentCard({ clientId }: PaymentCardProps) {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">No payment methods stored</p>
+            <p className="text-sm text-muted-foreground">No payment methods found in orders</p>
+          )}
+
+          {paymentMethods?.length > 0 && (
+            <>
+              <p className="text-sm text-muted-foreground mt-4 mb-2">Stored Payment Methods</p>
+              <div className="space-y-2">
+                {paymentMethods.map((pm) => (
+                  <div 
+                    key={pm.id} 
+                    className="flex items-center justify-between p-2 rounded-md bg-muted/50"
+                  >
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          {pm.processor?.displayname || pm.payment_type}
+                          {pm.is_default && <span className="ml-2 text-xs text-muted-foreground">(Default)</span>}
+                        </p>
+                        {pm.masked_number && (
+                          <p className="text-xs text-muted-foreground">
+                            {pm.masked_number}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </CardContent>
