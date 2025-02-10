@@ -52,24 +52,33 @@ export default function Clients() {
   const { data: clientStats } = useQuery({
     queryKey: ["clientStats"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("clients")
-        .select("*", { count: "exact" })
-        .order("clientid", { ascending: false })
+      // Get a count of total unique clients
+      const { count: totalCount, error: countError } = await supabase
+        .from('clients')
+        .select('clientid', { count: 'exact', head: true })
       
-      if (error) throw error
+      if (countError) throw countError
 
-      const uniqueClients = data.filter((value, index, self) =>
-        index === self.findIndex((t) => t.clientid === value.clientid)
-      )
+      // Get a count of active clients
+      const { count: activeCount, error: activeError } = await supabase
+        .from('clients')
+        .select('clientid', { count: 'exact', head: true })
+        .eq('active', true)
+      
+      if (activeError) throw activeError
 
-      const activeClients = uniqueClients.filter(client => client.active).length
-      const withPrescriptions = uniqueClients.filter(client => client.doctor).length
+      // Get a count of clients with prescriptions
+      const { count: prescriptionCount, error: prescriptionError } = await supabase
+        .from('clients')
+        .select('clientid', { count: 'exact', head: true })
+        .not('doctor', 'is', null)
+      
+      if (prescriptionError) throw prescriptionError
 
       return {
-        total: uniqueClients.length,
-        active: activeClients,
-        withPrescriptions,
+        total: totalCount || 0,
+        active: activeCount || 0,
+        withPrescriptions: prescriptionCount || 0,
       }
     },
   })
