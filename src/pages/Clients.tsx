@@ -5,6 +5,14 @@ import { supabase } from "@/integrations/supabase/client"
 import { ClientSearch } from "@/components/clients/ClientSearch"
 import { ClientStats } from "@/components/clients/ClientStats"
 import { ClientsTable } from "@/components/clients/ClientsTable"
+import { 
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 interface ClientWithOrderCount {
   clientid: number
@@ -33,10 +41,13 @@ interface LifetimeValue {
   total: string
 }
 
+const PAGE_SIZE = 50
+
 export default function Clients() {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [prescriptionFilter, setPrescriptionFilter] = useState<string>("all")
+  const [currentPage, setCurrentPage] = useState(1)
 
   const { data: clientStats } = useQuery({
     queryKey: ["clientStats"],
@@ -63,14 +74,50 @@ export default function Clients() {
     },
   })
 
+  const { data: paginationInfo } = useQuery({
+    queryKey: ["clientsCount", search, statusFilter, prescriptionFilter],
+    queryFn: async () => {
+      let query = supabase
+        .from("clients")
+        .select("*", { count: "exact", head: true })
+      
+      if (statusFilter !== "all") {
+        query = query.eq("active", statusFilter === "active")
+      }
+
+      if (prescriptionFilter === "with") {
+        query = query.not("doctor", "is", null)
+      } else if (prescriptionFilter === "without") {
+        query = query.is("doctor", null)
+      }
+        
+      if (search) {
+        const searchNumber = parseInt(search)
+        query = query.or(
+          `firstname.ilike.%${search}%,lastname.ilike.%${search}%,email.ilike.%${search}%${
+            !isNaN(searchNumber) ? `,clientid.eq.${searchNumber}` : ''
+          }`
+        )
+      }
+
+      const { count } = await query
+      
+      return {
+        totalPages: Math.ceil((count || 0) / PAGE_SIZE),
+        totalClients: count || 0
+      }
+    }
+  })
+
   const { data: clients = [], isLoading } = useQuery({
-    queryKey: ["clients", search, statusFilter, prescriptionFilter],
+    queryKey: ["clients", search, statusFilter, prescriptionFilter, currentPage],
     queryFn: async () => {
       // First get the filtered clients
       let query = supabase
         .from("clients")
         .select()
         .order("clientid", { ascending: false })
+        .range((currentPage - 1) * PAGE_SIZE, (currentPage * PAGE_SIZE) - 1)
         
       if (statusFilter !== "all") {
         query = query.eq("active", statusFilter === "active")
@@ -91,7 +138,7 @@ export default function Clients() {
         )
       }
       
-      const { data: clientsData, error: clientsError } = await query.limit(100)
+      const { data: clientsData, error: clientsError } = await query
       
       if (clientsError) throw clientsError
 
@@ -109,22 +156,16 @@ export default function Clients() {
       )
 
       // Get order counts using RPC function
-      const { data: orderCounts } = await supabase.rpc<
-        "get_client_order_counts",
-        { client_ids: number[] },
-        { clientid: number; count: string }[]
-      >("get_client_order_counts", {
-        client_ids: clientsData.map(c => c.clientid)
-      })
+      const { data: orderCounts } = await supabase
+        .rpc("get_client_order_counts", {
+          client_ids: clientsData.map(c => c.clientid)
+        })
 
       // Get lifetime values using RPC function
-      const { data: lifetimeValues } = await supabase.rpc<
-        "get_client_lifetime_values",
-        { client_ids: number[] },
-        { clientid: number; total: string }[]
-      >("get_client_lifetime_values", {
-        client_ids: clientsData.map(c => c.clientid)
-      })
+      const { data: lifetimeValues } = await supabase
+        .rpc("get_client_lifetime_values", {
+          client_ids: clientsData.map(c => c.clientid)
+        })
 
       // Create lookup maps for order counts and lifetime values
       const orderCountMap = Object.fromEntries(
@@ -168,6 +209,61 @@ export default function Clients() {
         clients={clients}
         isLoading={isLoading}
       />
+
+      {paginationInfo && paginationInfo.totalPages > 1 && (
+        <Pagination className="mt-4">
+          <PaginationContent>
+            {currentPage > 1 && (
+              <PaginationItem>
+                <PaginationPrevious onClick={() => setCurrentPage(p => p - 1)} />
+              </PaginationItem>
+            )}
+
+            {[...Array(paginationInfo.totalPages)].map((_, i) => {
+              const page = i + 1
+              // Only show current page, first, last, and one page before/after current
+              if (
+                page === 1 ||
+                page === paginationInfo.totalPages ||
+                page === currentPage ||
+                page === currentPage - 1 ||
+                page === currentPage + 1
+              ) {
+                return (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      isActive={currentPage === page}
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                )
+              }
+              // Show ellipsis for skipped pages
+              if (
+                page === currentPage - 2 ||
+                page === currentPage + 2
+              ) {
+                return <PaginationItem key={page}>...</PaginationItem>
+              }
+              return null
+            })}
+
+            {currentPage < paginationInfo.totalPages && (
+              <PaginationItem>
+                <PaginationNext onClick={() => setCurrentPage(p => p + 1)} />
+              </PaginationItem>
+            )}
+          </PaginationContent>
+        </Pagination>
+      )}
+      
+      {paginationInfo && (
+        <div className="text-sm text-muted-foreground text-center">
+          Showing {((currentPage - 1) * PAGE_SIZE) + 1} to {Math.min(currentPage * PAGE_SIZE, paginationInfo.totalClients)} of {paginationInfo.totalClients} clients
+        </div>
+      )}
     </div>
   )
 }
