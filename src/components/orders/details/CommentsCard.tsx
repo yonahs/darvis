@@ -1,4 +1,3 @@
-
 import React, { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -16,9 +15,10 @@ type Comment = Database["public"]["Tables"]["ordercomments"]["Row"]
 interface CommentsCardProps {
   comments: Comment[] | null
   orderId: number
+  className?: string
 }
 
-export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
+export const CommentsCard = ({ comments, orderId, className }: CommentsCardProps) => {
   const [newComment, setNewComment] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -27,7 +27,6 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
 
     setIsSubmitting(true)
     try {
-      // First, get the maximum ID to ensure we don't have conflicts
       const { data: maxIdResult, error: maxIdError } = await supabase
         .from("ordercomments")
         .select("id")
@@ -88,14 +87,13 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
   }
 
   const handleCommentClick = (comment: Comment) => {
-    // This would need to be configured with your actual Zendesk domain and ticket format
     if (comment.asanataskid) {
       window.open(`https://your-zendesk-domain.zendesk.com/agent/tickets/${comment.asanataskid}`, '_blank')
     }
   }
 
   return (
-    <Card className="h-full flex flex-col bg-[#F8F9FA]">
+    <Card className={`h-full flex flex-col ${className}`}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3">
         <CardTitle className="text-sm font-medium text-gray-700">
           Comments ({comments?.length || 0})

@@ -1,3 +1,4 @@
+
 import { Plus, Upload, Eye, Pill, RefreshCw, Package2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -18,9 +19,10 @@ interface OrderItemsProps {
   drugDetails: DrugDetails | null
   order: Order | null
   allOrderItems?: Order[] | null
+  className?: string
 }
 
-export const OrderItemsCard = ({ drugDetails, order, allOrderItems }: OrderItemsProps) => {
+export const OrderItemsCard = ({ drugDetails, order, allOrderItems, className }: OrderItemsProps) => {
   console.log("Drug Details received:", drugDetails)
   console.log("All order items:", allOrderItems)
 
@@ -56,7 +58,7 @@ export const OrderItemsCard = ({ drugDetails, order, allOrderItems }: OrderItems
   }
 
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader className="p-2">
         <div className="flex justify-between items-center">
           <CardTitle className="text-xs font-medium text-primary/80 flex items-center gap-1">

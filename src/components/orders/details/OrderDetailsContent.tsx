@@ -49,8 +49,8 @@ export const OrderDetailsContent = ({
           </div>
         </div>
 
-        <div className="bg-purple-200 rounded-lg shadow-sm overflow-auto">
-          <OrderItemsCard drugDetails={drugDetails} order={order} allOrderItems={allOrderItems} />
+        <div className="rounded-lg shadow-sm overflow-auto">
+          <OrderItemsCard drugDetails={drugDetails} order={order} allOrderItems={allOrderItems} className="bg-purple-200" />
         </div>
 
         <div className="bg-white rounded-lg shadow-sm overflow-auto">
@@ -63,8 +63,8 @@ export const OrderDetailsContent = ({
           <PrescriptionManagementCard order={order} drugDetails={drugDetails} />
         </div>
 
-        <div className="bg-purple-300 rounded-lg shadow-sm overflow-auto">
-          <CommentsCard comments={comments} orderId={order?.orderid || 0} />
+        <div className="rounded-lg shadow-sm overflow-auto">
+          <CommentsCard comments={comments} orderId={order?.orderid || 0} className="bg-purple-300" />
         </div>
       </div>
     </OrderDetailsGrid>
