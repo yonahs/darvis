@@ -13,9 +13,11 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { supabase } from "@/integrations/supabase/client"
+import { useNavigate } from "react-router-dom"
 
 export default function Clients() {
   const [search, setSearch] = useState("")
+  const navigate = useNavigate()
 
   const { data: clientStats } = useQuery({
     queryKey: ["clientStats"],
@@ -124,7 +126,11 @@ export default function Clients() {
               </TableRow>
             ) : (
               clients.map((client) => (
-                <TableRow key={client.clientid}>
+                <TableRow 
+                  key={client.clientid}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => navigate(`/clients/${client.clientid}`)}
+                >
                   <TableCell>
                     {client.firstname} {client.lastname}
                   </TableCell>

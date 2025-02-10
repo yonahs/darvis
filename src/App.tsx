@@ -11,6 +11,7 @@ import Pharmacy from '@/pages/Pharmacy';
 import Products from '@/pages/Products';
 import StockCount from '@/pages/StockCount';
 import Clients from '@/pages/Clients';
+import ClientDetail from '@/pages/clients/[clientId]';
 import NotFound from '@/pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => {
             <Route path="/products" element={<Products />} />
             <Route path="/stockcount" element={<StockCount />} />
             <Route path="/clients" element={<Clients />} />
+            <Route path="/clients/:clientId" element={<ClientDetail />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </DashboardLayout>
