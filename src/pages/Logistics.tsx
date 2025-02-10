@@ -1,13 +1,20 @@
+
 import { useShipperStats } from "@/hooks/useShipperStats"
 import { ShipperCard } from "@/components/logistics/ShipperCard"
 import { OrdersTableView } from "@/components/logistics/OrdersTableView"
 import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Package2, Upload, Clock, AlertTriangle, Plane, DollarSign } from "lucide-react"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
 
 const Logistics = () => {
   const { data: shipperStats, isLoading } = useShipperStats()
-  const [selectedShipperId, setSelectedShipperId] = useState<number | null>(null)
+  const [selectedShipper, setSelectedShipper] = useState<{id: number, name: string} | null>(null)
 
   // Calculate totals
   const totals = shipperStats?.reduce(
@@ -169,17 +176,25 @@ const Logistics = () => {
               internationalOrders={stats.internationalOrders}
               avgShippingCost={stats.avgShippingCost}
               isInternational={stats.isInternational}
-              onClick={() => setSelectedShipperId(stats.shipperid)}
+              onClick={() => setSelectedShipper({ id: stats.shipperid, name: stats.name })}
             />
           ))}
         </div>
       )}
 
-      {selectedShipperId && (
-        <div className="mt-8">
-          <OrdersTableView shipperId={selectedShipperId} />
-        </div>
-      )}
+      <Sheet open={!!selectedShipper} onOpenChange={() => setSelectedShipper(null)}>
+        <SheetContent className="w-full sm:max-w-3xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Shipper Orders</SheetTitle>
+          </SheetHeader>
+          {selectedShipper && (
+            <OrdersTableView 
+              shipperId={selectedShipper.id} 
+              shipperName={selectedShipper.name}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }

@@ -24,9 +24,10 @@ import { useState } from "react"
 
 interface OrdersTableViewProps {
   shipperId: number | null
+  shipperName?: string
 }
 
-export const OrdersTableView = ({ shipperId }: OrdersTableViewProps) => {
+export const OrdersTableView = ({ shipperId, shipperName }: OrdersTableViewProps) => {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
 
@@ -89,7 +90,7 @@ export const OrdersTableView = ({ shipperId }: OrdersTableViewProps) => {
       case 2:
         return <Badge variant="success">Uploaded</Badge>
       case 1:
-        return <Badge variant="warning">Pending</Badge>
+        return <Badge variant="destructive">Pending</Badge>
       default:
         return <Badge variant="secondary">Processing</Badge>
     }
@@ -97,6 +98,9 @@ export const OrdersTableView = ({ shipperId }: OrdersTableViewProps) => {
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between border-b pb-4">
+        <h2 className="text-lg font-semibold">{shipperName || "Orders"}</h2>
+      </div>
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="relative w-full md:w-96">
           <Input
@@ -176,7 +180,7 @@ export const OrdersTableView = ({ shipperId }: OrdersTableViewProps) => {
                         <Badge variant="destructive">Rush</Badge>
                       )}
                       {order.outofstock && (
-                        <Badge variant="warning">Stock</Badge>
+                        <Badge variant="destructive">Stock</Badge>
                       )}
                     </div>
                   </TableCell>
