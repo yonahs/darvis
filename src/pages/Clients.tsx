@@ -56,7 +56,7 @@ export default function Clients() {
         .from("clients")
         .select(`
           *,
-          mv_client_order_counts (
+          mv_client_order_counts!clientid (
             total_orders
           )
         `)
@@ -85,14 +85,10 @@ export default function Clients() {
       
       if (error) throw error
 
-      const uniqueClients = (data as ClientWithOrderCount[]).filter((value, index, self) =>
-        index === self.findIndex((t) => t.clientid === value.clientid)
-      ).map(client => ({
+      return data.map(client => ({
         ...client,
         total_orders: client.mv_client_order_counts?.[0]?.total_orders || 0
       }))
-
-      return uniqueClients
     },
   })
 
