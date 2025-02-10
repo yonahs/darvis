@@ -17,6 +17,7 @@ import { ClientHealthInfo } from "@/components/clients/ClientHealthInfo"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { useToast } from "@/components/ui/use-toast"
+import { Package, DollarSign, Stethoscope } from "lucide-react"
 
 export default function ClientDetail() {
   const { clientId } = useParams()
@@ -39,6 +40,35 @@ export default function ClientDetail() {
     },
   })
 
+  const { data: clientStats } = useQuery({
+    queryKey: ["clientStats", clientId],
+    queryFn: async () => {
+      // Get order count
+      const { data: orderCount } = await supabase
+        .rpc("get_client_order_counts", {
+          client_ids: [parseInt(clientId || "0")]
+        })
+
+      // Get lifetime value
+      const { data: lifetimeValue } = await supabase
+        .rpc("get_client_lifetime_values", {
+          client_ids: [parseInt(clientId || "0")]
+        })
+
+      // Get prescription count
+      const { count: rxCount } = await supabase
+        .from("clientrx")
+        .select("*", { count: "exact" })
+        .eq("clientid", parseInt(clientId || "0"))
+
+      return {
+        orderCount: parseInt(orderCount?.[0]?.count || "0"),
+        lifetimeValue: parseFloat(lifetimeValue?.[0]?.total || "0"),
+        prescriptionCount: rxCount || 0
+      }
+    },
+  })
+
   const updateClientMutation = useMutation({
     mutationFn: async (updates: any) => {
       const { error: updateError } = await supabase
@@ -53,7 +83,7 @@ export default function ClientDetail() {
         field_name: field,
         old_value: String(client[field]),
         new_value: String(newValue),
-        changed_by: "User", // You might want to get this from auth context
+        changed_by: "User",
         comment: "Updated via client details page"
       }))
 
@@ -303,8 +333,52 @@ export default function ClientDetail() {
           </Card>
         </div>
 
-        <div>
-          <Card className="h-full">
+        <div className="space-y-3">
+          <div className="grid grid-cols-3 gap-3">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Orders
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {clientStats?.orderCount || 0}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  Lifetime Value
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  ${clientStats?.lifetimeValue.toFixed(2) || "0.00"}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Stethoscope className="h-4 w-4" />
+                  Prescriptions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {clientStats?.prescriptionCount || 0}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="h-[calc(100%-5rem)]">
             <CardHeader className="pb-2">
               <CardTitle>Order History</CardTitle>
             </CardHeader>
@@ -317,3 +391,4 @@ export default function ClientDetail() {
     </div>
   )
 }
+
