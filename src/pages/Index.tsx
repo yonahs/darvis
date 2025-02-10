@@ -30,7 +30,7 @@ const Index = () => {
         .from('orders')
         .select(`
           shipperid,
-          shippers(
+          shippers!inner (
             display_name
           )
         `)
