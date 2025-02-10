@@ -13,19 +13,40 @@ const Index = () => {
   return (
     <div className="p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="col-span-1">
+        {/* First row - 2 columns */}
+        <div className="lg:col-span-2">
           <SlackAlertsWidget />
         </div>
-        <div className="col-span-1">
+        <div className="lg:col-span-2">
           <TrustpilotCard />
         </div>
-        <ClientStats />
-        <RecentOrdersWidget />
-        <PrescriptionAlertsWidget />
-        <ShipperOrdersWidget />
-        <FinancialOverviewWidget />
-        <InventoryAlertsWidget />
-        <TeamActivityWidget />
+        
+        {/* Second row - mixed layout */}
+        <div className="lg:col-span-1">
+          <ClientStats />
+        </div>
+        <div className="lg:col-span-2">
+          <RecentOrdersWidget />
+        </div>
+        <div className="lg:col-span-1">
+          <PrescriptionAlertsWidget />
+        </div>
+        
+        {/* Third row - balanced layout */}
+        <div className="lg:col-span-2">
+          <ShipperOrdersWidget />
+        </div>
+        <div className="lg:col-span-2">
+          <FinancialOverviewWidget />
+        </div>
+        
+        {/* Fourth row - mixed layout */}
+        <div className="lg:col-span-3">
+          <InventoryAlertsWidget />
+        </div>
+        <div className="lg:col-span-1">
+          <TeamActivityWidget />
+        </div>
       </div>
     </div>
   )

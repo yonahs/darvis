@@ -4,7 +4,7 @@ import { Stethoscope, Clock } from "lucide-react"
 
 export const PrescriptionAlertsWidget = () => {
   return (
-    <Card className="bg-green-500/10">
+    <Card className="bg-white">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium">
           <div className="flex items-center gap-2">

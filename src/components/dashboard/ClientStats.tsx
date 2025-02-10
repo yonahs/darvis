@@ -4,7 +4,7 @@ import { Users } from "lucide-react"
 
 export const ClientStats = () => {
   return (
-    <Card className="bg-blue-500/10">
+    <Card className="bg-white">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium">
           <div className="flex items-center gap-2">

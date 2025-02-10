@@ -10,25 +10,20 @@ export const ShipperOrdersWidget = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('orders')
-        .select(`
-          shipperid,
-          shippers!inner (
-            display_name
-          )
-        `)
+        .select('shipperid, shippers!inner(display_name)')
         .eq('cancelled', false)
         .eq('shipstatus', 1);
 
       if (error) throw error;
 
       // Count orders per shipper
-      const shipperCounts = data.reduce((acc, order) => {
+      const shipperCounts = data.reduce((acc: Record<string, number>, order: any) => {
         const shipperName = order.shippers?.display_name;
         if (shipperName) {
           acc[shipperName] = (acc[shipperName] || 0) + 1;
         }
         return acc;
-      }, {} as Record<string, number>);
+      }, {});
 
       // Convert to array and sort by count
       return Object.entries(shipperCounts)
@@ -38,7 +33,7 @@ export const ShipperOrdersWidget = () => {
   });
 
   return (
-    <Card className="bg-indigo-500/10">
+    <Card className="bg-white">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium">
           <div className="flex items-center gap-2">
