@@ -1871,7 +1871,7 @@ export type Database = {
         }
         Relationships: []
       }
-      vw_order_details: {
+      mv_order_details: {
         Row: {
           cancelled: boolean | null
           clientid: number | null
@@ -1890,42 +1890,24 @@ export type Database = {
         }
         Relationships: []
       }
-      vw_order_extended_details: {
+      vw_order_details: {
         Row: {
           cancelled: boolean | null
           clientid: number | null
           clientname: string | null
           country: string | null
-          delay_reason: string | null
-          delay_reported_at: string | null
-          has_stock_issues: boolean | null
-          is_delayed: boolean | null
-          last_payment_attempt: string | null
           orderbilled: number | null
           orderdate: string | null
           orderid: number | null
           orderstatus: string | null
           payment: string | null
-          payment_retry_count: number | null
-          payment_status: string | null
           prioritize: number | null
-          reminder_sent_at: string | null
           shipper: string | null
           state: string | null
           totalsale: number | null
-          warehouse_id: number | null
-          warehouse_name: string | null
           website: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "order_warehouse_assignments_warehouse_id_fkey"
-            columns: ["warehouse_id"]
-            isOneToOne: false
-            referencedRelation: "warehouses"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       vw_order_prescriptions: {
         Row: {
