@@ -14,9 +14,18 @@ import {
 } from "@/components/ui/table"
 import { supabase } from "@/integrations/supabase/client"
 import { useNavigate } from "react-router-dom"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export default function Clients() {
   const [search, setSearch] = useState("")
+  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [prescriptionFilter, setPrescriptionFilter] = useState<string>("all")
   const navigate = useNavigate()
 
   const { data: clientStats } = useQuery({
@@ -45,15 +54,33 @@ export default function Clients() {
   })
 
   const { data: clients = [], isLoading } = useQuery({
-    queryKey: ["clients", search],
+    queryKey: ["clients", search, statusFilter, prescriptionFilter],
     queryFn: async () => {
       let query = supabase
         .from("clients")
         .select("*")
         .order("lastname")
         
+      // Apply status filter
+      if (statusFilter !== "all") {
+        query = query.eq("active", statusFilter === "active")
+      }
+
+      // Apply prescription filter
+      if (prescriptionFilter === "with") {
+        query = query.not("doctor", "is", null)
+      } else if (prescriptionFilter === "without") {
+        query = query.is("doctor", null)
+      }
+        
+      // Apply search
       if (search) {
-        query = query.or(`firstname.ilike.%${search}%,lastname.ilike.%${search}%,email.ilike.%${search}%,clientid.eq.${!isNaN(search) ? search : 0}`)
+        const searchNumber = parseInt(search)
+        query = query.or(
+          `firstname.ilike.%${search}%,lastname.ilike.%${search}%,email.ilike.%${search}%${
+            !isNaN(searchNumber) ? `,clientid.eq.${searchNumber}` : ''
+          }`
+        )
       }
       
       const { data, error } = await query.limit(100)
@@ -71,15 +98,46 @@ export default function Clients() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      {/* Search */}
-      <div className="relative w-full md:w-96">
-        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search clients by name, email or ID..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-8"
-        />
+      {/* Search and Filters */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="relative w-full md:w-96">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search clients by name, email or ID..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-8"
+          />
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
+          <Select
+            value={statusFilter}
+            onValueChange={setStatusFilter}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={prescriptionFilter}
+            onValueChange={setPrescriptionFilter}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by prescription" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Clients</SelectItem>
+              <SelectItem value="with">With Prescriptions</SelectItem>
+              <SelectItem value="without">Without Prescriptions</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Summary Cards */}
