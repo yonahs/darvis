@@ -2096,6 +2096,24 @@ export type Database = {
       }
     }
     Functions: {
+      get_client_lifetime_values: {
+        Args: {
+          client_ids: number[]
+        }
+        Returns: {
+          clientid: number
+          total: number
+        }[]
+      }
+      get_client_order_counts: {
+        Args: {
+          client_ids: number[]
+        }
+        Returns: {
+          clientid: number
+          count: number
+        }[]
+      }
       is_saul: {
         Args: Record<PropertyKey, never>
         Returns: boolean

@@ -23,6 +23,16 @@ interface ClientWithOrderCount {
   is_flagged?: boolean
 }
 
+interface OrderCount {
+  clientid: number
+  count: string
+}
+
+interface LifetimeValue {
+  clientid: number
+  total: string
+}
+
 export default function Clients() {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
@@ -100,7 +110,7 @@ export default function Clients() {
 
       // Get order counts using raw SQL count
       const { data: orderCounts, error: orderCountError } = await supabase
-        .rpc('get_client_order_counts', {
+        .rpc<OrderCount>("get_client_order_counts", {
           client_ids: clientsData.map(c => c.clientid)
         })
 
@@ -108,7 +118,7 @@ export default function Clients() {
 
       // Get lifetime values using raw SQL sum
       const { data: lifetimeValues, error: lifetimeValuesError } = await supabase
-        .rpc('get_client_lifetime_values', {
+        .rpc<LifetimeValue>("get_client_lifetime_values", {
           client_ids: clientsData.map(c => c.clientid)
         })
 
