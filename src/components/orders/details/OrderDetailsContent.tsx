@@ -38,28 +38,34 @@ export const OrderDetailsContent = ({
 
   return (
     <OrderDetailsGrid>
-      <div className="bg-white rounded-lg shadow-sm overflow-auto">
-        <ClientDetailsCard client={client} />
-      </div>
-      
-      <div className="bg-white rounded-lg shadow-sm overflow-auto">
-        <ShippingAndLogisticsCard order={order} onMarkAsShipped={onMarkAsShipped} />
-      </div>
-      
-      <div className="bg-white rounded-lg shadow-sm overflow-auto">
-        <FinancialDetailsCard order={order} onMarkAsPaid={onMarkAsPaid} />
+      <div className="col-span-1 space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-lg shadow-sm overflow-auto">
+            <ClientDetailsCard client={client} />
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-sm overflow-auto">
+            <FinancialDetailsCard order={order} onMarkAsPaid={onMarkAsPaid} />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm overflow-auto">
+          <ShippingAndLogisticsCard order={order} onMarkAsShipped={onMarkAsShipped} />
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm overflow-auto">
+          <OrderItemsCard drugDetails={drugDetails} order={order} allOrderItems={allOrderItems} />
+        </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm overflow-auto">
-        <OrderItemsCard drugDetails={drugDetails} order={order} allOrderItems={allOrderItems} />
-      </div>
+      <div className="col-span-1 space-y-4">
+        <div className="bg-white rounded-lg shadow-sm overflow-auto">
+          <PrescriptionManagementCard order={order} drugDetails={drugDetails} />
+        </div>
 
-      <div className="bg-white rounded-lg shadow-sm overflow-auto">
-        <PrescriptionManagementCard order={order} drugDetails={drugDetails} />
-      </div>
-
-      <div className="bg-white rounded-lg shadow-sm overflow-auto h-[400px]">
-        <CommentsCard comments={comments} orderId={order?.orderid || 0} />
+        <div className="bg-white rounded-lg shadow-sm overflow-auto h-[400px]">
+          <CommentsCard comments={comments} orderId={order?.orderid || 0} />
+        </div>
       </div>
     </OrderDetailsGrid>
   )
