@@ -4,6 +4,25 @@ import { CalendarClock, Package, CreditCard, AlertCircle } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { Skeleton } from "@/components/ui/skeleton"
 
+interface OrderComment {
+  id: number
+  comment: string
+  commentdate: string
+  author: string
+}
+
+interface Order {
+  orderid: number
+  orderdate: string
+  totalsale: number
+  orderbilled: number
+  shipstatus: number
+  cancelled: boolean
+  outofstock: boolean
+  problemorder: boolean
+  ordercomments: OrderComment[]
+}
+
 interface ClientOrderTimelineProps {
   clientId: number
 }
@@ -24,6 +43,7 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
           outofstock,
           problemorder,
           ordercomments (
+            id,
             comment,
             commentdate,
             author
@@ -31,9 +51,10 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
         `)
         .eq("clientid", clientId)
         .order("orderdate", { ascending: false })
+        .limit(50) // Limit to recent orders for performance
 
       if (error) throw error
-      return data
+      return data as Order[]
     },
   })
 
@@ -45,7 +66,7 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
     </div>
   }
 
-  const getStatusIcon = (order: any) => {
+  const getStatusIcon = (order: Order) => {
     if (order.cancelled) return <AlertCircle className="h-4 w-4 text-red-500" />
     if (order.problemorder) return <AlertCircle className="h-4 w-4 text-yellow-500" />
     if (order.shipstatus === 2) return <Package className="h-4 w-4 text-green-500" />
@@ -53,7 +74,7 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
     return <CalendarClock className="h-4 w-4 text-gray-500" />
   }
 
-  const getStatusText = (order: any) => {
+  const getStatusText = (order: Order) => {
     if (order.cancelled) return "Order Cancelled"
     if (order.problemorder) return "Problem Order"
     if (order.shipstatus === 2) return "Shipped"
@@ -83,8 +104,8 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
             </div>
             {order.ordercomments?.length > 0 && (
               <div className="bg-gray-50 p-3 rounded-md space-y-2">
-                {order.ordercomments.map((comment: any, i: number) => (
-                  <div key={i} className="text-sm">
+                {order.ordercomments.map((comment) => (
+                  <div key={comment.id} className="text-sm">
                     <span className="font-medium">{comment.author}:</span>{" "}
                     <span className="text-muted-foreground">{comment.comment}</span>
                   </div>
