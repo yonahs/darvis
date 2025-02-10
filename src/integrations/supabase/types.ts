@@ -2102,7 +2102,7 @@ export type Database = {
         }
         Returns: {
           clientid: number
-          total: number
+          total: string
         }[]
       }
       get_client_order_counts: {
@@ -2111,7 +2111,7 @@ export type Database = {
         }
         Returns: {
           clientid: number
-          count: number
+          count: string
         }[]
       }
       is_saul: {
