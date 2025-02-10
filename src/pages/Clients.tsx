@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query"
 import { Search } from "lucide-react"
 import { useState } from "react"
@@ -98,7 +97,6 @@ export default function Clients() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      {/* Search and Filters */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="relative w-full md:w-96">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -140,7 +138,6 @@ export default function Clients() {
         </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -168,7 +165,6 @@ export default function Clients() {
         </Card>
       </div>
 
-      {/* Clients Table */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
