@@ -82,14 +82,22 @@ export default function Clients() {
       
       if (clientsError) throw clientsError
 
-      // Get order counts using a count aggregation
-      const { data: orderCounts, error: orderCountsError } = await supabase
-        .from("orders")
-        .select('clientid, count(*)', { count: 'exact', head: false })
-        .eq('cancelled', false)
-        .in('clientid', clientsData.map(c => c.clientid))
+      // Get order counts for non-cancelled orders
+      const orderPromises = clientsData.map(client => 
+        supabase
+          .from("orders")
+          .select("*", { count: "exact" })
+          .eq("clientid", client.clientid)
+          .eq("cancelled", false)
+      )
 
-      if (orderCountsError) throw orderCountsError
+      const orderResults = await Promise.all(orderPromises)
+      const orderCountByClient = Object.fromEntries(
+        orderResults.map((result, index) => [
+          clientsData[index].clientid,
+          result.count || 0
+        ])
+      )
 
       // Get lifetime values excluding cancelled orders
       const { data: lifetimeValues, error: lifetimeValuesError } = await supabase
@@ -107,13 +115,7 @@ export default function Clients() {
         return acc
       }, {} as Record<number, number>)
 
-      // Calculate order counts per client from the raw data
-      const orderCountByClient = orderCounts.reduce((acc, count) => {
-        acc[count.clientid] = parseInt(count.count)
-        return acc
-      }, {} as Record<number, number>)
-
-      // Merge the data
+      // Merge all the data
       return clientsData.map(client => ({
         ...client,
         total_orders: orderCountByClient[client.clientid] || 0,
