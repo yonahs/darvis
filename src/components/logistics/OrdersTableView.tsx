@@ -18,10 +18,18 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Calendar } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Calendar, ExternalLink, SwapHorizontal, Upload, Clock, Truck, Navigation } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 interface OrdersTableViewProps {
   shipperId: number | null
@@ -92,11 +100,22 @@ export const OrdersTableView = ({ shipperId, shipperName }: OrdersTableViewProps
   const getStatusBadge = (status: number) => {
     switch (status) {
       case 2:
-        return <Badge variant="success">Uploaded</Badge>
+        return <Badge variant="success" className="flex items-center gap-1"><Upload className="h-3 w-3" /> Uploaded</Badge>
       case 1:
-        return <Badge variant="destructive">Pending</Badge>
+        return <Badge variant="destructive" className="flex items-center gap-1"><Clock className="h-3 w-3" /> Pending</Badge>
       default:
         return <Badge variant="secondary">Processing</Badge>
+    }
+  }
+
+  const getShippingStatusBadge = (status: number) => {
+    switch (status) {
+      case 2:
+        return <Badge variant="success" className="flex items-center gap-1"><Truck className="h-3 w-3" /> Shipped</Badge>
+      case 1:
+        return <Badge variant="warning" className="flex items-center gap-1"><Clock className="h-3 w-3" /> Processing</Badge>
+      default:
+        return <Badge variant="secondary">Not Started</Badge>
     }
   }
 
@@ -135,17 +154,18 @@ export const OrdersTableView = ({ shipperId, shipperName }: OrdersTableViewProps
               <TableHead>Date</TableHead>
               <TableHead>Client</TableHead>
               <TableHead>Country</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Order Status</TableHead>
+              <TableHead>Shipping Status</TableHead>
               <TableHead>Total</TableHead>
-              <TableHead>Shipping Cost</TableHead>
               <TableHead>Tracking</TableHead>
               <TableHead>Flags</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8">
+                <TableCell colSpan={10} className="text-center py-8">
                   Loading orders...
                 </TableCell>
               </TableRow>
@@ -173,11 +193,27 @@ export const OrdersTableView = ({ shipperId, shipperName }: OrdersTableViewProps
                   </TableCell>
                   <TableCell>{order.clients?.country}</TableCell>
                   <TableCell>{getStatusBadge(order.shipstatus)}</TableCell>
+                  <TableCell>{getShippingStatusBadge(order.status)}</TableCell>
                   <TableCell>{formatCurrency(order.totalsale)}</TableCell>
-                  <TableCell>{formatCurrency(order.shippingcost_usd)}</TableCell>
                   <TableCell>
                     {order.ups ? (
-                      <Badge variant="outline">{order.ups}</Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="flex items-center gap-1">
+                          <Navigation className="h-3 w-3" />
+                          {order.ups}
+                        </Badge>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            window.open(`https://www.ups.com/track?track=yes&trackNums=${order.ups}`, '_blank')
+                          }}
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                      </div>
                     ) : (
                       <span className="text-muted-foreground">-</span>
                     )}
@@ -192,11 +228,37 @@ export const OrdersTableView = ({ shipperId, shipperName }: OrdersTableViewProps
                       )}
                     </div>
                   </TableCell>
+                  <TableCell>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center gap-1"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                          }}
+                        >
+                          <SwapHorizontal className="h-4 w-4" />
+                          Change Shipper
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Change Shipper for Order #{order.orderid}</DialogTitle>
+                        </DialogHeader>
+                        {/* Content for changing shipper will be implemented later */}
+                        <div className="py-4">
+                          Shipper change functionality coming soon...
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8">
+                <TableCell colSpan={10} className="text-center py-8">
                   No orders found
                 </TableCell>
               </TableRow>
@@ -207,3 +269,4 @@ export const OrdersTableView = ({ shipperId, shipperName }: OrdersTableViewProps
     </div>
   )
 }
+
