@@ -17,7 +17,7 @@ export default function Clients() {
       const { data, error } = await supabase
         .from("clients")
         .select("*", { count: "exact" })
-        .order("clientid")
+        .order("clientid", { ascending: false })
       
       if (error) throw error
 
@@ -42,7 +42,7 @@ export default function Clients() {
       let query = supabase
         .from("clients")
         .select("*")
-        .order("lastname")
+        .order("clientid", { ascending: false })
         
       if (statusFilter !== "all") {
         query = query.eq("active", statusFilter === "active")
