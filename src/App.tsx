@@ -7,6 +7,7 @@ import Index from '@/pages/Index';
 import Orders from '@/pages/Orders';
 import OrderDetail from '@/pages/orders/[orderId]';
 import Logistics from '@/pages/Logistics';
+import ShipperOrders from '@/pages/logistics/ShipperOrders';
 import Pharmacy from '@/pages/Pharmacy';
 import Products from '@/pages/Products';
 import StockCount from '@/pages/StockCount';
@@ -26,6 +27,7 @@ const App = () => {
             <Route path="/orders" element={<Orders />} />
             <Route path="/orders/:orderId" element={<OrderDetail />} />
             <Route path="/logistics" element={<Logistics />} />
+            <Route path="/logistics/shipper/:shipperId" element={<ShipperOrders />} />
             <Route path="/pharmacy" element={<Pharmacy />} />
             <Route path="/products" element={<Products />} />
             <Route path="/stockcount" element={<StockCount />} />
