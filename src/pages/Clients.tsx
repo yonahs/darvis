@@ -104,7 +104,7 @@ export default function Clients() {
         .select('clientid, count(*)')
         .eq('cancelled', false)
         .in('clientid', clientsData.map(c => c.clientid))
-        .group('clientid')
+        .groupBy('clientid')
 
       if (orderCountError) throw orderCountError
 
@@ -114,7 +114,7 @@ export default function Clients() {
         .select('clientid, sum(totalsale) as total')
         .eq('cancelled', false)
         .in('clientid', clientsData.map(c => c.clientid))
-        .group('clientid')
+        .groupBy('clientid')
 
       if (lifetimeValuesError) throw lifetimeValuesError
 
