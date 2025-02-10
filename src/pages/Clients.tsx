@@ -82,27 +82,37 @@ export default function Clients() {
       
       if (clientsError) throw clientsError
 
-      // Get order counts
+      // Get order counts excluding cancelled orders
       const { data: orderCounts, error: orderCountsError } = await supabase
-        .from("mv_client_order_counts")
-        .select("clientid, total_orders")
+        .from("orders")
+        .select("clientid, count", { count: 'exact' })
+        .eq('cancelled', false)
         .in("clientid", clientsData.map(c => c.clientid))
+        .group_by('clientid')
 
       if (orderCountsError) throw orderCountsError
 
-      // Get lifetime values
+      // Get lifetime values excluding cancelled orders
       const { data: lifetimeValues, error: lifetimeValuesError } = await supabase
-        .from("mv_client_lifetime_value")
-        .select("clientid, lifetime_value")
+        .from("orders")
+        .select("clientid, totalsale")
+        .eq('cancelled', false)
         .in("clientid", clientsData.map(c => c.clientid))
 
       if (lifetimeValuesError) throw lifetimeValuesError
 
+      // Calculate lifetime value per client
+      const lifetimeValueByClient = lifetimeValues.reduce((acc, order) => {
+        if (!acc[order.clientid]) acc[order.clientid] = 0
+        acc[order.clientid] += order.totalsale || 0
+        return acc
+      }, {} as Record<number, number>)
+
       // Merge the data
       return clientsData.map(client => ({
         ...client,
-        total_orders: orderCounts?.find(oc => oc.clientid === client.clientid)?.total_orders || 0,
-        lifetime_value: lifetimeValues?.find(lv => lv.clientid === client.clientid)?.lifetime_value || 0
+        total_orders: orderCounts?.find(oc => oc.clientid === client.clientid)?.count || 0,
+        lifetime_value: lifetimeValueByClient[client.clientid] || 0
       })) as ClientWithOrderCount[]
     },
   })
