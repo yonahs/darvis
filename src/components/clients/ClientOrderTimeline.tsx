@@ -1,6 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query"
-import { CalendarClock, Package, CreditCard, AlertCircle, Box } from "lucide-react"
+import { CalendarClock, Package, CreditCard, AlertCircle, Box, ExternalLink } from "lucide-react"
 import { Link } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -24,7 +24,16 @@ interface OrderItem {
   }
 }
 
-interface Order {
+interface TrackingInfo {
+  ups: string
+  courierid: number
+  courier?: {
+    trackinglink: string
+    name: string
+  }
+}
+
+interface Order extends TrackingInfo {
   orderid: number
   orderdate: string
   totalsale: number
@@ -37,7 +46,7 @@ interface Order {
   items?: OrderItem[]
 }
 
-interface OrderData extends Omit<Order, "ordercomments" | "items"> {
+interface OrderData extends Omit<Order, "ordercomments" | "items" | "courier"> {
   drugdetailid: number
   amount: number
 }
@@ -63,7 +72,9 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
           outofstock,
           problemorder,
           drugdetailid,
-          amount
+          amount,
+          ups,
+          courierid
         `)
         .eq("clientid", clientId)
         .order("orderdate", { ascending: false })
@@ -111,7 +122,20 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
     enabled: !!orders?.length,
   })
 
-  const isLoading = ordersLoading || commentsLoading || drugDetailsLoading
+  // Fetch courier information
+  const { data: couriers, isLoading: couriersLoading } = useQuery({
+    queryKey: ["couriers"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("couriers")
+        .select("courierid, trackinglink, name")
+
+      if (error) throw error
+      return data
+    },
+  })
+
+  const isLoading = ordersLoading || commentsLoading || drugDetailsLoading || couriersLoading
 
   if (isLoading) {
     return <div className="space-y-3">
@@ -121,9 +145,10 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
     </div>
   }
 
-  // Combine orders with their comments and drug details
+  // Combine orders with their comments, drug details, and courier info
   const ordersWithDetails = orders?.map(order => {
     const orderDrugDetails = drugDetails?.find(d => d.id === order.drugdetailid)
+    const orderCourier = couriers?.find(c => c.courierid === order.courierid)
     return {
       ...order,
       ordercomments: comments?.filter(comment => comment.orderid === order.orderid) || [],
@@ -131,7 +156,8 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
         drugdetailid: order.drugdetailid,
         amount: order.amount,
         drugDetails: orderDrugDetails
-      }]
+      }],
+      courier: orderCourier
     }
   })
 
@@ -149,6 +175,11 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
     if (order.shipstatus === 2) return "Delivered"
     if (order.orderbilled) return "Paid"
     return "Order Placed"
+  }
+
+  const getTrackingUrl = (order: Order) => {
+    if (!order.ups || !order.courier?.trackinglink) return null
+    return order.courier.trackinglink.replace("{TRACKING_NUMBER}", order.ups)
   }
 
   return (
@@ -196,6 +227,33 @@ export function ClientOrderTimeline({ clientId }: ClientOrderTimelineProps) {
                   </div>
                 </div>
               </div>
+
+              {/* Tracking Information */}
+              {order.ups && (
+                <div className="bg-gray-50 p-2 rounded-md">
+                  <div className="text-xs flex items-center gap-2">
+                    <Package className="h-3 w-3 text-gray-500" />
+                    <span className="text-muted-foreground">Tracking:</span>
+                    {getTrackingUrl(order) ? (
+                      <a
+                        href={getTrackingUrl(order)!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-blue-500 hover:text-blue-700 flex items-center gap-1"
+                      >
+                        {order.ups}
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    ) : (
+                      <span>{order.ups}</span>
+                    )}
+                    {order.courier?.name && (
+                      <span className="text-muted-foreground">via {order.courier.name}</span>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {order.ordercomments?.length > 0 && (
                 <div className="bg-gray-50 p-2 rounded-md space-y-1">
