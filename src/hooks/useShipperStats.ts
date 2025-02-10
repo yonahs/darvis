@@ -91,7 +91,7 @@ export const useShipperStats = () => {
         throw err
       }
     },
-    staleTime: 30000, // 30 seconds
-    refetchInterval: 30000 // Refresh every 30 seconds
+    staleTime: 600000, // 10 minutes
+    refetchInterval: 600000 // Refresh every 10 minutes
   })
 }
