@@ -2,6 +2,7 @@
 import { Check, X } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
+import { Separator } from "@/components/ui/separator"
 
 interface ClientHealthInfoProps {
   client: any
@@ -29,25 +30,94 @@ export function ClientHealthInfo({ client, isEditing = false, onConditionChange 
   ]
 
   return (
-    <div className="space-y-2">
-      <div className="grid grid-cols-2 gap-2">
-        {conditions.map(({ key, label }) => (
-          <div key={key} className="flex items-center justify-between">
-            <span className="text-sm">{label}</span>
+    <div className="space-y-4">
+      <div>
+        <h3 className="text-sm font-medium mb-2">Health Status</h3>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm">Pregnant</span>
             {isEditing ? (
               <Switch
-                checked={client[key] || false}
-                onCheckedChange={(checked) => onConditionChange?.(key, checked)}
+                checked={client.pregnant || false}
+                onCheckedChange={(checked) => onConditionChange?.('pregnant', checked)}
               />
             ) : (
-              client[key] ? (
+              client.pregnant ? (
                 <Check className="h-4 w-4 text-green-500" />
               ) : (
                 <X className="h-4 w-4 text-gray-300" />
               )
             )}
           </div>
-        ))}
+          <div className="flex items-center justify-between">
+            <span className="text-sm">Nursing</span>
+            {isEditing ? (
+              <Switch
+                checked={client.nursing || false}
+                onCheckedChange={(checked) => onConditionChange?.('nursing', checked)}
+              />
+            ) : (
+              client.nursing ? (
+                <Check className="h-4 w-4 text-green-500" />
+              ) : (
+                <X className="h-4 w-4 text-gray-300" />
+              )
+            )}
+          </div>
+        </div>
+      </div>
+
+      <Separator />
+
+      <div>
+        <h3 className="text-sm font-medium mb-2">Medications</h3>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-sm">Taking Medications</span>
+          {isEditing ? (
+            <Switch
+              checked={client.rdomedications || false}
+              onCheckedChange={(checked) => onConditionChange?.('rdomedications', checked)}
+            />
+          ) : (
+            client.rdomedications ? (
+              <Check className="h-4 w-4 text-green-500" />
+            ) : (
+              <X className="h-4 w-4 text-gray-300" />
+            )
+          )}
+        </div>
+        <Textarea
+          placeholder="List current medications..."
+          value={client.medications || ""}
+          onChange={(e) => onConditionChange?.('medications', e.target.value)}
+          disabled={!isEditing}
+          className="min-h-[60px]"
+        />
+      </div>
+
+      <Separator />
+
+      <div>
+        <h3 className="text-sm font-medium mb-2">Medical Conditions</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {conditions.map(({ key, label }) => (
+            <div key={key} className="flex items-center justify-between">
+              <span className="text-sm">{label}</span>
+              {isEditing ? (
+                <Switch
+                  checked={client[key] || false}
+                  onCheckedChange={(checked) => onConditionChange?.(key, checked)}
+                />
+              ) : (
+                client[key] ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <X className="h-4 w-4 text-gray-300" />
+                )
+              )}
+            </div>
+          ))}
+        </div>
       </div>
       
       <div className="space-y-2">
@@ -72,8 +142,24 @@ export function ClientHealthInfo({ client, isEditing = false, onConditionChange 
         )}
       </div>
 
+      <Separator />
+
       <div className="space-y-2">
-        <span className="text-sm font-medium">Allergies</span>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-sm font-medium">Has Allergies</span>
+          {isEditing ? (
+            <Switch
+              checked={client.rdoallergies || false}
+              onCheckedChange={(checked) => onConditionChange?.('rdoallergies', checked)}
+            />
+          ) : (
+            client.rdoallergies ? (
+              <Check className="h-4 w-4 text-green-500" />
+            ) : (
+              <X className="h-4 w-4 text-gray-300" />
+            )
+          )}
+        </div>
         <Textarea
           placeholder="List any allergies..."
           value={client.allergies || ""}
