@@ -25,14 +25,19 @@ export default function Clients() {
       const { data, error } = await supabase
         .from("clients")
         .select("*", { count: "exact" })
+        .order("clientid")
       
       if (error) throw error
 
-      const activeClients = data.filter(client => client.active).length
-      const withPrescriptions = data.filter(client => client.doctor).length
+      const uniqueClients = data.filter((value, index, self) =>
+        index === self.findIndex((t) => t.clientid === value.clientid)
+      )
+
+      const activeClients = uniqueClients.filter(client => client.active).length
+      const withPrescriptions = uniqueClients.filter(client => client.doctor).length
 
       return {
-        total: data.length,
+        total: uniqueClients.length,
         active: activeClients,
         withPrescriptions,
       }
@@ -48,13 +53,19 @@ export default function Clients() {
         .order("lastname")
         
       if (search) {
-        query = query.or(`firstname.ilike.%${search}%,lastname.ilike.%${search}%,email.ilike.%${search}%`)
+        query = query.or(`firstname.ilike.%${search}%,lastname.ilike.%${search}%,email.ilike.%${search}%,clientid.eq.${!isNaN(search) ? search : 0}`)
       }
       
       const { data, error } = await query.limit(100)
       
       if (error) throw error
-      return data
+
+      // Remove duplicates based on clientid
+      const uniqueClients = data.filter((value, index, self) =>
+        index === self.findIndex((t) => t.clientid === value.clientid)
+      )
+
+      return uniqueClients
     },
   })
 
@@ -64,7 +75,7 @@ export default function Clients() {
       <div className="relative w-full md:w-96">
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search clients..."
+          placeholder="Search clients by name, email or ID..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-8"
@@ -104,6 +115,7 @@ export default function Clients() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Client ID</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
@@ -114,13 +126,13 @@ export default function Clients() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center">
+                <TableCell colSpan={6} className="text-center">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : clients.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center">
+                <TableCell colSpan={6} className="text-center">
                   No clients found
                 </TableCell>
               </TableRow>
@@ -131,6 +143,7 @@ export default function Clients() {
                   className="cursor-pointer hover:bg-muted/50"
                   onClick={() => navigate(`/clients/${client.clientid}`)}
                 >
+                  <TableCell>{client.clientid}</TableCell>
                   <TableCell>
                     {client.firstname} {client.lastname}
                   </TableCell>
