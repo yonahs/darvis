@@ -1,7 +1,15 @@
 
-import { useParams } from "react-router-dom"
+import { useParams, Link } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 
 export default function ClientDetail() {
   const { clientId } = useParams()
@@ -12,7 +20,7 @@ export default function ClientDetail() {
       const { data, error } = await supabase
         .from("clients")
         .select("*")
-        .eq("clientid", clientId)
+        .eq("clientid", parseInt(clientId || "0"))
         .single()
 
       if (error) throw error
@@ -30,6 +38,22 @@ export default function ClientDetail() {
 
   return (
     <div className="p-6">
+      <Breadcrumb className="mb-6">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/clients">Clients</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>
+              {client.firstname} {client.lastname}
+            </BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       <h1 className="text-2xl font-bold mb-6">
         {client.firstname} {client.lastname}
       </h1>
