@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
@@ -8,13 +9,11 @@ interface ShipperStats {
   totalOrders: number
   uploaded: number
   notUploaded: number
-}
-
-interface ShipperOrder {
-  shipperid: number
-  shipstatus: number | null
-  status: number | null
-  ups: string | null
+  rushOrders: number
+  outOfStock: number
+  internationalOrders: number
+  avgShippingCost: number
+  isInternational: boolean
 }
 
 export const useShipperStats = () => {
@@ -26,7 +25,7 @@ export const useShipperStats = () => {
         // First get active shippers
         const { data: shipperData, error: shipperError } = await supabase
           .from("shippers")
-          .select("shipperid, display_name, company_name")
+          .select("shipperid, display_name, company_name, isintl")
           .order('display_name')
         
         if (shipperError) {
@@ -43,10 +42,10 @@ export const useShipperStats = () => {
 
         const { data: orders, error: ordersError } = await supabase
           .from("orders")
-          .select("shipperid, shipstatus, status, ups")
+          .select("shipperid, shipstatus, status, ups, rushorder, outofstock, shippingcost_usd, country")
           .not('shipperid', 'is', null)
           .not('cancelled', 'eq', true)
-          .is('ups', null) // Only get orders that don't have tracking numbers yet
+          .is('ups', null)
           .gte('orderdate', thirtyDaysAgo.toISOString())
           .not('status', 'in', '(99, 100)')
           .not('shipstatus', 'eq', 99)
@@ -64,13 +63,23 @@ export const useShipperStats = () => {
           const shipperOrders = orders?.filter(order => order.shipperid === shipper.shipperid) || []
           const uploaded = shipperOrders.filter(order => order.shipstatus === 2).length
           const total = shipperOrders.length
+          const rushOrders = shipperOrders.filter(order => order.rushorder).length
+          const outOfStock = shipperOrders.filter(order => order.outofstock).length
+          const internationalOrders = shipperOrders.filter(order => order.country !== 'US').length
+          const totalShippingCost = shipperOrders.reduce((sum, order) => sum + (order.shippingcost_usd || 0), 0)
+          const avgShippingCost = total > 0 ? totalShippingCost / total : 0
 
           return {
             shipperid: shipper.shipperid,
             name: shipper.display_name || shipper.company_name || "Unnamed Shipper",
             totalOrders: total,
             uploaded: uploaded,
-            notUploaded: total - uploaded
+            notUploaded: total - uploaded,
+            rushOrders,
+            outOfStock,
+            internationalOrders,
+            avgShippingCost,
+            isInternational: shipper.isintl || false
           }
         }).filter(shipper => shipper.totalOrders > 0) || []
 

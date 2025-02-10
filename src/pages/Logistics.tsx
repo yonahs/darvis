@@ -4,7 +4,7 @@ import { ShipperCard } from "@/components/logistics/ShipperCard"
 import { OrdersDialog } from "@/components/logistics/OrdersDialog"
 import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Package2, Upload, Clock, AlertTriangle } from "lucide-react"
+import { Package2, Upload, Clock, AlertTriangle, Plane, DollarSign } from "lucide-react"
 
 const Logistics = () => {
   const { data: shipperStats, isLoading } = useShipperStats()
@@ -16,9 +16,25 @@ const Logistics = () => {
       orders: acc.orders + curr.totalOrders,
       uploaded: acc.uploaded + curr.uploaded,
       notUploaded: acc.notUploaded + curr.notUploaded,
+      rushOrders: acc.rushOrders + curr.rushOrders,
+      outOfStock: acc.outOfStock + curr.outOfStock,
+      internationalOrders: acc.internationalOrders + curr.internationalOrders,
+      totalShippingCost: acc.totalShippingCost + (curr.avgShippingCost * curr.totalOrders),
     }),
-    { orders: 0, uploaded: 0, notUploaded: 0 }
+    { 
+      orders: 0, 
+      uploaded: 0, 
+      notUploaded: 0, 
+      rushOrders: 0, 
+      outOfStock: 0, 
+      internationalOrders: 0,
+      totalShippingCost: 0 
+    }
   )
+
+  const avgShippingCost = totals && totals.orders > 0 
+    ? totals.totalShippingCost / totals.orders 
+    : 0
 
   return (
     <div className="container py-8 space-y-8">
@@ -28,7 +44,7 @@ const Logistics = () => {
 
       {/* Overview Cards */}
       {!isLoading && totals && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -76,6 +92,54 @@ const Logistics = () => {
               </div>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-red-100 rounded-full">
+                    <Clock className="h-4 w-4 text-red-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Rush Orders</p>
+                    <p className="text-2xl font-bold">{totals.rushOrders}</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-blue-100 rounded-full">
+                    <Plane className="h-4 w-4 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">International</p>
+                    <p className="text-2xl font-bold">{totals.internationalOrders}</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-green-100 rounded-full">
+                    <DollarSign className="h-4 w-4 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Avg. Shipping</p>
+                    <p className="text-2xl font-bold">${avgShippingCost.toFixed(2)}</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
@@ -101,6 +165,11 @@ const Logistics = () => {
               totalOrders={stats.totalOrders}
               uploaded={stats.uploaded}
               notUploaded={stats.notUploaded}
+              rushOrders={stats.rushOrders}
+              outOfStock={stats.outOfStock}
+              internationalOrders={stats.internationalOrders}
+              avgShippingCost={stats.avgShippingCost}
+              isInternational={stats.isInternational}
               onClick={() => setSelectedShipperId(stats.shipperid)}
             />
           ))}
