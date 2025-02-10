@@ -6,6 +6,19 @@ import { ClientSearch } from "@/components/clients/ClientSearch"
 import { ClientStats } from "@/components/clients/ClientStats"
 import { ClientsTable } from "@/components/clients/ClientsTable"
 
+interface ClientWithOrderCount {
+  clientid: number
+  firstname: string
+  lastname: string
+  email: string
+  mobile: string
+  dayphone: string
+  country: string
+  active: boolean
+  doctor: string | null
+  mv_client_order_counts: { total_orders: number }[] | null
+}
+
 export default function Clients() {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
@@ -72,7 +85,7 @@ export default function Clients() {
       
       if (error) throw error
 
-      const uniqueClients = data.filter((value, index, self) =>
+      const uniqueClients = (data as ClientWithOrderCount[]).filter((value, index, self) =>
         index === self.findIndex((t) => t.clientid === value.clientid)
       ).map(client => ({
         ...client,
