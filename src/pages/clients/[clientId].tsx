@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom"
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -119,7 +118,7 @@ export default function ClientDetail() {
 
           <PaymentCard clientId={parseInt(clientId)} />
 
-          <Card>
+          <Card className="bg-[#F0F8FF]">
             <CardHeader className="pb-2">
               <CardTitle>Health Data</CardTitle>
             </CardHeader>
