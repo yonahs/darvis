@@ -98,7 +98,7 @@ export const CommentsCard = ({ comments, orderId }: CommentsCardProps) => {
     <Card className="h-full flex flex-col bg-[#F8F9FA]">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-3">
         <CardTitle className="text-sm font-medium text-gray-700">
-          Activity Timeline ({comments?.length || 0})
+          Comments ({comments?.length || 0})
         </CardTitle>
         <MessageCircle className="h-4 w-4 text-gray-500" />
       </CardHeader>
