@@ -25,13 +25,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface OrdersTableRowProps {
   order: any // Type this properly based on your data structure
   onRowClick: (orderId: number) => void
+  selected: boolean
+  onSelectChange: () => void
 }
 
-export const OrdersTableRow = ({ order, onRowClick }: OrdersTableRowProps) => {
+export const OrdersTableRow = ({ order, onRowClick, selected, onSelectChange }: OrdersTableRowProps) => {
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false)
   const [newStatus, setNewStatus] = useState<string>(order.shipstatus?.toString() || "1")
   const [isUpdating, setIsUpdating] = useState(false)
@@ -70,11 +73,26 @@ export const OrdersTableRow = ({ order, onRowClick }: OrdersTableRowProps) => {
     }
   }
 
+  const handleRowClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking the checkbox or status change button
+    const target = e.target as HTMLElement
+    if (
+      target.closest('input[type="checkbox"]') ||
+      target.closest('button')
+    ) {
+      return
+    }
+    onRowClick(order.orderid)
+  }
+
   return (
     <TableRow
       className="cursor-pointer hover:bg-muted/50"
-      onClick={() => onRowClick(order.orderid)}
+      onClick={handleRowClick}
     >
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        <Checkbox checked={selected} onCheckedChange={onSelectChange} />
+      </TableCell>
       <TableCell className="font-medium">#{order.orderid}</TableCell>
       <TableCell>
         <div className="flex items-center gap-2">

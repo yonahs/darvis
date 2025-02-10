@@ -15,8 +15,10 @@ import { OrdersSearchFilters } from "./table/OrdersSearchFilters"
 import { OrdersTableRow } from "./table/OrdersTableRow"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/utils"
-import { ArrowUpDown } from "lucide-react"
+import { ArrowUpDown, Package, Truck } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { toast } from "sonner"
 
 interface OrdersTableViewProps {
   shipperId: number | null
@@ -27,9 +29,10 @@ export const OrdersTableView = ({ shipperId, shipperName }: OrdersTableViewProps
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("1") // Set default to pending (1)
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const [selectedOrders, setSelectedOrders] = useState<number[]>([])
   const navigate = useNavigate()
 
-  const { data: orders, isLoading } = useQuery({
+  const { data: orders, isLoading, refetch } = useQuery({
     queryKey: ["shipper-orders", shipperId, search, statusFilter, sortOrder],
     enabled: !!shipperId,
     queryFn: async () => {
@@ -80,7 +83,7 @@ export const OrdersTableView = ({ shipperId, shipperName }: OrdersTableViewProps
         throw error
       }
 
-      console.log("Fetched orders:", data)
+      console.log("Fetched orders:", data?.length)
       return data || []
     },
   })
@@ -99,6 +102,61 @@ export const OrdersTableView = ({ shipperId, shipperName }: OrdersTableViewProps
 
   const toggleSort = () => {
     setSortOrder(current => current === "asc" ? "desc" : "asc")
+  }
+
+  const handleSelectAll = () => {
+    if (orders) {
+      if (selectedOrders.length === orders.length) {
+        setSelectedOrders([])
+      } else {
+        setSelectedOrders(orders.map(order => order.orderid))
+      }
+    }
+  }
+
+  const handleSelectOrder = (orderId: number) => {
+    setSelectedOrders(current => {
+      if (current.includes(orderId)) {
+        return current.filter(id => id !== orderId)
+      }
+      return [...current, orderId]
+    })
+  }
+
+  const handleBulkMarkAsShipped = async () => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ shipstatus: 3 })
+        .in('orderid', selectedOrders)
+
+      if (error) throw error
+
+      toast.success(`${selectedOrders.length} orders marked as shipped`)
+      setSelectedOrders([])
+      refetch()
+    } catch (error) {
+      console.error('Error updating orders:', error)
+      toast.error('Failed to update orders')
+    }
+  }
+
+  const handleBulkMarkAsProcessing = async () => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ shipstatus: 2 })
+        .in('orderid', selectedOrders)
+
+      if (error) throw error
+
+      toast.success(`${selectedOrders.length} orders marked as processing`)
+      setSelectedOrders([])
+      refetch()
+    } catch (error) {
+      console.error('Error updating orders:', error)
+      toast.error('Failed to update orders')
+    }
   }
 
   return (
@@ -139,10 +197,42 @@ export const OrdersTableView = ({ shipperId, shipperName }: OrdersTableViewProps
         setStatusFilter={setStatusFilter}
       />
 
+      {selectedOrders.length > 0 && (
+        <div className="flex items-center gap-2 py-2">
+          <span className="text-sm text-muted-foreground">
+            {selectedOrders.length} orders selected
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleBulkMarkAsProcessing}
+            className="flex items-center gap-1"
+          >
+            <Package className="h-4 w-4" />
+            Mark as Processing
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleBulkMarkAsShipped}
+            className="flex items-center gap-1"
+          >
+            <Truck className="h-4 w-4" />
+            Mark as Shipped
+          </Button>
+        </div>
+      )}
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={orders?.length ? selectedOrders.length === orders.length : false}
+                  onCheckedChange={handleSelectAll}
+                />
+              </TableHead>
               <TableHead>Order ID</TableHead>
               <TableHead>
                 <Button
@@ -168,7 +258,7 @@ export const OrdersTableView = ({ shipperId, shipperName }: OrdersTableViewProps
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center py-8">
+                <TableCell colSpan={11} className="text-center py-8">
                   Loading orders...
                 </TableCell>
               </TableRow>
@@ -178,11 +268,13 @@ export const OrdersTableView = ({ shipperId, shipperName }: OrdersTableViewProps
                   key={order.orderid}
                   order={order}
                   onRowClick={handleRowClick}
+                  selected={selectedOrders.includes(order.orderid)}
+                  onSelectChange={() => handleSelectOrder(order.orderid)}
                 />
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={10} className="text-center py-8">
+                <TableCell colSpan={11} className="text-center py-8">
                   No orders found
                 </TableCell>
               </TableRow>
