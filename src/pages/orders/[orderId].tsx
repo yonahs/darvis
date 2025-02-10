@@ -1,10 +1,20 @@
-import { useParams } from "react-router-dom"
+
+import { useParams, Link } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
 import { OrderDetailsHeader } from "@/components/orders/details/OrderDetailsHeader"
 import { OrderDetailsContent } from "@/components/orders/details/OrderDetailsContent"
 import type { Database } from "@/integrations/supabase/types"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { ChevronLeft } from "lucide-react"
 
 type Order = Database["public"]["Tables"]["orders"]["Row"]
 type DrugDetails = Database["public"]["Tables"]["newdrugdetails"]["Row"]
@@ -189,6 +199,35 @@ const OrderDetail = () => {
 
   return (
     <div className="p-4 space-y-4">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/orders" className="flex items-center gap-1">
+                <ChevronLeft className="h-4 w-4" />
+                Orders
+              </Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          {clientData && (
+            <>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to={`/clients/${clientData.clientid}`}>
+                    {clientData.firstname} {clientData.lastname}
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            </>
+          )}
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Order #{orderId}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       <OrderDetailsHeader order={orderData} onEscalate={handleEscalate} />
       <OrderDetailsContent
         order={orderData}
