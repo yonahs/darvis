@@ -49,7 +49,7 @@ export const OrderDetailsContent = ({
           </div>
         </div>
 
-        <div className="bg-[#F1F0FB] rounded-lg shadow-sm overflow-auto">
+        <div className="bg-purple-50 rounded-lg shadow-sm overflow-auto">
           <OrderItemsCard drugDetails={drugDetails} order={order} allOrderItems={allOrderItems} />
         </div>
 
@@ -63,7 +63,7 @@ export const OrderDetailsContent = ({
           <PrescriptionManagementCard order={order} drugDetails={drugDetails} />
         </div>
 
-        <div className="bg-[#D6BCFA] rounded-lg shadow-sm overflow-auto">
+        <div className="bg-purple-100 rounded-lg shadow-sm overflow-auto">
           <CommentsCard comments={comments} orderId={order?.orderid || 0} />
         </div>
       </div>
