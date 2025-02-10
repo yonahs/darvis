@@ -50,11 +50,11 @@ export const OrderDetailsContent = ({
         </div>
 
         <div className="bg-white rounded-lg shadow-sm overflow-auto">
-          <ShippingAndLogisticsCard order={order} onMarkAsShipped={onMarkAsShipped} />
+          <OrderItemsCard drugDetails={drugDetails} order={order} allOrderItems={allOrderItems} />
         </div>
 
         <div className="bg-white rounded-lg shadow-sm overflow-auto">
-          <OrderItemsCard drugDetails={drugDetails} order={order} allOrderItems={allOrderItems} />
+          <ShippingAndLogisticsCard order={order} onMarkAsShipped={onMarkAsShipped} />
         </div>
       </div>
 
