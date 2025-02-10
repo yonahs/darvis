@@ -59,7 +59,7 @@ export default function Clients() {
       // First get the filtered clients
       let query = supabase
         .from("clients")
-        .select("*, vw_client_risk_summary!inner(*)")
+        .select()
         .order("clientid", { ascending: false })
         
       if (statusFilter !== "all") {
@@ -85,42 +85,56 @@ export default function Clients() {
       
       if (clientsError) throw clientsError
 
+      // Get risk assessment data
+      const { data: riskData, error: riskError } = await supabase
+        .from("vw_client_risk_summary")
+        .select()
+        .in("clientid", clientsData.map(c => c.clientid))
+
+      if (riskError) throw riskError
+
+      // Create a map of risk data by client ID
+      const riskMap = Object.fromEntries(
+        riskData.map(risk => [risk.clientid, risk])
+      )
+
       // Get order counts for non-cancelled orders
       const { data: orderCounts, error: orderCountError } = await supabase
         .from('orders')
-        .select('clientid, count(*)')
+        .select('clientid, count')
         .eq('cancelled', false)
         .in('clientid', clientsData.map(c => c.clientid))
-        .group('clientid')
 
       if (orderCountError) throw orderCountError
 
       // Get lifetime values excluding cancelled orders
       const { data: lifetimeValues, error: lifetimeValuesError } = await supabase
         .from('orders')
-        .select('clientid, sum(totalsale) as total')
+        .select('clientid, totalsale')
         .eq('cancelled', false)
         .in('clientid', clientsData.map(c => c.clientid))
-        .group('clientid')
 
       if (lifetimeValuesError) throw lifetimeValuesError
 
-      // Create lookup maps
-      const orderCountMap = Object.fromEntries(
-        orderCounts.map(({ clientid, count }) => [clientid, count])
-      )
-      const lifetimeValueMap = Object.fromEntries(
-        lifetimeValues.map(({ clientid, total }) => [clientid, total])
-      )
+      // Create lookup maps for order counts and lifetime values
+      const orderCountMap = {}
+      orderCounts?.forEach(({ clientid, count }) => {
+        orderCountMap[clientid] = (orderCountMap[clientid] || 0) + Number(count)
+      })
+
+      const lifetimeValueMap = {}
+      lifetimeValues?.forEach(({ clientid, totalsale }) => {
+        lifetimeValueMap[clientid] = (lifetimeValueMap[clientid] || 0) + Number(totalsale || 0)
+      })
 
       // Merge all the data
       return clientsData.map(client => ({
         ...client,
         total_orders: orderCountMap[client.clientid] || 0,
         lifetime_value: lifetimeValueMap[client.clientid] || 0,
-        risk_level: client.vw_client_risk_summary?.risk_level || 0,
-        risk_factors: client.vw_client_risk_summary?.risk_types?.split(', ') || [],
-        is_flagged: client.vw_client_risk_summary?.is_flagged || false
+        risk_level: riskMap[client.clientid]?.risk_level || 0,
+        risk_factors: riskMap[client.clientid]?.risk_types?.split(', ') || [],
+        is_flagged: riskMap[client.clientid]?.is_flagged || false
       })) as ClientWithOrderCount[]
     },
   })
