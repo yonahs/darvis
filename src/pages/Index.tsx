@@ -12,39 +12,37 @@ import { TeamActivityWidget } from "@/components/dashboard/TeamActivityWidget"
 const Index = () => {
   return (
     <div className="p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* First row - 2 columns */}
-        <div className="lg:col-span-2">
+      <div className="grid grid-cols-2 gap-4">
+        {/* Left Column */}
+        <div className="space-y-4">
+          {/* Top section - full width */}
           <SlackAlertsWidget />
-        </div>
-        <div className="lg:col-span-2">
-          <TrustpilotCard />
-        </div>
-        
-        {/* Second row - mixed layout */}
-        <div className="lg:col-span-1">
-          <ClientStats />
-        </div>
-        <div className="lg:col-span-2">
-          <RecentOrdersWidget />
-        </div>
-        <div className="lg:col-span-1">
-          <PrescriptionAlertsWidget />
-        </div>
-        
-        {/* Third row - balanced layout */}
-        <div className="lg:col-span-2">
+          
+          {/* Two small widgets side by side */}
+          <div className="grid grid-cols-2 gap-4">
+            <ClientStats />
+            <PrescriptionAlertsWidget />
+          </div>
+          
+          {/* Full width widget */}
           <ShipperOrdersWidget />
-        </div>
-        <div className="lg:col-span-2">
-          <FinancialOverviewWidget />
-        </div>
-        
-        {/* Fourth row - mixed layout */}
-        <div className="lg:col-span-3">
+          
+          {/* Full width widget */}
           <InventoryAlertsWidget />
         </div>
-        <div className="lg:col-span-1">
+
+        {/* Right Column */}
+        <div className="space-y-4">
+          {/* Full width in right column */}
+          <TrustpilotCard />
+          
+          {/* Full width widget */}
+          <RecentOrdersWidget />
+          
+          {/* Full width widget */}
+          <FinancialOverviewWidget />
+          
+          {/* Full width widget */}
           <TeamActivityWidget />
         </div>
       </div>
