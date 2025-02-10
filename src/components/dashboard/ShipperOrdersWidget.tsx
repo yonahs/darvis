@@ -10,11 +10,19 @@ export const ShipperOrdersWidget = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('orders')
-        .select('shipperid, shippers!inner(display_name)')
+        .select(`
+          shipperid,
+          shippers (
+            display_name
+          )
+        `)
         .eq('cancelled', false)
         .eq('shipstatus', 1);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching shipper orders:', error);
+        throw error;
+      }
 
       // Count orders per shipper
       const shipperCounts = data.reduce((acc: Record<string, number>, order: any) => {
