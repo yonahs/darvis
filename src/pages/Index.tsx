@@ -5,7 +5,6 @@ import { ClientStats } from "@/components/dashboard/ClientStats"
 import { RecentOrdersWidget } from "@/components/dashboard/RecentOrdersWidget"
 import { PrescriptionAlertsWidget } from "@/components/dashboard/PrescriptionAlertsWidget"
 import { ShipperOrdersWidget } from "@/components/dashboard/ShipperOrdersWidget"
-import { FinancialOverviewWidget } from "@/components/dashboard/FinancialOverviewWidget"
 import { InventoryAlertsWidget } from "@/components/dashboard/InventoryAlertsWidget"
 
 const Index = () => {
@@ -37,9 +36,6 @@ const Index = () => {
           
           {/* Full width widget */}
           <RecentOrdersWidget />
-          
-          {/* Full width widget */}
-          <FinancialOverviewWidget />
         </div>
       </div>
     </div>
