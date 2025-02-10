@@ -4,6 +4,11 @@ import { Truck } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 
+interface ShipperCount {
+  name: string
+  count: number
+}
+
 export const ShipperOrdersWidget = () => {
   const { data: shipperOrders, isLoading } = useQuery({
     queryKey: ['shipperOrders'],
@@ -12,7 +17,7 @@ export const ShipperOrdersWidget = () => {
         .from('orders')
         .select(`
           shipperid,
-          shippers (
+          shipper:shippers(
             display_name
           )
         `)
@@ -26,7 +31,8 @@ export const ShipperOrdersWidget = () => {
 
       // Count orders per shipper
       const shipperCounts = data.reduce((acc: Record<string, number>, order: any) => {
-        const shipperName = order.shippers?.display_name;
+        // Safely access the shipper name
+        const shipperName = order.shipper?.display_name;
         if (shipperName) {
           acc[shipperName] = (acc[shipperName] || 0) + 1;
         }
@@ -61,6 +67,9 @@ export const ShipperOrdersWidget = () => {
                 <span className="text-sm font-bold">{shipper.count}</span>
               </div>
             ))
+          )}
+          {!isLoading && (!shipperOrders || shipperOrders.length === 0) && (
+            <div className="text-sm text-muted-foreground">No pending orders</div>
           )}
         </div>
       </CardContent>
