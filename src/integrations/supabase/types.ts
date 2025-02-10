@@ -1555,7 +1555,15 @@ export type Database = {
           websiteid?: number | null
           zip?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_orders_processor"
+            columns: ["processorid"]
+            isOneToOne: false
+            referencedRelation: "processor"
+            referencedColumns: ["autoid"]
+          },
+        ]
       }
       pack_type: {
         Row: {
