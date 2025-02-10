@@ -12,7 +12,7 @@ interface MedicalCardProps {
 
 export function MedicalCard({ client, isEditing, editedClient, onInputChange }: MedicalCardProps) {
   return (
-    <Card>
+    <Card className="bg-[#F0F8FF]"> {/* Added very light blue background */}
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2">
           <Stethoscope className="h-4 w-4" />
