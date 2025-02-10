@@ -63,7 +63,7 @@ export const OrderDetailsContent = ({
           <PrescriptionManagementCard order={order} drugDetails={drugDetails} />
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm overflow-auto h-[400px]">
+        <div className="bg-white rounded-lg shadow-sm overflow-auto">
           <CommentsCard comments={comments} orderId={order?.orderid || 0} />
         </div>
       </div>
