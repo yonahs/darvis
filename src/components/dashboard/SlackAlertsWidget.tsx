@@ -27,7 +27,7 @@ export const SlackAlertsWidget = () => {
   ]
 
   return (
-    <Card>
+    <Card className="bg-[#FFDEE2]">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium">
           <div className="flex items-center gap-2">
