@@ -19,6 +19,7 @@ interface Client {
   country: string
   active: boolean
   doctor: string | null
+  total_orders?: number
 }
 
 interface ClientsTableProps {
@@ -40,18 +41,19 @@ export function ClientsTable({ clients, isLoading }: ClientsTableProps) {
             <TableHead>Phone</TableHead>
             <TableHead>Country</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Total Orders</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center">
+              <TableCell colSpan={7} className="text-center">
                 Loading...
               </TableCell>
             </TableRow>
           ) : clients.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center">
+              <TableCell colSpan={7} className="text-center">
                 No clients found
               </TableCell>
             </TableRow>
@@ -75,6 +77,9 @@ export function ClientsTable({ clients, isLoading }: ClientsTableProps) {
                   }`}>
                     {client.active ? 'Active' : 'Inactive'}
                   </span>
+                </TableCell>
+                <TableCell>
+                  {client.total_orders || 0}
                 </TableCell>
               </TableRow>
             ))

@@ -41,7 +41,12 @@ export default function Clients() {
     queryFn: async () => {
       let query = supabase
         .from("clients")
-        .select("*")
+        .select(`
+          *,
+          mv_client_order_counts (
+            total_orders
+          )
+        `)
         .order("clientid", { ascending: false })
         
       if (statusFilter !== "all") {
@@ -69,7 +74,10 @@ export default function Clients() {
 
       const uniqueClients = data.filter((value, index, self) =>
         index === self.findIndex((t) => t.clientid === value.clientid)
-      )
+      ).map(client => ({
+        ...client,
+        total_orders: client.mv_client_order_counts?.[0]?.total_orders || 0
+      }))
 
       return uniqueClients
     },
