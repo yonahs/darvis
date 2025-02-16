@@ -25,10 +25,21 @@ serve(async (req) => {
 
     // First, let's verify if the drug exists and how it's stored in the database
     const verificationQuery = `
-      SELECT DISTINCT nameus 
-      FROM newdrugs 
-      WHERE LOWER(nameus) LIKE '%eliquis%' 
-      OR LOWER(chemical) LIKE '%eliquis%'
+      SELECT 
+        drugid,
+        nameus,
+        chemical,
+        (
+          SELECT COUNT(DISTINCT o.clientid)
+          FROM orders o
+          WHERE o.drugid = nd.drugid
+        ) as customer_count
+      FROM newdrugs nd
+      WHERE 
+        LOWER(nameus) LIKE '%eliquis%' 
+        OR LOWER(chemical) LIKE '%eliquis%'
+        OR LOWER(nameus) LIKE '%apixaban%'  -- generic name
+        OR LOWER(chemical) LIKE '%apixaban%'
     `;
     
     const { data: drugCheck } = await supabaseClient.rpc('execute_ai_query', {
@@ -36,6 +47,32 @@ serve(async (req) => {
     });
 
     console.log('Drug verification results:', drugCheck);
+
+    // If we found the drug, let's get a sample of orders
+    if (drugCheck && drugCheck.length > 0) {
+      const sampleOrdersQuery = `
+        SELECT 
+          o.orderid,
+          o.orderdate,
+          nd.nameus,
+          nd.chemical,
+          c.firstname,
+          c.lastname
+        FROM orders o
+        JOIN newdrugdetails ndd ON o.drugdetailid = ndd.id
+        JOIN newdrugs nd ON ndd.drugid = nd.drugid
+        JOIN clients c ON o.clientid = c.clientid
+        WHERE nd.drugid = ${drugCheck[0].drugid}
+        ORDER BY o.orderdate DESC
+        LIMIT 5
+      `;
+
+      const { data: sampleOrders } = await supabaseClient.rpc('execute_ai_query', {
+        query_text: sampleOrdersQuery
+      });
+
+      console.log('Sample orders:', sampleOrders);
+    }
 
     // Now proceed with the main query generation
     const openAiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -68,10 +105,14 @@ serve(async (req) => {
                INNER JOIN orders o ON c.clientid = o.clientid
                INNER JOIN newdrugdetails ndd ON o.drugdetailid = ndd.id
                INNER JOIN newdrugs nd ON ndd.drugid = nd.drugid
-            4. For specific drugs: WHERE LOWER(nd.nameus) LIKE '%drug_name%'
-            5. For order counts: HAVING COUNT(DISTINCT o.orderid) > X
-            6. For time conditions: WHERE o.orderdate <= CURRENT_DATE - INTERVAL '3 months'
-            7. GROUP BY all selected client fields
+               WHERE (LOWER(nd.nameus) LIKE '%eliquis%' OR LOWER(nd.chemical) LIKE '%eliquis%' OR LOWER(nd.nameus) LIKE '%apixaban%' OR LOWER(nd.chemical) LIKE '%apixaban%')
+            4. For order counts: HAVING COUNT(DISTINCT o.orderid) > X
+            5. For time conditions: AND NOT EXISTS (
+                 SELECT 1 FROM orders o2 
+                 WHERE o2.clientid = c.clientid 
+                 AND o2.orderdate > CURRENT_DATE - INTERVAL '3 months'
+               )
+            6. GROUP BY all selected client fields
             
             Only return the SQL query without any explanation.`
           },
