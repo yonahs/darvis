@@ -35,11 +35,6 @@ const menuItems = [
     href: "/",
   },
   {
-    title: "AI List Builder",
-    icon: ListPlus,
-    href: "/ai-list-builder",
-  },
-  {
     title: "Orders",
     icon: ShoppingCart,
     href: "/orders",
@@ -98,6 +93,11 @@ const menuItems = [
     title: "Analytics",
     icon: BarChart3,
     href: "/analytics",
+  },
+  {
+    title: "AI List Builder",
+    icon: ListPlus,
+    href: "/ai-list-builder",
   },
   {
     title: "Settings",
