@@ -23,56 +23,89 @@ serve(async (req) => {
 
     console.log('Received query:', query);
 
-    // Basic query to find Eliquis customers
-    const baseQuery = `
-      SELECT DISTINCT 
-        c.clientid,
-        c.firstname,
-        c.lastname,
-        c.email,
-        c.mobile,
-        c.dayphone,
-        MAX(o.orderdate) as last_purchase,
-        COUNT(DISTINCT o.orderid) as total_orders,
-        string_agg(DISTINCT nd.nameus, ', ') as drugs_purchased
-      FROM clients c
-      JOIN orders o ON c.clientid = o.clientid
-      JOIN newdrugdetails ndd ON o.drugdetailid = ndd.id
-      JOIN newdrugs nd ON ndd.drugid = nd.drugid
-      WHERE LOWER(nd.nameus) LIKE '%eliquis%'
-      AND NOT EXISTS (
-        SELECT 1
-        FROM orders o2
-        WHERE o2.clientid = c.clientid
-        AND o2.orderdate > CURRENT_DATE - INTERVAL '3 months'
-      )
-      GROUP BY 
-        c.clientid,
-        c.firstname,
-        c.lastname,
-        c.email,
-        c.mobile,
-        c.dayphone
-      HAVING COUNT(DISTINCT o.orderid) > 2
-      ORDER BY MAX(o.orderdate) DESC
+    // First, let's just find the drug in newdrugs table
+    const drugQuery = `
+      SELECT drugid, nameus, chemical 
+      FROM newdrugs 
+      WHERE 
+        nameus ILIKE '%eliq%' OR 
+        nameus ILIKE '%apix%' OR
+        chemical ILIKE '%eliq%' OR 
+        chemical ILIKE '%apix%'
     `;
 
-    console.log('Executing query:', baseQuery);
-    
-    const { data: results, error } = await supabaseClient.rpc('execute_ai_query', {
-      query_text: baseQuery
+    const { data: drugResults, error: drugError } = await supabaseClient.rpc('execute_ai_query', {
+      query_text: drugQuery
     });
 
-    if (error) {
-      console.error('Error executing query:', error);
-      throw error;
+    console.log('Drug search results:', drugResults);
+
+    // If we found the drug, let's look for orders
+    if (drugResults && drugResults.length > 0) {
+      const drugIds = drugResults.map((d: any) => d.drugid).join(',');
+      
+      const ordersQuery = `
+        SELECT DISTINCT 
+          c.clientid,
+          c.firstname,
+          c.lastname,
+          c.email,
+          c.mobile,
+          c.dayphone,
+          o.orderdate as last_purchase,
+          nd.nameus as drug_name
+        FROM clients c
+        JOIN orders o ON c.clientid = o.clientid
+        JOIN newdrugdetails ndd ON o.drugdetailid = ndd.id
+        JOIN newdrugs nd ON ndd.drugid = nd.drugid
+        WHERE nd.drugid IN (${drugIds})
+        ORDER BY o.orderdate DESC
+        LIMIT 10
+      `;
+
+      const { data: results, error } = await supabaseClient.rpc('execute_ai_query', {
+        query_text: ordersQuery
+      });
+
+      console.log('Order results:', results);
+
+      return new Response(JSON.stringify({ 
+        results,
+        debug: {
+          drugResults,
+          drugQuery,
+          ordersQuery
+        }
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    console.log('Query results:', results);
+    // If we didn't find the drug, let's see what drugs we do have
+    const sampleDrugsQuery = `
+      SELECT drugid, nameus, chemical 
+      FROM newdrugs 
+      WHERE nameus IS NOT NULL 
+      ORDER BY nameus 
+      LIMIT 10
+    `;
 
-    return new Response(JSON.stringify({ results }), {
+    const { data: sampleDrugs } = await supabaseClient.rpc('execute_ai_query', {
+      query_text: sampleDrugsQuery
+    });
+
+    console.log('Sample drugs in database:', sampleDrugs);
+
+    return new Response(JSON.stringify({ 
+      results: [],
+      debug: {
+        sampleDrugs,
+        drugQuery
+      }
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
+
   } catch (error) {
     console.error('Error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
