@@ -1910,6 +1910,39 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       shippers: {
         Row: {
           abbrev: string | null
@@ -2333,6 +2366,19 @@ export type Database = {
           },
         ]
       }
+      mv_order_metrics: {
+        Row: {
+          cancelled_orders: number | null
+          delayed_orders: number | null
+          out_of_stock_orders: number | null
+          payment_issues: number | null
+          problem_orders: number | null
+          shipped_orders: number | null
+          total_orders: number | null
+          total_revenue: number | null
+        }
+        Relationships: []
+      }
       vw_client_risk_summary: {
         Row: {
           clientid: number | null
@@ -2629,6 +2675,14 @@ export type Database = {
         | "prescription_issues"
         | "suspicious_ordering_pattern"
         | "failed_verification"
+      user_role:
+        | "administrator"
+        | "customer_support"
+        | "logistics"
+        | "pharmacist"
+        | "marketing"
+        | "finance"
+        | "manager"
     }
     CompositeTypes: {
       [_ in never]: never
