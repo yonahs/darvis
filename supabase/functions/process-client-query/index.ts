@@ -29,14 +29,24 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4-turbo-preview',
         messages: [
           {
             role: 'system',
-            content: `You are a SQL query generator. Convert natural language questions about customers into SQL queries using these tables:
+            content: `You are a SQL query generator. Convert natural language questions about customers into SQL queries using these tables and views:
             - clients (clientid, firstname, lastname, email, country, state)
-            - orders (orderid, clientid, totalsale, orderdate)
-            Only return the SQL query without any explanation.`
+            - orders (orderid, clientid, totalsale, orderdate, orderstatus, problemorder)
+            - clientrx (id, clientid, dateuploaded, image)
+            - clientrxdetails (id, rxid, drugid, refills, filled, rxdate)
+            - zendesk_tickets (client_id, status, created_at, subject)
+            - vw_client_risk_summary (clientid, risk_level, is_flagged)
+            - payment_methods (client_id, payment_type, is_default)
+
+            Join the tables as needed to provide comprehensive customer information.
+            Only return the SQL query without any explanation.
+            Always include clientid, firstname, lastname, email in the result.
+            Use COUNT, MAX, and other aggregations when appropriate.
+            Include COALESCE for nullable fields.`
           },
           { role: 'user', content: query }
         ],
