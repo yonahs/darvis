@@ -21,7 +21,6 @@ serve(async (req) => {
 
     const { query } = await req.json();
 
-    // Add debug logging
     console.log('Received query:', query);
 
     // Process the natural language query with OpenAI
@@ -39,18 +38,21 @@ serve(async (req) => {
             content: `You are a SQL query generator. Convert natural language questions about customers into SQL queries using these tables and views:
             - clients (clientid, firstname, lastname, email, country, state)
             - orders (orderid, clientid, totalsale, orderdate, orderstatus, problemorder)
+            - newdrugs (drugid, nameus, chemical)
+            - newdrugdetails (id, drugid, nameil, strength)
             - clientrx (id, clientid, dateuploaded, image)
             - clientrxdetails (id, rxid, drugid, refills, filled, rxdate)
             - zendesk_tickets (client_id, status, created_at, subject)
             - vw_client_risk_summary (clientid, risk_level, is_flagged)
-            - payment_methods (client_id, payment_type, is_default)
-
+            
             Generate only a SELECT query that:
             1. Always starts with SELECT DISTINCT c.clientid, c.firstname, c.lastname, c.email
             2. Uses proper table aliases (c for clients, o for orders, etc)
             3. Always joins from the clients table (use LEFT JOIN for optional data)
-            4. Groups by the core client fields when using aggregations
-            5. Returns only one row per client
+            4. For drug-related queries, join orders with newdrugdetails and newdrugs
+            5. When counting orders, use COUNT(DISTINCT o.orderid)
+            6. Returns only one row per client
+            7. Use LOWER() for drug name comparisons
             
             Only return the SQL query without any explanation.`
           },
@@ -64,27 +66,43 @@ serve(async (req) => {
 
     console.log('Generated SQL:', sqlQuery);
 
-    // First try to execute the query directly
+    // First verify the drug exists
     try {
-      const { data: directResults, error: directError } = await supabaseClient
-        .from('clients')
-        .select(`
-          clientid,
-          firstname,
-          lastname,
-          email,
-          orders (
-            orderid,
-            totalsale,
-            orderdate
-          )
-        `)
+      const { data: drugCheck, error: drugError } = await supabaseClient
+        .from('newdrugs')
+        .select('drugid, nameus')
+        .ilike('nameus', '%eliquis%')
         .limit(1);
 
-      console.log('Direct query test results:', directResults);
-      if (directError) console.error('Direct query test error:', directError);
+      console.log('Drug check results:', drugCheck);
+      if (drugError) console.error('Drug check error:', drugError);
     } catch (e) {
-      console.error('Direct query test failed:', e);
+      console.error('Drug check failed:', e);
+    }
+
+    // Then check for any orders of this drug
+    try {
+      const { data: orderCheck, error: orderError } = await supabaseClient
+        .from('orders')
+        .select(`
+          orderid,
+          orderdate,
+          clientid,
+          drugdetailid,
+          newdrugdetails!inner (
+            nameil,
+            drugid,
+            newdrugs!inner (
+              nameus
+            )
+          )
+        `)
+        .limit(5);
+
+      console.log('Order check results:', orderCheck);
+      if (orderError) console.error('Order check error:', orderError);
+    } catch (e) {
+      console.error('Order check failed:', e);
     }
 
     // Now execute the AI-generated query
