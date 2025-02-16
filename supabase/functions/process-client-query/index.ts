@@ -49,9 +49,17 @@ serve(async (req) => {
             3. Always joins from the clients table (use LEFT JOIN for optional data)
             4. For drug-related queries, join orders with newdrugdetails and newdrugs
             5. When counting orders, use COUNT(DISTINCT o.orderid)
-            6. Returns only one row per client
+            6. Add commonly needed metrics like:
+               - MAX(o.orderdate) as last_purchase
+               - COUNT(DISTINCT o.orderid) as total_orders
             7. Use LOWER() for drug name comparisons
-            8. Include the most recent call info if available
+            8. Include the most recent call info using a subquery:
+               LEFT JOIN LATERAL (
+                 SELECT called_at, outcome, notes 
+                 FROM customer_call_logs ccl 
+                 WHERE ccl.client_id = c.clientid 
+                 ORDER BY called_at DESC LIMIT 1
+               ) as last_call ON true
             
             Only return the SQL query without any explanation.`
           },
