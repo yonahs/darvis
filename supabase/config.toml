@@ -1,1 +1,5 @@
+
 project_id = "oywnoebuanmnydyauail"
+
+[functions.process-client-query]
+verify_jwt = false
