@@ -23,84 +23,64 @@ serve(async (req) => {
 
     console.log('Received query:', query);
 
-    // First, let's just find the drug in newdrugs table
-    const drugQuery = `
-      SELECT drugid, nameus, chemical 
-      FROM newdrugs 
-      WHERE 
-        nameus ILIKE '%eliq%' OR 
-        nameus ILIKE '%apix%' OR
-        chemical ILIKE '%eliq%' OR 
-        chemical ILIKE '%apix%'
+    // Let's check what's in the tables first
+    const tablesQuery = `
+      SELECT 
+        table_name,
+        (SELECT COUNT(*) FROM ${table_name}) as row_count
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
+      AND table_name IN ('newdrugs', 'newdrugdetails', 'orders', 'clients')
     `;
 
-    const { data: drugResults, error: drugError } = await supabaseClient.rpc('execute_ai_query', {
-      query_text: drugQuery
+    const { data: tableInfo } = await supabaseClient.rpc('execute_ai_query', {
+      query_text: tablesQuery
     });
 
-    console.log('Drug search results:', drugResults);
+    console.log('Table information:', tableInfo);
 
-    // If we found the drug, let's look for orders
-    if (drugResults && drugResults.length > 0) {
-      const drugIds = drugResults.map((d: any) => d.drugid).join(',');
-      
-      const ordersQuery = `
-        SELECT DISTINCT 
-          c.clientid,
-          c.firstname,
-          c.lastname,
-          c.email,
-          c.mobile,
-          c.dayphone,
-          o.orderdate as last_purchase,
-          nd.nameus as drug_name
-        FROM clients c
-        JOIN orders o ON c.clientid = o.clientid
-        JOIN newdrugdetails ndd ON o.drugdetailid = ndd.id
-        JOIN newdrugs nd ON ndd.drugid = nd.drugid
-        WHERE nd.drugid IN (${drugIds})
-        ORDER BY o.orderdate DESC
-        LIMIT 10
-      `;
-
-      const { data: results, error } = await supabaseClient.rpc('execute_ai_query', {
-        query_text: ordersQuery
-      });
-
-      console.log('Order results:', results);
-
-      return new Response(JSON.stringify({ 
-        results,
-        debug: {
-          drugResults,
-          drugQuery,
-          ordersQuery
-        }
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // If we didn't find the drug, let's see what drugs we do have
-    const sampleDrugsQuery = `
+    // Let's look at a sample from each table
+    const drugsQuery = `
       SELECT drugid, nameus, chemical 
       FROM newdrugs 
-      WHERE nameus IS NOT NULL 
-      ORDER BY nameus 
-      LIMIT 10
+      LIMIT 5
     `;
 
-    const { data: sampleDrugs } = await supabaseClient.rpc('execute_ai_query', {
-      query_text: sampleDrugsQuery
+    const drugDetailsQuery = `
+      SELECT id, drugid, strength, nameil 
+      FROM newdrugdetails 
+      LIMIT 5
+    `;
+
+    const ordersQuery = `
+      SELECT orderid, clientid, drugdetailid 
+      FROM orders 
+      ORDER BY orderdate DESC 
+      LIMIT 5
+    `;
+
+    const { data: drugs } = await supabaseClient.rpc('execute_ai_query', {
+      query_text: drugsQuery
     });
 
-    console.log('Sample drugs in database:', sampleDrugs);
+    const { data: drugDetails } = await supabaseClient.rpc('execute_ai_query', {
+      query_text: drugDetailsQuery
+    });
+
+    const { data: orders } = await supabaseClient.rpc('execute_ai_query', {
+      query_text: ordersQuery
+    });
+
+    console.log('Sample drugs:', drugs);
+    console.log('Sample drug details:', drugDetails);
+    console.log('Sample orders:', orders);
 
     return new Response(JSON.stringify({ 
-      results: [],
       debug: {
-        sampleDrugs,
-        drugQuery
+        tableInfo,
+        drugs,
+        drugDetails,
+        orders
       }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
