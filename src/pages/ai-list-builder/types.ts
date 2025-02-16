@@ -6,6 +6,10 @@ export interface CustomerResult {
   email: string
   total_orders: number
   last_purchase: string
+  total_tickets?: number
+  open_tickets?: number
+  last_ticket_date?: string
+  recent_ticket_subjects?: string[]
 }
 
 export interface SavedSegment {
