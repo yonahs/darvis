@@ -36,23 +36,22 @@ serve(async (req) => {
           {
             role: 'system',
             content: `You are a SQL query generator. Convert natural language questions about customers into SQL queries using these tables and views:
-            - clients (clientid, firstname, lastname, email, country, state)
-            - orders (orderid, clientid, totalsale, orderdate, orderstatus, problemorder)
+            - clients (clientid, firstname, lastname, email, mobile, dayphone)
+            - orders (orderid, clientid, totalsale, orderdate, orderstatus, drugid, drugdetailid)
             - newdrugs (drugid, nameus, chemical)
             - newdrugdetails (id, drugid, nameil, strength)
-            - clientrx (id, clientid, dateuploaded, image)
-            - clientrxdetails (id, rxid, drugid, refills, filled, rxdate)
             - zendesk_tickets (client_id, status, created_at, subject)
-            - vw_client_risk_summary (clientid, risk_level, is_flagged)
+            - customer_call_logs (id, client_id, outcome, called_at, notes)
             
             Generate only a SELECT query that:
-            1. Always starts with SELECT DISTINCT c.clientid, c.firstname, c.lastname, c.email
+            1. Always starts with SELECT DISTINCT c.clientid, c.firstname, c.lastname, c.email, c.mobile, c.dayphone
             2. Uses proper table aliases (c for clients, o for orders, etc)
             3. Always joins from the clients table (use LEFT JOIN for optional data)
             4. For drug-related queries, join orders with newdrugdetails and newdrugs
             5. When counting orders, use COUNT(DISTINCT o.orderid)
             6. Returns only one row per client
             7. Use LOWER() for drug name comparisons
+            8. Include the most recent call info if available
             
             Only return the SQL query without any explanation.`
           },
@@ -65,45 +64,6 @@ serve(async (req) => {
     const sqlQuery = aiData.choices[0].message.content;
 
     console.log('Generated SQL:', sqlQuery);
-
-    // First verify the drug exists
-    try {
-      const { data: drugCheck, error: drugError } = await supabaseClient
-        .from('newdrugs')
-        .select('drugid, nameus')
-        .ilike('nameus', '%eliquis%')
-        .limit(1);
-
-      console.log('Drug check results:', drugCheck);
-      if (drugError) console.error('Drug check error:', drugError);
-    } catch (e) {
-      console.error('Drug check failed:', e);
-    }
-
-    // Then check for any orders of this drug
-    try {
-      const { data: orderCheck, error: orderError } = await supabaseClient
-        .from('orders')
-        .select(`
-          orderid,
-          orderdate,
-          clientid,
-          drugdetailid,
-          newdrugdetails!inner (
-            nameil,
-            drugid,
-            newdrugs!inner (
-              nameus
-            )
-          )
-        `)
-        .limit(5);
-
-      console.log('Order check results:', orderCheck);
-      if (orderError) console.error('Order check error:', orderError);
-    } catch (e) {
-      console.error('Order check failed:', e);
-    }
 
     // Now execute the AI-generated query
     const { data: results, error } = await supabaseClient.rpc('execute_ai_query', {
