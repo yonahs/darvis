@@ -18,6 +18,8 @@ interface ResultsTableProps {
   results: CustomerResult[]
 }
 
+type CallOutcome = 'reached' | 'voicemail' | 'no_answer' | 'wrong_number' | 'do_not_call';
+
 export const ResultsTable = ({ results }: ResultsTableProps) => {
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerResult | null>(null)
   const { toast } = useToast()
@@ -36,7 +38,7 @@ export const ResultsTable = ({ results }: ResultsTableProps) => {
         .from('customer_call_logs')
         .insert({
           client_id: selectedCustomer.clientid,
-          outcome: data.outcome,
+          outcome: data.outcome as CallOutcome,
           notes: data.notes
         })
 
@@ -59,7 +61,7 @@ export const ResultsTable = ({ results }: ResultsTableProps) => {
     }
   }
 
-  const handleQuickAction = async (clientId: number, outcome: string) => {
+  const handleQuickAction = async (clientId: number, outcome: CallOutcome) => {
     try {
       const { error } = await supabase
         .from('customer_call_logs')
@@ -174,7 +176,7 @@ export const ResultsTable = ({ results }: ResultsTableProps) => {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => handleQuickAction(customer.clientid, "contacted")}
+                        onClick={() => handleQuickAction(customer.clientid, "reached")}
                       >
                         <PhoneOutgoing className="h-4 w-4" />
                       </Button>
@@ -188,7 +190,8 @@ export const ResultsTable = ({ results }: ResultsTableProps) => {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => handleQuickAction(customer.clientid, "reclaimed")}
+                        onClick={() => handleQuickAction(customer.clientid, "reached")}
+                        title="Mark as reclaimed"
                       >
                         <RefreshCw className="h-4 w-4" />
                       </Button>
@@ -223,11 +226,10 @@ export const ResultsTable = ({ results }: ResultsTableProps) => {
                                         </SelectTrigger>
                                       </FormControl>
                                       <SelectContent>
-                                        <SelectItem value="contacted">Contacted</SelectItem>
+                                        <SelectItem value="reached">Reached</SelectItem>
                                         <SelectItem value="no_answer">No Answer</SelectItem>
                                         <SelectItem value="voicemail">Left Voicemail</SelectItem>
                                         <SelectItem value="wrong_number">Wrong Number</SelectItem>
-                                        <SelectItem value="unreachable">Unreachable</SelectItem>
                                         <SelectItem value="do_not_call">Do Not Call</SelectItem>
                                       </SelectContent>
                                     </Select>
