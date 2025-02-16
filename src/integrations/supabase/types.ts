@@ -42,6 +42,88 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_segments: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          last_executed_at: string | null
+          metadata: Json | null
+          name: string
+          natural_language_query: string
+          next_refresh_at: string | null
+          parent_segment_id: string | null
+          refresh_frequency:
+            | Database["public"]["Enums"]["segment_refresh_frequency"]
+            | null
+          structured_query: Json
+          updated_at: string | null
+          version: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_executed_at?: string | null
+          metadata?: Json | null
+          name: string
+          natural_language_query: string
+          next_refresh_at?: string | null
+          parent_segment_id?: string | null
+          refresh_frequency?:
+            | Database["public"]["Enums"]["segment_refresh_frequency"]
+            | null
+          structured_query: Json
+          updated_at?: string | null
+          version?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_executed_at?: string | null
+          metadata?: Json | null
+          name?: string
+          natural_language_query?: string
+          next_refresh_at?: string | null
+          parent_segment_id?: string | null
+          refresh_frequency?:
+            | Database["public"]["Enums"]["segment_refresh_frequency"]
+            | null
+          structured_query?: Json
+          updated_at?: string | null
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_segments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_segments_parent_segment_id_fkey"
+            columns: ["parent_segment_id"]
+            isOneToOne: false
+            referencedRelation: "ai_segments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_segments_parent_segment_id_fkey"
+            columns: ["parent_segment_id"]
+            isOneToOne: false
+            referencedRelation: "vw_segment_analytics"
+            referencedColumns: ["segment_id"]
+          },
+        ]
+      }
       bsd_packages: {
         Row: {
           autoid: number
@@ -566,6 +648,98 @@ export type Database = {
           trackinglink?: string | null
         }
         Relationships: []
+      }
+      customer_call_logs: {
+        Row: {
+          called_at: string | null
+          called_by: string | null
+          client_id: number | null
+          duration_seconds: number | null
+          follow_up_date: string | null
+          id: string
+          metadata: Json | null
+          notes: string | null
+          outcome: Database["public"]["Enums"]["call_outcome"]
+          segment_id: string | null
+          zendesk_ticket_id: string | null
+        }
+        Insert: {
+          called_at?: string | null
+          called_by?: string | null
+          client_id?: number | null
+          duration_seconds?: number | null
+          follow_up_date?: string | null
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          outcome: Database["public"]["Enums"]["call_outcome"]
+          segment_id?: string | null
+          zendesk_ticket_id?: string | null
+        }
+        Update: {
+          called_at?: string | null
+          called_by?: string | null
+          client_id?: number | null
+          duration_seconds?: number | null
+          follow_up_date?: string | null
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          outcome?: Database["public"]["Enums"]["call_outcome"]
+          segment_id?: string | null
+          zendesk_ticket_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_call_logs_called_by_fkey"
+            columns: ["called_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_call_logs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "customer_call_logs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "mv_client_lifetime_value"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "customer_call_logs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "mv_client_order_counts"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "customer_call_logs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_risk_summary"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "customer_call_logs_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "ai_segments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_call_logs_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "vw_segment_analytics"
+            referencedColumns: ["segment_id"]
+          },
+        ]
       }
       dashboard_changelog: {
         Row: {
@@ -1943,6 +2117,64 @@ export type Database = {
         }
         Relationships: []
       }
+      segment_executions: {
+        Row: {
+          error_message: string | null
+          executed_at: string | null
+          executed_by: string | null
+          execution_time_ms: number | null
+          id: string
+          query_params: Json | null
+          results_count: number | null
+          segment_id: string | null
+          status: string
+        }
+        Insert: {
+          error_message?: string | null
+          executed_at?: string | null
+          executed_by?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          query_params?: Json | null
+          results_count?: number | null
+          segment_id?: string | null
+          status: string
+        }
+        Update: {
+          error_message?: string | null
+          executed_at?: string | null
+          executed_by?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          query_params?: Json | null
+          results_count?: number | null
+          segment_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "segment_executions_executed_by_fkey"
+            columns: ["executed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "segment_executions_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "ai_segments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "segment_executions_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "vw_segment_analytics"
+            referencedColumns: ["segment_id"]
+          },
+        ]
+      }
       shippers: {
         Row: {
           abbrev: string | null
@@ -2587,6 +2819,28 @@ export type Database = {
         }
         Relationships: []
       }
+      vw_segment_analytics: {
+        Row: {
+          avg_execution_time_ms: number | null
+          created_by: string | null
+          created_by_email: string | null
+          last_execution: string | null
+          segment_id: string | null
+          segment_name: string | null
+          total_calls: number | null
+          total_executions: number | null
+          unique_customers_called: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_segments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vw_segmented_orders: {
         Row: {
           assigned_warehouse: string | null
@@ -2657,6 +2911,12 @@ export type Database = {
       }
     }
     Enums: {
+      call_outcome:
+        | "reached"
+        | "voicemail"
+        | "no_answer"
+        | "wrong_number"
+        | "do_not_call"
       changelog_action:
         | "layout_updated"
         | "widget_added"
@@ -2675,6 +2935,7 @@ export type Database = {
         | "prescription_issues"
         | "suspicious_ordering_pattern"
         | "failed_verification"
+      segment_refresh_frequency: "weekly" | "biweekly" | "monthly" | "never"
       user_role:
         | "administrator"
         | "customer_support"
