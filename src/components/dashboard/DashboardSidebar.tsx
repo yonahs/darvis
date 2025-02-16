@@ -1,4 +1,3 @@
-
 import {
   LayoutDashboard,
   Package,
@@ -14,6 +13,7 @@ import {
   TestTube,
   FileText,
   Database,
+  ListPlus,
 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import {
@@ -32,6 +32,11 @@ const menuItems = [
     title: "Dashboard",
     icon: LayoutDashboard,
     href: "/",
+  },
+  {
+    title: "AI List Builder",
+    icon: ListPlus,
+    href: "/ai-list-builder",
   },
   {
     title: "Orders",

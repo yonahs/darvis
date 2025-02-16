@@ -14,6 +14,7 @@ import StockCount from '@/pages/StockCount';
 import Clients from '@/pages/Clients';
 import ClientDetail from '@/pages/clients/[clientId]';
 import NotFound from '@/pages/NotFound';
+import AiListBuilder from '@/pages/AiListBuilder';
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => {
         <DashboardLayout>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/ai-list-builder" element={<AiListBuilder />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/orders/:orderId" element={<OrderDetail />} />
             <Route path="/logistics" element={<Logistics />} />

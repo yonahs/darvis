@@ -13,26 +13,32 @@ export type Database = {
         Row: {
           action_type: string
           created_at: string | null
+          description: string | null
           details: Json | null
           entity_id: string
           entity_type: string
           id: string
+          metadata: Json | null
         }
         Insert: {
           action_type: string
           created_at?: string | null
+          description?: string | null
           details?: Json | null
           entity_id: string
           entity_type: string
           id?: string
+          metadata?: Json | null
         }
         Update: {
           action_type?: string
           created_at?: string | null
+          description?: string | null
           details?: Json | null
           entity_id?: string
           entity_type?: string
           id?: string
+          metadata?: Json | null
         }
         Relationships: []
       }
@@ -561,6 +567,39 @@ export type Database = {
         }
         Relationships: []
       }
+      dashboard_changelog: {
+        Row: {
+          action_type: Database["public"]["Enums"]["dashboard_action_type"]
+          created_at: string | null
+          description: string
+          id: string
+          metadata: Json | null
+          new_state: Json | null
+          previous_state: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          action_type: Database["public"]["Enums"]["dashboard_action_type"]
+          created_at?: string | null
+          description: string
+          id?: string
+          metadata?: Json | null
+          new_state?: Json | null
+          previous_state?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: Database["public"]["Enums"]["dashboard_action_type"]
+          created_at?: string | null
+          description?: string
+          id?: string
+          metadata?: Json | null
+          new_state?: Json | null
+          previous_state?: Json | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       dashboard_preferences: {
         Row: {
           created_at: string | null
@@ -1034,65 +1073,97 @@ export type Database = {
       }
       notifications: {
         Row: {
+          alert_source: string | null
           category: string
           created_at: string | null
           id: string
           link: string | null
           message: string
+          order_id: number | null
           priority: string
           read: boolean | null
           title: string
           type: string
         }
         Insert: {
+          alert_source?: string | null
           category: string
           created_at?: string | null
           id?: string
           link?: string | null
           message: string
+          order_id?: number | null
           priority: string
           read?: boolean | null
           title: string
           type: string
         }
         Update: {
+          alert_source?: string | null
           category?: string
           created_at?: string | null
           id?: string
           link?: string | null
           message?: string
+          order_id?: number | null
           priority?: string
           read?: boolean | null
           title?: string
           type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "notifications_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_delays: {
         Row: {
           delay_reason: string
+          estimated_resolution_date: string | null
           id: string
+          impact_assessment: string | null
+          metadata: Json | null
+          notification_sent: boolean | null
           order_id: number
+          priority: string | null
           reported_at: string | null
           reported_by: string | null
+          resolution_notes: string | null
           resolved_at: string | null
           resolved_by: string | null
         }
         Insert: {
           delay_reason: string
+          estimated_resolution_date?: string | null
           id?: string
+          impact_assessment?: string | null
+          metadata?: Json | null
+          notification_sent?: boolean | null
           order_id: number
+          priority?: string | null
           reported_at?: string | null
           reported_by?: string | null
+          resolution_notes?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
         }
         Update: {
           delay_reason?: string
+          estimated_resolution_date?: string | null
           id?: string
+          impact_assessment?: string | null
+          metadata?: Json | null
+          notification_sent?: boolean | null
           order_id?: number
+          priority?: string | null
           reported_at?: string | null
           reported_by?: string | null
+          resolution_notes?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
         }
@@ -1718,30 +1789,48 @@ export type Database = {
       payment_tracking: {
         Row: {
           amount: number
+          failure_reason: string | null
           id: string
           last_attempt: string | null
+          metadata: Json | null
+          next_retry_at: string | null
           notes: string | null
+          notify_after_attempts: number | null
+          notify_after_days: number | null
           order_id: number
+          payment_method_id: string | null
           reminder_sent_at: string | null
           retry_count: number | null
           status: string
         }
         Insert: {
           amount: number
+          failure_reason?: string | null
           id?: string
           last_attempt?: string | null
+          metadata?: Json | null
+          next_retry_at?: string | null
           notes?: string | null
+          notify_after_attempts?: number | null
+          notify_after_days?: number | null
           order_id: number
+          payment_method_id?: string | null
           reminder_sent_at?: string | null
           retry_count?: number | null
           status: string
         }
         Update: {
           amount?: number
+          failure_reason?: string | null
           id?: string
           last_attempt?: string | null
+          metadata?: Json | null
+          next_retry_at?: string | null
           notes?: string | null
+          notify_after_attempts?: number | null
+          notify_after_days?: number | null
           order_id?: number
+          payment_method_id?: string | null
           reminder_sent_at?: string | null
           retry_count?: number | null
           status?: string
@@ -1759,6 +1848,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_tracking_payment_method_id_fkey"
+            columns: ["payment_method_id"]
+            isOneToOne: false
+            referencedRelation: "payment_methods"
             referencedColumns: ["id"]
           },
         ]
@@ -2251,6 +2347,61 @@ export type Database = {
         }
         Relationships: []
       }
+      vw_order_alerts: {
+        Row: {
+          alert_source: string | null
+          category: string | null
+          clientid: number | null
+          created_at: string | null
+          id: string | null
+          link: string | null
+          message: string | null
+          order_id: number | null
+          order_status: number | null
+          priority: string | null
+          read: boolean | null
+          title: string | null
+          totalsale: number | null
+          type: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "mv_client_lifetime_value"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "mv_client_order_counts"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "vw_client_risk_summary"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "notifications_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vw_order_details: {
         Row: {
           cancelled: boolean | null
@@ -2343,6 +2494,25 @@ export type Database = {
           },
         ]
       }
+      vw_order_status_alerts: {
+        Row: {
+          delay_priority: string | null
+          delay_reason: string | null
+          delay_reported_at: string | null
+          estimated_resolution_date: string | null
+          last_payment_attempt: string | null
+          next_payment_retry: string | null
+          order_status: string | null
+          orderdate: string | null
+          orderid: number | null
+          payment_failure_reason: string | null
+          payment_retries: number | null
+          payment_status: string | null
+          status_type: string | null
+          totalsale: number | null
+        }
+        Relationships: []
+      }
       vw_product_catalog: {
         Row: {
           available: boolean | null
@@ -2371,8 +2541,34 @@ export type Database = {
         }
         Relationships: []
       }
+      vw_segmented_orders: {
+        Row: {
+          assigned_warehouse: string | null
+          client_email: string | null
+          client_name: string | null
+          delay_reason: string | null
+          delay_reported_at: string | null
+          is_delayed: boolean | null
+          orderbilled: number | null
+          orderdate: string | null
+          orderid: number | null
+          orderstatus: string | null
+          outofstock: boolean | null
+          payment_retries: number | null
+          payment_status: string | null
+          problemorder: boolean | null
+          segment_type: string | null
+          status_name: string | null
+          totalsale: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      check_stale_orders: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       get_client_lifetime_values: {
         Args: {
           client_ids: number[]
@@ -2415,6 +2611,17 @@ export type Database = {
       }
     }
     Enums: {
+      changelog_action:
+        | "layout_updated"
+        | "widget_added"
+        | "widget_removed"
+        | "settings_changed"
+      dashboard_action_type: "move" | "resize" | "add" | "remove" | "reorder"
+      notification_priority_type:
+        | "stale_order"
+        | "priority_escalation"
+        | "order_assigned"
+      payment_status: "pending" | "paid" | "failed" | "requires_action"
       risk_factor_type:
         | "payment_failure"
         | "chargeback"
