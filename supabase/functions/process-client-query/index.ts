@@ -23,56 +23,42 @@ serve(async (req) => {
 
     console.log('Received query:', query);
 
-    // First, let's verify if the drug exists and how it's stored in the database
-    const verificationQuery = `
-      SELECT 
-        drugid,
-        nameus,
-        chemical,
-        (
-          SELECT COUNT(DISTINCT o.clientid)
-          FROM orders o
-          WHERE o.drugid = nd.drugid
-        ) as customer_count
-      FROM newdrugs nd
-      WHERE 
-        LOWER(nameus) LIKE '%eliquis%' 
-        OR LOWER(chemical) LIKE '%eliquis%'
-        OR LOWER(nameus) LIKE '%apixaban%'  -- generic name
-        OR LOWER(chemical) LIKE '%apixaban%'
+    // Let's do a very basic query first to see ALL drug names
+    const drugNamesQuery = `
+      SELECT DISTINCT nameus, chemical 
+      FROM newdrugs 
+      ORDER BY nameus
     `;
     
-    const { data: drugCheck } = await supabaseClient.rpc('execute_ai_query', {
-      query_text: verificationQuery
+    const { data: allDrugs } = await supabaseClient.rpc('execute_ai_query', {
+      query_text: drugNamesQuery
     });
 
-    console.log('Drug verification results:', drugCheck);
+    console.log('All drugs in database:', allDrugs);
 
-    // If we found the drug, let's get a sample of orders
-    if (drugCheck && drugCheck.length > 0) {
-      const sampleOrdersQuery = `
-        SELECT 
-          o.orderid,
-          o.orderdate,
-          nd.nameus,
-          nd.chemical,
-          c.firstname,
-          c.lastname
-        FROM orders o
-        JOIN newdrugdetails ndd ON o.drugdetailid = ndd.id
-        JOIN newdrugs nd ON ndd.drugid = nd.drugid
-        JOIN clients c ON o.clientid = c.clientid
-        WHERE nd.drugid = ${drugCheck[0].drugid}
-        ORDER BY o.orderdate DESC
-        LIMIT 5
-      `;
+    // Now let's look at some recent orders
+    const recentOrdersQuery = `
+      SELECT 
+        o.orderid,
+        o.orderdate,
+        c.firstname,
+        c.lastname,
+        nd.nameus,
+        nd.chemical,
+        ndd.strength
+      FROM orders o
+      JOIN clients c ON o.clientid = c.clientid
+      JOIN newdrugdetails ndd ON o.drugdetailid = ndd.id
+      JOIN newdrugs nd ON ndd.drugid = nd.drugid
+      ORDER BY o.orderdate DESC
+      LIMIT 10
+    `;
 
-      const { data: sampleOrders } = await supabaseClient.rpc('execute_ai_query', {
-        query_text: sampleOrdersQuery
-      });
+    const { data: recentOrders } = await supabaseClient.rpc('execute_ai_query', {
+      query_text: recentOrdersQuery
+    });
 
-      console.log('Sample orders:', sampleOrders);
-    }
+    console.log('Recent orders:', recentOrders);
 
     // Now proceed with the main query generation
     const openAiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -100,19 +86,13 @@ serve(async (req) => {
                MAX(o.orderdate) as last_purchase,
                COUNT(DISTINCT o.orderid) as total_orders,
                string_agg(DISTINCT nd.nameus, ', ') as drugs_purchased
-            3. Always use this join pattern for drug queries:
+            3. Always use this join pattern:
                FROM clients c
-               INNER JOIN orders o ON c.clientid = o.clientid
-               INNER JOIN newdrugdetails ndd ON o.drugdetailid = ndd.id
-               INNER JOIN newdrugs nd ON ndd.drugid = nd.drugid
-               WHERE (LOWER(nd.nameus) LIKE '%eliquis%' OR LOWER(nd.chemical) LIKE '%eliquis%' OR LOWER(nd.nameus) LIKE '%apixaban%' OR LOWER(nd.chemical) LIKE '%apixaban%')
-            4. For order counts: HAVING COUNT(DISTINCT o.orderid) > X
-            5. For time conditions: AND NOT EXISTS (
-                 SELECT 1 FROM orders o2 
-                 WHERE o2.clientid = c.clientid 
-                 AND o2.orderdate > CURRENT_DATE - INTERVAL '3 months'
-               )
-            6. GROUP BY all selected client fields
+               JOIN orders o ON c.clientid = o.clientid
+               JOIN newdrugdetails ndd ON o.drugdetailid = ndd.id
+               JOIN newdrugs nd ON ndd.drugid = nd.drugid
+            4. GROUP BY all selected client fields
+            5. Always include ORDER BY last_purchase DESC
             
             Only return the SQL query without any explanation.`
           },
@@ -125,14 +105,6 @@ serve(async (req) => {
     const sqlQuery = aiData.choices[0].message.content;
 
     console.log('Generated SQL:', sqlQuery);
-
-    // First, let's count how many rows this query would return
-    const countQuery = `WITH base_query AS (${sqlQuery}) SELECT COUNT(*) as total_rows FROM base_query`;
-    const { data: countResult, error: countError } = await supabaseClient.rpc('execute_ai_query', {
-      query_text: countQuery
-    });
-
-    console.log('Count result:', countResult);
 
     // Now execute the actual query
     const { data: results, error } = await supabaseClient.rpc('execute_ai_query', {
@@ -149,9 +121,9 @@ serve(async (req) => {
     return new Response(JSON.stringify({ 
       results,
       debug: {
-        drugCheck,
-        sqlQuery,
-        countResult
+        allDrugs,
+        recentOrders,
+        sqlQuery
       }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
