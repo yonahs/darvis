@@ -2869,6 +2869,12 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      execute_ai_query: {
+        Args: {
+          query_text: string
+        }
+        Returns: Json[]
+      }
       get_client_lifetime_values: {
         Args: {
           client_ids: number[]
