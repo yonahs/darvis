@@ -21,6 +21,9 @@ serve(async (req) => {
 
     const { query } = await req.json();
 
+    // Add debug logging
+    console.log('Received query:', query);
+
     // Process the natural language query with OpenAI
     const openAiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -42,11 +45,14 @@ serve(async (req) => {
             - vw_client_risk_summary (clientid, risk_level, is_flagged)
             - payment_methods (client_id, payment_type, is_default)
 
-            Join the tables as needed to provide comprehensive customer information.
-            Only return the SQL query without any explanation.
-            Always include clientid, firstname, lastname, email in the result.
-            Use COUNT, MAX, and other aggregations when appropriate.
-            Include COALESCE for nullable fields.`
+            Generate only a SELECT query that:
+            1. Always starts with SELECT DISTINCT c.clientid, c.firstname, c.lastname, c.email
+            2. Uses proper table aliases (c for clients, o for orders, etc)
+            3. Always joins from the clients table (use LEFT JOIN for optional data)
+            4. Groups by the core client fields when using aggregations
+            5. Returns only one row per client
+            
+            Only return the SQL query without any explanation.`
           },
           { role: 'user', content: query }
         ],
@@ -58,12 +64,40 @@ serve(async (req) => {
 
     console.log('Generated SQL:', sqlQuery);
 
-    // Execute the SQL query
+    // First try to execute the query directly
+    try {
+      const { data: directResults, error: directError } = await supabaseClient
+        .from('clients')
+        .select(`
+          clientid,
+          firstname,
+          lastname,
+          email,
+          orders (
+            orderid,
+            totalsale,
+            orderdate
+          )
+        `)
+        .limit(1);
+
+      console.log('Direct query test results:', directResults);
+      if (directError) console.error('Direct query test error:', directError);
+    } catch (e) {
+      console.error('Direct query test failed:', e);
+    }
+
+    // Now execute the AI-generated query
     const { data: results, error } = await supabaseClient.rpc('execute_ai_query', {
       query_text: sqlQuery
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error executing AI query:', error);
+      throw error;
+    }
+
+    console.log('Query results:', results);
 
     return new Response(JSON.stringify({ results }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
