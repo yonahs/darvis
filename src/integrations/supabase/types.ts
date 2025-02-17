@@ -232,6 +232,20 @@ export type Database = {
             foreignKeyName: "client_changelog_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
+            referencedRelation: "mv_client_overview"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "client_changelog_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_overview"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "client_changelog_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "vw_client_risk_summary"
             referencedColumns: ["clientid"]
           },
@@ -291,6 +305,20 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "mv_client_order_counts"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "client_risk_assessments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "mv_client_overview"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "client_risk_assessments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_overview"
             referencedColumns: ["clientid"]
           },
           {
@@ -716,6 +744,20 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "mv_client_order_counts"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "customer_call_logs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "mv_client_overview"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "customer_call_logs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_overview"
             referencedColumns: ["clientid"]
           },
           {
@@ -1864,6 +1906,20 @@ export type Database = {
             foreignKeyName: "fk_orders_client"
             columns: ["clientid"]
             isOneToOne: false
+            referencedRelation: "mv_client_overview"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "vw_client_overview"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
             referencedRelation: "vw_client_risk_summary"
             referencedColumns: ["clientid"]
           },
@@ -1942,6 +1998,20 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "mv_client_order_counts"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "payment_methods_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "mv_client_overview"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "payment_methods_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "vw_client_overview"
             referencedColumns: ["clientid"]
           },
           {
@@ -2526,6 +2596,24 @@ export type Database = {
         }
         Relationships: []
       }
+      mv_client_overview: {
+        Row: {
+          active: boolean | null
+          blacklist: boolean | null
+          blacklistreason: string | null
+          clientid: number | null
+          dayphone: string | null
+          email: string | null
+          firstname: string | null
+          is_flagged: boolean | null
+          lastname: string | null
+          lifetime_value: number | null
+          mobile: string | null
+          risk_level: number | null
+          total_orders: number | null
+        }
+        Relationships: []
+      }
       mv_client_statistics: {
         Row: {
           active_clients: number | null
@@ -2593,6 +2681,20 @@ export type Database = {
             foreignKeyName: "fk_orders_client"
             columns: ["clientid"]
             isOneToOne: false
+            referencedRelation: "mv_client_overview"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "vw_client_overview"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
             referencedRelation: "vw_client_risk_summary"
             referencedColumns: ["clientid"]
           },
@@ -2608,6 +2710,37 @@ export type Database = {
           shipped_orders: number | null
           total_orders: number | null
           total_revenue: number | null
+        }
+        Relationships: []
+      }
+      vw_client_overview: {
+        Row: {
+          active: boolean | null
+          address: string | null
+          address2: string | null
+          allergies: string | null
+          blacklist: boolean | null
+          blacklistreason: string | null
+          city: string | null
+          clientid: number | null
+          conditions: string[] | null
+          country: string | null
+          createddate: string | null
+          dayphone: string | null
+          email: string | null
+          firstname: string | null
+          is_flagged: boolean | null
+          last_assessed_at: string | null
+          last_modified: string | null
+          last_order_date: string | null
+          lastname: string | null
+          lifetime_value: number | null
+          medications: string | null
+          mobile: string | null
+          risk_level: number | null
+          state: string | null
+          total_orders: number | null
+          zip: string | null
         }
         Relationships: []
       }
@@ -2662,6 +2795,20 @@ export type Database = {
             columns: ["clientid"]
             isOneToOne: false
             referencedRelation: "mv_client_order_counts"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "mv_client_overview"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "vw_client_overview"
             referencedColumns: ["clientid"]
           },
           {
@@ -2723,6 +2870,20 @@ export type Database = {
             foreignKeyName: "fk_orders_client"
             columns: ["clientid"]
             isOneToOne: false
+            referencedRelation: "mv_client_overview"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "vw_client_overview"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
             referencedRelation: "vw_client_risk_summary"
             referencedColumns: ["clientid"]
           },
@@ -2761,6 +2922,20 @@ export type Database = {
             columns: ["clientid"]
             isOneToOne: false
             referencedRelation: "mv_client_order_counts"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "mv_client_overview"
+            referencedColumns: ["clientid"]
+          },
+          {
+            foreignKeyName: "fk_orders_client"
+            columns: ["clientid"]
+            isOneToOne: false
+            referencedRelation: "vw_client_overview"
             referencedColumns: ["clientid"]
           },
           {
