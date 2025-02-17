@@ -54,7 +54,7 @@ export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionM
           qtypercycle,
           duration,
           refills,
-          clientrx (
+          clientrx:clientrx (
             dateuploaded,
             image,
             directory
@@ -64,7 +64,7 @@ export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionM
         .eq('strength', drugDetails?.strength)
         .order('rxdate', { ascending: false })
         .limit(1)
-        .single()
+        .maybeSingle()
 
       if (error) {
         console.error("Error fetching prescription details:", error)

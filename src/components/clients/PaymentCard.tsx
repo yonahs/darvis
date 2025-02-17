@@ -8,6 +8,17 @@ interface PaymentCardProps {
   clientId: number
 }
 
+interface ProcessorPayment {
+  processorid: number
+  processor: {
+    autoid: number
+    name: string
+    displayname: string
+    marker: string
+    abbrev: string
+  }
+}
+
 export function PaymentCard({ clientId }: PaymentCardProps) {
   // First query to get distinct payment methods from orders
   const { data: orderPayments, error: orderError } = useQuery({
@@ -36,7 +47,7 @@ export function PaymentCard({ clientId }: PaymentCardProps) {
       }
       
       // Remove duplicates by processor ID
-      const uniqueProcessors = data.reduce((acc: any[], curr) => {
+      const uniqueProcessors = data.reduce((acc: ProcessorPayment[], curr) => {
         if (!acc.find(p => p.processor.autoid === curr.processor.autoid)) {
           acc.push(curr)
         }
