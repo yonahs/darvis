@@ -22,7 +22,6 @@ interface ProcessorPayment {
 }
 
 export function PaymentCard({ clientId }: PaymentCardProps) {
-  // First query to get distinct payment methods from orders
   const { data: orderPayments, error: orderError } = useQuery<ProcessorPayment[]>({
     queryKey: ["client-order-payments", clientId],
     queryFn: async () => {
@@ -51,7 +50,8 @@ export function PaymentCard({ clientId }: PaymentCardProps) {
       // Ensure we get the correct type by mapping the response
       const uniqueProcessors = (data || []).reduce<ProcessorPayment[]>((acc, curr) => {
         // Verify processor is a single object with the correct shape
-        if (!curr.processor || Array.isArray(curr.processor)) {
+        const processorData = curr.processor as Record<string, any>
+        if (!processorData || Array.isArray(processorData)) {
           console.warn('Invalid processor data:', curr)
           return acc
         }
@@ -59,11 +59,11 @@ export function PaymentCard({ clientId }: PaymentCardProps) {
         const payment: ProcessorPayment = {
           processorid: curr.processorid,
           processor: {
-            autoid: curr.processor.autoid,
-            name: curr.processor.name,
-            displayname: curr.processor.displayname,
-            marker: curr.processor.marker,
-            abbrev: curr.processor.abbrev
+            autoid: processorData.autoid,
+            name: processorData.name,
+            displayname: processorData.displayname,
+            marker: processorData.marker,
+            abbrev: processorData.abbrev
           }
         }
         

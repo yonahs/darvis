@@ -31,14 +31,14 @@ const AiListBuilder = () => {
   }, [setMessages])
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <Tabs defaultValue="chat">
+    <div className="flex-1">
+      <Tabs defaultValue="chat" className="h-full">
         <TabsList>
           <TabsTrigger value="chat">Chat</TabsTrigger>
           <TabsTrigger value="saved">Saved Segments</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="chat" className="space-y-6">
+        <TabsContent value="chat" className="mt-0 space-y-4">
           <ChatInterface
             messages={messages}
             isProcessing={isProcessing}
