@@ -1,3 +1,4 @@
+
 import { Upload, Eye, Edit, FileText, Calendar, Link } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,6 +13,12 @@ import type { Database } from "@/integrations/supabase/types"
 type Order = Database["public"]["Tables"]["orders"]["Row"]
 type DrugDetails = Database["public"]["Tables"]["newdrugdetails"]["Row"]
 
+interface ClientRx {
+  dateuploaded: string | null
+  image: string | null
+  directory: string | null
+}
+
 interface PrescriptionDetails {
   rxid: number
   rxdate: string
@@ -22,11 +29,7 @@ interface PrescriptionDetails {
   qtypercycle: number | null
   duration: string | null
   refills: number | null
-  clientrx: {
-    dateuploaded: string | null
-    image: string | null
-    directory: string | null
-  } | null
+  clientrx: ClientRx | null
 }
 
 interface PrescriptionManagementCardProps {
@@ -54,7 +57,7 @@ export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionM
           qtypercycle,
           duration,
           refills,
-          clientrx:clientrx (
+          clientrx:clientrx!left (
             dateuploaded,
             image,
             directory
@@ -64,15 +67,21 @@ export const PrescriptionManagementCard = ({ order, drugDetails }: PrescriptionM
         .eq('strength', drugDetails?.strength)
         .order('rxdate', { ascending: false })
         .limit(1)
-        .maybeSingle()
+        .single()
 
       if (error) {
         console.error("Error fetching prescription details:", error)
         throw error
       }
 
-      console.log("Prescription details:", data)
-      return data as PrescriptionDetails
+      // Transform the response to match our PrescriptionDetails type
+      const transformedData: PrescriptionDetails = {
+        ...data,
+        clientrx: Array.isArray(data.clientrx) ? data.clientrx[0] || null : data.clientrx
+      }
+
+      console.log("Prescription details:", transformedData)
+      return transformedData
     }
   })
 

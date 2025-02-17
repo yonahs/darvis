@@ -8,20 +8,22 @@ interface PaymentCardProps {
   clientId: number
 }
 
+interface Processor {
+  autoid: number
+  name: string
+  displayname: string
+  marker: string
+  abbrev: string
+}
+
 interface ProcessorPayment {
   processorid: number
-  processor: {
-    autoid: number
-    name: string
-    displayname: string
-    marker: string
-    abbrev: string
-  }
+  processor: Processor
 }
 
 export function PaymentCard({ clientId }: PaymentCardProps) {
   // First query to get distinct payment methods from orders
-  const { data: orderPayments, error: orderError } = useQuery({
+  const { data: orderPayments, error: orderError } = useQuery<ProcessorPayment[]>({
     queryKey: ["client-order-payments", clientId],
     queryFn: async () => {
       console.log("Fetching payment processors from orders for client:", clientId)
@@ -46,10 +48,16 @@ export function PaymentCard({ clientId }: PaymentCardProps) {
         throw error
       }
       
-      // Remove duplicates by processor ID
-      const uniqueProcessors = data.reduce((acc: ProcessorPayment[], curr) => {
-        if (!acc.find(p => p.processor.autoid === curr.processor.autoid)) {
-          acc.push(curr)
+      // Ensure we get the correct type by mapping the response
+      const uniqueProcessors = (data || []).reduce<ProcessorPayment[]>((acc, curr) => {
+        // Ensure processor is a single object, not an array
+        const payment: ProcessorPayment = {
+          processorid: curr.processorid,
+          processor: curr.processor as Processor
+        }
+        
+        if (!acc.find(p => p.processor.autoid === payment.processor.autoid)) {
+          acc.push(payment)
         }
         return acc
       }, [])
