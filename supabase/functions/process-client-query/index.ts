@@ -1,10 +1,30 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { Configuration, OpenAIApi } from 'https://esm.sh/openai@4.20.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+const systemPrompt = `You are a SQL query generator for a pharmacy database. Generate SQL queries based on natural language requests.
+The database has these main tables:
+- clients (clientid, firstname, lastname, email, mobile, dayphone)
+- orders (orderid, clientid, drugdetailid, orderdate, totalsale, cancelled)
+- newdrugs (drugid, nameus, chemical)
+- newdrugdetails (id, drugid, strength)
+- customer_call_logs (client_id, outcome, called_at)
+- clientrx (clientid, dateuploaded)
+
+Some important notes:
+1. Always use client_id when joining with customer_call_logs
+2. Use drugdetailid to join orders with newdrugdetails
+3. Filter out cancelled orders with "cancelled = false"
+4. Use proper date intervals for time-based queries
+5. Include relevant customer contact information
+6. Always return results ordered by most relevant criteria first
+
+Return ONLY the SQL query without any explanation or comments.`
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -20,80 +40,28 @@ Deno.serve(async (req) => {
     const { query } = await req.json()
     console.log('Processing natural language query:', query)
 
-    // Query to find lapsed Eliquis customers
-    const sqlQuery = `
-      WITH eliquis_customers AS (
-        SELECT DISTINCT 
-          c.clientid,
-          c.firstname,
-          c.lastname,
-          c.email,
-          c.mobile,
-          c.dayphone,
-          COUNT(DISTINCT o.orderid) as total_orders,
-          SUM(o.totalsale) as total_value,
-          MAX(o.orderdate) as last_purchase,
-          MIN(o.orderdate) as first_purchase
-        FROM clients c
-        JOIN orders o ON c.clientid = o.clientid
-        JOIN newdrugdetails ndd ON o.drugdetailid = ndd.id
-        JOIN newdrugs nd ON ndd.drugid = nd.drugid
-        WHERE 
-          nd.nameus = 'Eliquis'
-          AND o.cancelled = false
-        GROUP BY 
-          c.clientid, c.firstname, c.lastname, c.email, c.mobile, c.dayphone
-        HAVING 
-          COUNT(DISTINCT o.orderid) >= 2  -- At least 2 orders
-          AND MAX(o.orderdate) < CURRENT_DATE - INTERVAL '3 months'  -- No orders in last 3 months
-          AND MIN(o.orderdate) < MAX(o.orderdate)  -- Show purchasing history
-      ),
-      last_orders AS (
-        SELECT DISTINCT ON (o.clientid)
-          o.clientid,
-          nd.nameus as drug_name,
-          o.amount as quantity,
-          o.totalsale as value,
-          o.orderdate as date
-        FROM orders o
-        JOIN newdrugdetails ndd ON o.drugdetailid = ndd.id
-        JOIN newdrugs nd ON ndd.drugid = nd.drugid
-        JOIN eliquis_customers ec ON o.clientid = ec.clientid
-        WHERE o.cancelled = false
-        ORDER BY o.clientid, o.orderdate DESC
-      ),
-      call_stats AS (
-        SELECT 
-          client_id,
-          COUNT(*) as call_attempts,
-          string_agg(outcome::text, ',') as call_outcomes,
-          MAX(called_at)::text as last_contacted
-        FROM customer_call_logs
-        GROUP BY client_id
-      )
-      SELECT 
-        ec.*,
-        json_build_object(
-          'drug_name', lo.drug_name,
-          'quantity', lo.quantity,
-          'value', lo.value,
-          'date', lo.date
-        ) as last_order_details,
-        cs.call_attempts,
-        cs.call_outcomes,
-        cs.last_contacted,
-        EXISTS (SELECT 1 FROM clientrx cr WHERE cr.clientid = ec.clientid) as has_prescription
-      FROM eliquis_customers ec
-      LEFT JOIN last_orders lo ON ec.clientid = lo.clientid
-      LEFT JOIN call_stats cs ON ec.clientid = cs.client_id
-      ORDER BY ec.last_purchase DESC
-    `
+    // Initialize OpenAI
+    const configuration = new Configuration({
+      apiKey: Deno.env.get('OPENAI_API_KEY'),
+    })
+    const openai = new OpenAIApi(configuration)
 
-    console.log('Executing SQL query:', sqlQuery)
-    
+    // Generate SQL query using GPT
+    const completion = await openai.createChatCompletion({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: query }
+      ]
+    })
+
+    const generatedQuery = completion.data.choices[0].message?.content || ''
+    console.log('Generated SQL query:', generatedQuery)
+
+    // Execute the generated query
     const { data: results, error: queryError } = await supabaseClient.rpc(
       'execute_ai_query',
-      { query_text: sqlQuery }
+      { query_text: generatedQuery }
     )
 
     if (queryError) {
@@ -124,7 +92,7 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        message: `Found ${formattedResults.length} lapsed Eliquis customers who haven't ordered in the last 3 months`,
+        message: `Found ${formattedResults.length} customers matching your criteria`,
         results: formattedResults,
         queryId: crypto.randomUUID()
       }),
