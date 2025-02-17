@@ -14,73 +14,88 @@ serve(async (req) => {
   }
 
   try {
-    const { query, metadata } = await req.json()
+    const { query } = await req.json()
     console.log('Received query:', query)
-
-    // Get OpenAI API key from environment
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not found')
-    }
-
-    console.log('Sending query to OpenAI for SQL generation...')
-    
-    // Send to OpenAI to generate SQL
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a SQL expert that converts natural language queries about pharmacy customers into SQL queries.
-            Available tables:
-            - orders (orderid, clientid, drugid, orderdate, shipdate)
-            - clients (clientid, firstname, lastname, email)
-            - newdrugs (drugid, nameus, chemical)
-            Always include client details and ensure proper joins.`
-          },
-          {
-            role: 'user',
-            content: query
-          }
-        ],
-      }),
-    })
-
-    const openAIData = await openAIResponse.json()
-    const generatedSQL = openAIData.choices[0].message.content
-    console.log('Generated SQL:', generatedSQL)
 
     // Create Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const supabase = createClient(supabaseUrl!, supabaseKey!)
 
-    // Execute the generated SQL
-    console.log('Executing SQL query...')
-    const { data: results, error: queryError } = await supabase.rpc(
-      'execute_ai_query',
-      { query_text: generatedSQL }
-    )
+    // First, let's check what medications we have in the database
+    console.log('Checking available medications...')
+    const { data: medications, error: medsError } = await supabase
+      .from('newdrugs')
+      .select('drugid, nameus, chemical')
+      .or('nameus.ilike.%ozempic%,chemical.ilike.%semaglutide%')
 
-    if (queryError) {
-      console.error('Query execution error:', queryError)
-      throw queryError
+    if (medsError) {
+      console.error('Error fetching medications:', medsError)
+      throw medsError
     }
 
-    console.log(`Query returned ${results?.[0]?.length || 0} results`)
+    console.log('Available medications:', medications)
+
+    // If we found any matching medications, let's get the customer orders
+    let results = []
+    if (medications && medications.length > 0) {
+      const drugIds = medications.map(med => med.drugid)
+      
+      const searchQuery = `
+        SELECT DISTINCT 
+          c.clientid,
+          c.firstname,
+          c.lastname,
+          c.email,
+          o.orderdate,
+          o.shipdate,
+          o.totalsale,
+          nd.nameus as medication_name,
+          nd.chemical as medication_chemical
+        FROM clients c
+        JOIN orders o ON c.clientid = o.clientid
+        JOIN newdrugs nd ON o.drugid = nd.drugid
+        WHERE nd.drugid = ANY($1)
+        ORDER BY o.shipdate DESC NULLS LAST
+      `
+
+      const { data: queryResults, error: queryError } = await supabase
+        .rpc('execute_ai_query', {
+          query_text: searchQuery.replace('$1', `'{${drugIds.join(',')}}'`)
+        })
+
+      if (queryError) {
+        console.error('Error executing customer query:', queryError)
+        throw queryError
+      }
+
+      results = queryResults?.[0] || []
+      console.log(`Found ${results.length} customer orders`)
+    } else {
+      console.log('No matching medications found in the database')
+    }
+
+    // Prepare a more informative response
+    let message = 'No matching medications found in our database.'
+    if (results.length > 0) {
+      message = `Found ${results.length} orders for Ozempic/Semaglutide, sorted by ship date.`
+    }
 
     return new Response(
       JSON.stringify({
-        message: `Here are the customers who ordered Ozempic, sorted by ship date:`,
-        results: results?.[0] || [],
+        message,
+        results,
+        debug: {
+          medications_found: medications?.length || 0,
+          medication_names: medications?.map(m => m.nameus)
+        }
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
     )
 
   } catch (error) {
@@ -88,6 +103,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         error: error.message,
+        message: 'Error processing your query. Please try again.'
       }),
       {
         status: 500,
