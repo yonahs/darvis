@@ -15,16 +15,76 @@ serve(async (req) => {
 
   try {
     const { query } = await req.json()
-    console.log('Processing natural language query:', query)
+    console.log('Processing query:', query)
 
-    // Get OpenAI API key from environment
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured')
     }
 
-    // First, have OpenAI understand the query and generate SQL
-    console.log('Asking LLM to interpret query and generate SQL...')
+    // Extract the order number if it's an order query
+    const orderMatch = query.match(/order\s+#?\s*(\d+)/i)
+    const orderNumber = orderMatch ? orderMatch[1] : null
+
+    // First, get the order details
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    const supabase = createClient(supabaseUrl!, supabaseKey!)
+
+    const orderQuery = `
+      SELECT 
+        o.*,
+        c.firstname, 
+        c.lastname,
+        c.email,
+        c.address,
+        c.city,
+        c.state,
+        c.country,
+        nd.nameus as medication_name,
+        nd.chemical,
+        ndd.strength,
+        ndd.packsize,
+        p.name as processor_name,
+        s.display_name as shipper_name,
+        sl.status as order_status,
+        string_agg(DISTINCT oc.comment, ' | ') as comments
+      FROM orders o
+      LEFT JOIN clients c ON o.clientid = c.clientid
+      LEFT JOIN newdrugs nd ON o.drugid = nd.drugid
+      LEFT JOIN newdrugdetails ndd ON o.drugdetailid = ndd.id
+      LEFT JOIN processor p ON o.processorid = p.autoid
+      LEFT JOIN shippers s ON o.shipperid = s.shipperid
+      LEFT JOIN statuslist sl ON o.status = sl.id
+      LEFT JOIN ordercomments oc ON o.orderid = oc.orderid
+      WHERE o.orderid = ${orderNumber}
+      GROUP BY 
+        o.orderid, c.clientid, nd.drugid, ndd.id, 
+        p.autoid, s.shipperid, sl.id
+    `
+
+    // Get order data
+    const { data: orderData, error: queryError } = await supabase
+      .rpc('execute_ai_query', { query_text: orderQuery })
+
+    if (queryError) {
+      console.error('Error fetching order:', queryError)
+      throw queryError
+    }
+
+    const orderInfo = orderData?.[0]?.[0]
+    
+    if (!orderInfo) {
+      return new Response(
+        JSON.stringify({
+          message: `I couldn't find any order with ID ${orderNumber}.`,
+          results: []
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Now use GPT to generate a natural language summary
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -36,75 +96,43 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an AI assistant that converts natural language queries into SQL queries.
-            The database contains pharmacy customer and order data with these main tables:
-            - clients (clientid, firstname, lastname, email, address, city, state, country)
-            - orders (orderid, clientid, drugid, drugdetailid, orderdate, shipdate, totalsale, cancelled)
-            - newdrugs (drugid, nameus, chemical, prescription)
-            - newdrugdetails (id, drugid, strength, packsize)
-            
-            Generate a SQL query that:
-            1. Always includes relevant customer information
-            2. Properly joins necessary tables
-            3. Excludes cancelled orders unless specifically requested
-            4. Returns clear, meaningful column names
-            5. Responds only with the SQL query, no other text
-            `
+            content: `You are a helpful pharmacy order assistant. Analyze the order information and provide a clear, natural summary. Include important details about:
+            - Order status and dates
+            - Customer information
+            - Medication details
+            - Payment and shipping status
+            - Any issues or special notes
+            Be concise but comprehensive.`
           },
           {
             role: 'user',
-            content: query
+            content: `Analyze this order information and provide a natural summary: ${JSON.stringify(orderInfo)}`
           }
         ],
       }),
     })
 
     const openAIData = await openAIResponse.json()
-    const generatedSQL = openAIData.choices[0].message.content
-    console.log('LLM generated SQL:', generatedSQL)
+    const summary = openAIData.choices[0].message.content
 
-    // Create Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    const supabase = createClient(supabaseUrl!, supabaseKey!)
-
-    // Execute the generated SQL
-    console.log('Executing generated SQL...')
-    const { data: queryResults, error: queryError } = await supabase
-      .rpc('execute_ai_query', { query_text: generatedSQL })
-
-    if (queryError) {
-      console.error('Error executing query:', queryError)
-      throw queryError
-    }
-
-    const results = queryResults?.[0] || []
-    console.log(`Query returned ${results.length} results`)
-
-    // Return results
     return new Response(
       JSON.stringify({
-        message: `Found ${results.length} results based on your query.`,
-        results,
+        message: summary,
+        results: [orderInfo],
         metadata: {
           queryId: crypto.randomUUID(),
-          resultCount: results.length
+          resultCount: 1
         }
       }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
-    console.error('Error in process-client-query:', error)
+    console.error('Error processing query:', error)
     return new Response(
       JSON.stringify({
         error: error.message,
-        message: 'Error processing your query. Please try again.'
+        message: 'I encountered an error while retrieving the order information. Please try again.'
       }),
       {
         status: 500,
