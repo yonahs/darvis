@@ -21,7 +21,6 @@ const AiListBuilder = () => {
   const { savedSegments } = useSavedSegments()
 
   useEffect(() => {
-    // Add initial system message
     setMessages([{
       id: uuidv4(),
       role: 'system',
@@ -31,14 +30,14 @@ const AiListBuilder = () => {
   }, [setMessages])
 
   return (
-    <div className="flex-1 w-full max-w-full px-4">
+    <div className="flex-1 w-full max-w-full px-4 py-4 bg-background">
       <Tabs defaultValue="chat" className="w-full">
         <TabsList>
           <TabsTrigger value="chat">Chat</TabsTrigger>
           <TabsTrigger value="saved">Saved Segments</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="chat" className="mt-0 space-y-4">
+        <TabsContent value="chat" className="mt-4 space-y-4">
           <ChatInterface
             messages={messages}
             isProcessing={isProcessing}

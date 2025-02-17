@@ -39,8 +39,8 @@ export function ChatInterface({
   }
 
   return (
-    <div className="flex flex-col h-[500px] rounded-lg border border-border bg-card w-full">
-      <div className="bg-primary/5 px-4 py-2 border-b border-border">
+    <div className="flex flex-col h-[500px] rounded-lg border bg-background shadow-sm">
+      <div className="bg-muted px-4 py-2 border-b">
         <h3 className="font-semibold text-sm text-foreground">AI Customer Assistant</h3>
       </div>
       
@@ -57,10 +57,10 @@ export function ChatInterface({
               <div className={cn(
                 "rounded-2xl px-4 py-2 shadow-sm",
                 message.role === "user" 
-                  ? "bg-primary text-primary-foreground rounded-br-none"
+                  ? "bg-blue-500 text-white rounded-br-none"
                   : message.role === "system"
-                  ? "bg-muted text-muted-foreground"
-                  : "bg-accent text-accent-foreground rounded-bl-none"
+                  ? "bg-gray-100 text-gray-800"
+                  : "bg-gray-100 text-gray-800 rounded-bl-none"
               )}>
                 <p className="text-sm whitespace-pre-wrap leading-relaxed">
                   {message.content}
@@ -74,15 +74,15 @@ export function ChatInterface({
             </div>
           ))}
           {isProcessing && (
-            <div className="flex items-center space-x-2 text-muted-foreground w-max">
-              <div className="bg-accent rounded-2xl px-4 py-2 shadow-sm">
+            <div className="flex items-center space-x-2 w-max">
+              <div className="bg-gray-100 rounded-2xl px-4 py-2 shadow-sm">
                 <div className="flex items-center gap-2">
                   <div className="flex space-x-1">
-                    <span className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                    <span className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                    <span className="w-2 h-2 bg-current rounded-full animate-bounce"></span>
+                    <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                    <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                    <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></span>
                   </div>
-                  <span className="text-sm">Processing query...</span>
+                  <span className="text-sm text-gray-600">Processing query...</span>
                 </div>
               </div>
             </div>
@@ -90,13 +90,13 @@ export function ChatInterface({
         </div>
       </ScrollArea>
 
-      <form onSubmit={handleSubmit} className="p-4 border-t border-border bg-card">
+      <form onSubmit={handleSubmit} className="p-4 border-t bg-white">
         <div className="flex gap-2 items-end">
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about your customers..."
-            className="flex-1 min-h-[60px] resize-none bg-background text-foreground"
+            className="flex-1 min-h-[60px] resize-none bg-white text-gray-800 border"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault()
@@ -109,7 +109,7 @@ export function ChatInterface({
             size="icon"
             disabled={!input.trim() || isProcessing}
             className={cn(
-              "h-10 w-10 shrink-0",
+              "h-10 w-10 shrink-0 bg-blue-500 hover:bg-blue-600 text-white",
               !input.trim() ? "opacity-50" : "opacity-100"
             )}
           >
