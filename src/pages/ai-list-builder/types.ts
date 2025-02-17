@@ -27,7 +27,7 @@ export interface SavedSegment {
   created_by: string
   description: string | null
   natural_language_query: string
-  structured_query: Record<string, any>
+  structured_query: any // Changed to any to handle Supabase JSON type
   created_at: string
   last_executed_at: string | null
   next_refresh_at: string | null
