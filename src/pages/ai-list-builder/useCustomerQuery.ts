@@ -23,12 +23,19 @@ export function useCustomerQuery() {
     setIsProcessing(true)
 
     try {
+      console.log('Sending query to edge function:', message)
+      
       // Process query using edge function
       const { data, error } = await supabase.functions.invoke('process-client-query', {
         body: { query: message }
       })
 
-      if (error) throw error
+      console.log('Edge function response:', { data, error })
+
+      if (error) {
+        console.error('Edge function error:', error)
+        throw error
+      }
 
       // Add assistant response
       const assistantMessage: ChatMessage = {
@@ -51,7 +58,7 @@ export function useCustomerQuery() {
       const errorMessage: ChatMessage = {
         id: uuidv4(),
         role: 'assistant',
-        content: 'I encountered an error processing your request. Please try rephrasing your query.',
+        content: 'I encountered an error processing your request. Please try again in a moment.',
         timestamp: new Date().toISOString(),
         metadata: {
           error: error instanceof Error ? error.message : 'Unknown error'
@@ -72,6 +79,8 @@ export function useCustomerQuery() {
   const executeSegment = async (segment: SavedSegment) => {
     setIsProcessing(true)
     try {
+      console.log('Executing saved segment:', segment.name)
+      
       const { data, error } = await supabase.functions.invoke('process-client-query', {
         body: { 
           query: segment.natural_language_query,
