@@ -1,6 +1,8 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 import { Configuration, OpenAIApi } from 'https://esm.sh/openai@4.20.1'
+import "https://deno.land/x/xhr@0.1.0/mod.ts"
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -26,7 +28,8 @@ Some important notes:
 
 Return ONLY the SQL query without any explanation or comments.`
 
-Deno.serve(async (req) => {
+serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -71,7 +74,7 @@ Deno.serve(async (req) => {
 
     console.log('Query results:', results)
 
-    const formattedResults = results[0].map((row: any) => ({
+    const formattedResults = results[0]?.map((row: any) => ({
       clientid: row.clientid,
       firstname: row.firstname,
       lastname: row.lastname,
@@ -88,7 +91,7 @@ Deno.serve(async (req) => {
       call_attempts: row.call_attempts,
       call_outcomes: row.call_outcomes?.split(','),
       has_prescription: row.has_prescription
-    }))
+    })) || []
 
     return new Response(
       JSON.stringify({
