@@ -23,7 +23,22 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { query } = await req.json()
+    // Safely parse request body
+    let requestBody;
+    try {
+      requestBody = await req.json()
+      console.log('Request body:', requestBody)
+    } catch (e) {
+      console.error('Error parsing request body:', e)
+      throw new Error('Invalid JSON in request body')
+    }
+
+    const { query } = requestBody
+    
+    if (!query) {
+      throw new Error('No query provided')
+    }
+
     console.log('Processing query:', query)
 
     // For testing, let's use a simple query first
@@ -37,10 +52,9 @@ serve(async (req) => {
         c.dayphone,
         COUNT(DISTINCT o.orderid) as total_orders,
         MAX(o.orderdate) as last_purchase,
-        SUM(o.totalsale) as total_value
+        COALESCE(SUM(o.totalsale), 0) as total_value
       FROM clients c
-      LEFT JOIN orders o ON c.clientid = o.clientid
-      WHERE o.cancelled = false
+      LEFT JOIN orders o ON c.clientid = o.clientid 
       GROUP BY c.clientid, c.firstname, c.lastname, c.email, c.mobile, c.dayphone
       LIMIT 5
     `
@@ -59,12 +73,16 @@ serve(async (req) => {
 
     console.log('Query results:', results)
 
+    const response = {
+      message: `Found ${results?.[0]?.length || 0} results`,
+      results: results?.[0] || [],
+      queryId: crypto.randomUUID()
+    }
+
+    console.log('Sending response:', response)
+
     return new Response(
-      JSON.stringify({
-        message: `Found ${results?.[0]?.length || 0} results`,
-        results: results?.[0] || [],
-        queryId: crypto.randomUUID()
-      }),
+      JSON.stringify(response),
       {
         headers: { 
           ...corsHeaders,
@@ -75,11 +93,16 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error processing request:', error)
+    
+    const errorResponse = {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      message: "Failed to process query"
+    }
+    
+    console.log('Sending error response:', errorResponse)
+    
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        message: "Failed to process query"
-      }),
+      JSON.stringify(errorResponse),
       {
         status: 500,
         headers: { 
