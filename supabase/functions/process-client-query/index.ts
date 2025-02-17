@@ -23,64 +23,71 @@ serve(async (req) => {
 
     console.log('Received query:', query);
 
-    // Let's check what's in the tables first
-    const tablesQuery = `
+    // First let's find customers who have ordered Eliquis
+    const customerQuery = `
+      WITH eliquis_orders AS (
+        SELECT DISTINCT 
+          o.clientid,
+          o.orderdate,
+          COUNT(*) OVER (PARTITION BY o.clientid) as order_count,
+          MAX(o.orderdate) OVER (PARTITION BY o.clientid) as last_order_date
+        FROM orders o
+        JOIN newdrugdetails ndd ON o.drugdetailid = ndd.id
+        JOIN newdrugs nd ON ndd.drugid = nd.drugid
+        WHERE 
+          (nd.nameus ILIKE '%eliquis%' OR nd.chemical ILIKE '%apixaban%')
+          AND o.cancelled = false
+      )
+      SELECT DISTINCT
+        c.clientid,
+        c.firstname,
+        c.lastname,
+        c.email,
+        c.mobile,
+        c.dayphone,
+        eo.last_order_date as last_purchase,
+        eo.order_count as total_orders
+      FROM clients c
+      JOIN eliquis_orders eo ON c.clientid = eo.clientid
+      WHERE 
+        eo.order_count > 2 
+        AND eo.last_order_date < NOW() - INTERVAL '3 months'
+      ORDER BY eo.last_order_date DESC;
+    `;
+
+    console.log('Executing query:', customerQuery);
+
+    const { data: results, error } = await supabaseClient.rpc('execute_ai_query', {
+      query_text: customerQuery
+    });
+
+    if (error) {
+      console.error('Query error:', error);
+      throw error;
+    }
+
+    console.log('Query results:', results);
+
+    // Also get some sample data to verify our tables have data
+    const verificationQuery = `
       SELECT 
-        table_name,
-        (SELECT COUNT(*) FROM ${table_name}) as row_count
-      FROM information_schema.tables
-      WHERE table_schema = 'public'
-      AND table_name IN ('newdrugs', 'newdrugdetails', 'orders', 'clients')
+        (SELECT COUNT(*) FROM orders) as total_orders,
+        (SELECT COUNT(*) FROM newdrugs WHERE nameus ILIKE '%eliquis%' OR chemical ILIKE '%apixaban%') as eliquis_drugs,
+        (SELECT COUNT(*) FROM newdrugdetails) as total_drug_details,
+        (SELECT COUNT(*) FROM clients) as total_clients;
     `;
 
-    const { data: tableInfo } = await supabaseClient.rpc('execute_ai_query', {
-      query_text: tablesQuery
+    const { data: verificationData } = await supabaseClient.rpc('execute_ai_query', {
+      query_text: verificationQuery
     });
 
-    console.log('Table information:', tableInfo);
-
-    // Let's look at a sample from each table
-    const drugsQuery = `
-      SELECT drugid, nameus, chemical 
-      FROM newdrugs 
-      LIMIT 5
-    `;
-
-    const drugDetailsQuery = `
-      SELECT id, drugid, strength, nameil 
-      FROM newdrugdetails 
-      LIMIT 5
-    `;
-
-    const ordersQuery = `
-      SELECT orderid, clientid, drugdetailid 
-      FROM orders 
-      ORDER BY orderdate DESC 
-      LIMIT 5
-    `;
-
-    const { data: drugs } = await supabaseClient.rpc('execute_ai_query', {
-      query_text: drugsQuery
-    });
-
-    const { data: drugDetails } = await supabaseClient.rpc('execute_ai_query', {
-      query_text: drugDetailsQuery
-    });
-
-    const { data: orders } = await supabaseClient.rpc('execute_ai_query', {
-      query_text: ordersQuery
-    });
-
-    console.log('Sample drugs:', drugs);
-    console.log('Sample drug details:', drugDetails);
-    console.log('Sample orders:', orders);
+    console.log('Verification data:', verificationData);
 
     return new Response(JSON.stringify({ 
+      results,
       debug: {
-        tableInfo,
-        drugs,
-        drugDetails,
-        orders
+        verificationData,
+        query: customerQuery
       }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
