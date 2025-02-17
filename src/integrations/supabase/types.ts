@@ -2827,6 +2827,21 @@ export type Database = {
           },
         ]
       }
+      vw_order_analytics: {
+        Row: {
+          assigned_warehouse: string | null
+          client_name: string | null
+          delay_reason: string | null
+          has_stock_issue: boolean | null
+          orderbilled: number | null
+          orderdate: string | null
+          orderid: number | null
+          orderstatus: string | null
+          payment_status: string | null
+          totalsale: number | null
+        }
+        Relationships: []
+      }
       vw_order_details: {
         Row: {
           cancelled: boolean | null
@@ -3089,6 +3104,14 @@ export type Database = {
       postgres_fdw_handler: {
         Args: Record<PropertyKey, never>
         Returns: unknown
+      }
+      update_order_status: {
+        Args: {
+          p_order_id: number
+          p_new_status: number
+          p_changed_by: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
