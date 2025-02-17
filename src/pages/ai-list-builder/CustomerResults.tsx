@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast"
 import { CustomerResult } from "./types"
 import { supabase } from "@/integrations/supabase/client"
-import { Phone, CheckCircle } from "lucide-react"
+import { Phone, CheckCircle, Printer, ExternalLink, MessageCircle } from "lucide-react"
 
 interface CustomerResultsProps {
   results: CustomerResult[]
@@ -53,10 +53,54 @@ export function CustomerResults({ results }: CustomerResultsProps) {
     }
   }
 
+  const handleOpenZendesk = (customer: CustomerResult) => {
+    // This is a placeholder - would need to be configured with actual Zendesk domain and integration
+    const zendeskUrl = `https://your-domain.zendesk.com/agent/users/search/2?query=${encodeURIComponent(customer.email)}`
+    window.open(zendeskUrl, '_blank')
+  }
+
+  const handlePrintList = () => {
+    const printContent = results.map(customer => `
+      Customer: ${customer.firstname} ${customer.lastname}
+      Email: ${customer.email}
+      Phone: ${customer.dayphone || 'N/A'}
+      Mobile: ${customer.mobile || 'N/A'}
+      Orders: ${customer.total_orders}
+      Value: $${customer.total_value?.toFixed(2)}
+      Last Purchase: ${new Date(customer.last_purchase).toLocaleDateString()}
+      ${'-'.repeat(50)}
+    `).join('\n')
+
+    const printWindow = window.open('', '_blank')
+    printWindow?.document.write(`
+      <html>
+        <head>
+          <title>Customer List</title>
+          <style>
+            body { font-family: monospace; white-space: pre; padding: 20px; }
+          </style>
+        </head>
+        <body>
+          ${printContent}
+        </body>
+      </html>
+    `)
+    printWindow?.document.close()
+    printWindow?.print()
+  }
+
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Results</CardTitle>
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={handlePrintList}
+        >
+          <Printer className="h-4 w-4 mr-2" />
+          Print List
+        </Button>
       </CardHeader>
       <CardContent>
         <div className="text-sm text-muted-foreground mb-4">
@@ -69,20 +113,53 @@ export function CustomerResults({ results }: CustomerResultsProps) {
               className="p-4 border rounded-lg hover:bg-accent transition-colors"
             >
               <div className="flex justify-between items-start">
-                <div>
-                  <div className="font-medium">
-                    {customer.firstname} {customer.lastname}
+                <div className="space-y-2 flex-1">
+                  <div>
+                    <div className="font-medium">
+                      {customer.firstname} {customer.lastname}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {customer.email}
+                    </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    {customer.email}
+                  
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <div className="font-medium">Contact Details</div>
+                      <div>Phone: {customer.dayphone || 'N/A'}</div>
+                      <div>Mobile: {customer.mobile || 'N/A'}</div>
+                    </div>
+                    <div>
+                      <div className="font-medium">Order Summary</div>
+                      <div>Total Orders: {customer.total_orders}</div>
+                      <div>Total Value: ${customer.total_value?.toFixed(2)}</div>
+                      <div>Last Purchase: {new Date(customer.last_purchase).toLocaleDateString()}</div>
+                    </div>
                   </div>
-                  <div className="text-sm mt-1">
-                    Orders: {customer.total_orders} | 
-                    Value: ${customer.total_value?.toFixed(2)} |
-                    Last Purchase: {new Date(customer.last_purchase).toLocaleDateString()}
-                  </div>
+
+                  {customer.last_order_details && (
+                    <div>
+                      <div className="font-medium">Last Order Details</div>
+                      <div className="text-sm">
+                        Drug: {customer.last_order_details.drug_name} |
+                        Quantity: {customer.last_order_details.quantity} |
+                        Value: ${customer.last_order_details.value?.toFixed(2)} |
+                        Date: {new Date(customer.last_order_details.date).toLocaleDateString()}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="flex gap-2">
+
+                <div className="flex gap-2 ml-4">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleOpenZendesk(customer)}
+                  >
+                    <MessageCircle className="h-4 w-4 mr-1" />
+                    Zendesk
+                  </Button>
+                  
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button 
