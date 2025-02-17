@@ -8,7 +8,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast"
 import { CustomerResult, CallOutcome } from "./types"
 import { supabase } from "@/integrations/supabase/client"
-import { Phone, CheckCircle, Printer, Search, MessageSquare } from "lucide-react"
+import { Phone, CheckCircle, Printer, Search, MessageSquare, CalendarIcon } from "lucide-react"
+import { format, isAfter, isBefore, parseISO, subMonths } from "date-fns"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface CustomerResultsProps {
   results: CustomerResult[]
@@ -18,15 +26,39 @@ export function CustomerResults({ results }: CustomerResultsProps) {
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerResult | null>(null)
   const [notes, setNotes] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
+  const [dateFilter, setDateFilter] = useState("all")
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 
   if (results.length === 0) return null
 
-  const filteredResults = results.filter(customer => 
-    customer.firstname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.lastname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  const getDateFilteredResults = (customers: CustomerResult[]) => {
+    const now = new Date()
+    return customers.filter(customer => {
+      if (!customer.last_purchase) return false
+      const purchaseDate = parseISO(customer.last_purchase)
+      
+      switch (dateFilter) {
+        case "1month":
+          return isAfter(purchaseDate, subMonths(now, 1))
+        case "3months":
+          return isAfter(purchaseDate, subMonths(now, 3))
+        case "6months":
+          return isAfter(purchaseDate, subMonths(now, 6))
+        case "12months":
+          return isAfter(purchaseDate, subMonths(now, 12))
+        default:
+          return true
+      }
+    })
+  }
+
+  const filteredResults = getDateFilteredResults(
+    results.filter(customer => 
+      customer.firstname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.lastname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
   )
 
   const handleLogCall = async (customerId: number, outcome: CallOutcome) => {
@@ -97,10 +129,26 @@ export function CustomerResults({ results }: CustomerResultsProps) {
   }
 
   return (
-    <Card>
+    <Card className="bg-background">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Results ({filteredResults.length} customers)</CardTitle>
+        <CardTitle className="text-foreground">Results ({filteredResults.length} customers)</CardTitle>
         <div className="flex items-center gap-2">
+          <Select
+            value={dateFilter}
+            onValueChange={setDateFilter}
+          >
+            <SelectTrigger className="w-[180px]">
+              <CalendarIcon className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Filter by last purchase" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="1month">Last Month</SelectItem>
+              <SelectItem value="3months">Last 3 Months</SelectItem>
+              <SelectItem value="6months">Last 6 Months</SelectItem>
+              <SelectItem value="12months">Last Year</SelectItem>
+            </SelectContent>
+          </Select>
           <div className="relative w-64">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -125,12 +173,12 @@ export function CustomerResults({ results }: CustomerResultsProps) {
           {filteredResults.map((customer) => (
             <Card 
               key={customer.clientid}
-              className="hover:bg-accent transition-colors"
+              className="hover:bg-accent transition-colors bg-card"
             >
               <CardContent className="p-4">
                 <div className="space-y-4">
                   <div>
-                    <div className="font-medium text-lg">
+                    <div className="font-medium text-lg text-card-foreground">
                       {customer.firstname} {customer.lastname}
                     </div>
                     <div className="text-sm text-muted-foreground">
@@ -140,27 +188,22 @@ export function CustomerResults({ results }: CustomerResultsProps) {
                   
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
-                      <div className="font-medium">Contact</div>
+                      <div className="font-medium text-card-foreground">Contact</div>
                       <div>📱 {customer.mobile || 'N/A'}</div>
                       <div>☎️ {customer.dayphone || 'N/A'}</div>
                     </div>
                     <div>
-                      <div className="font-medium">Orders</div>
+                      <div className="font-medium text-card-foreground">Orders</div>
                       <div>🛍️ Total: {customer.total_orders}</div>
                       <div>💰 Value: ${customer.total_value?.toFixed(2)}</div>
                     </div>
                   </div>
 
-                  {customer.last_order_details && (
+                  {customer.last_purchase && (
                     <div className="text-sm">
-                      <div className="font-medium">Last Order</div>
-                      <div>
-                        {customer.last_order_details.drug_name} |
-                        Qty: {customer.last_order_details.quantity} |
-                        ${customer.last_order_details.value?.toFixed(2)}
-                      </div>
+                      <div className="font-medium text-card-foreground">Last Purchase</div>
                       <div className="text-muted-foreground">
-                        📅 {new Date(customer.last_order_details.date).toLocaleDateString()}
+                        📅 {format(parseISO(customer.last_purchase), "MMM d, yyyy")}
                       </div>
                     </div>
                   )}
