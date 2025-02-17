@@ -4,8 +4,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+  'Access-Control-Allow-Headers': '*',
   'Access-Control-Max-Age': '86400',
 }
 
@@ -16,6 +16,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Request received:', req.method)
+    
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -24,7 +26,7 @@ serve(async (req) => {
     const { query } = await req.json()
     console.log('Processing query:', query)
 
-    // For testing, let's start with a simple query to verify the connection
+    // For testing, let's use a simple query first
     const sqlQuery = `
       SELECT 
         c.clientid,
@@ -40,7 +42,7 @@ serve(async (req) => {
       LEFT JOIN orders o ON c.clientid = o.clientid
       WHERE o.cancelled = false
       GROUP BY c.clientid, c.firstname, c.lastname, c.email, c.mobile, c.dayphone
-      LIMIT 10
+      LIMIT 5
     `
 
     console.log('Executing query:', sqlQuery)
@@ -57,23 +59,10 @@ serve(async (req) => {
 
     console.log('Query results:', results)
 
-    // Format the results
-    const formattedResults = results[0]?.map((row: any) => ({
-      clientid: row.clientid,
-      firstname: row.firstname,
-      lastname: row.lastname,
-      email: row.email,
-      mobile: row.mobile,
-      dayphone: row.dayphone,
-      total_orders: row.total_orders,
-      last_purchase: row.last_purchase,
-      total_value: row.total_value
-    })) || []
-
     return new Response(
       JSON.stringify({
-        message: `Found ${formattedResults.length} results`,
-        results: formattedResults,
+        message: `Found ${results?.[0]?.length || 0} results`,
+        results: results?.[0] || [],
         queryId: crypto.randomUUID()
       }),
       {

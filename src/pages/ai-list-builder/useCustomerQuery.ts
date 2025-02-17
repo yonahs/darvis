@@ -25,9 +25,13 @@ export function useCustomerQuery() {
     try {
       console.log('Sending query to edge function:', message)
       
-      // Process query using edge function
+      // Process query using edge function with explicit headers
       const { data, error } = await supabase.functions.invoke('process-client-query', {
-        body: { query: message }
+        body: { query: message },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabase.auth.session()?.access_token}`,
+        }
       })
 
       console.log('Edge function response:', { data, error })
@@ -85,6 +89,10 @@ export function useCustomerQuery() {
         body: { 
           query: segment.natural_language_query,
           metadata: segment.metadata
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabase.auth.session()?.access_token}`,
         }
       })
 
