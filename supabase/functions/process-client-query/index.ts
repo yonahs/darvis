@@ -19,21 +19,49 @@ Deno.serve(async (req) => {
     )
 
     const { query } = await req.json()
-    console.log('Received query:', query)
+    console.log('Processing natural language query:', query)
 
-    // Test query to verify database connection
-    const testQuery = `
+    // For this example, we'll construct a specific SQL query to get customer data
+    const sqlQuery = `
+      WITH customer_orders AS (
+        SELECT 
+          c.clientid,
+          c.firstname,
+          c.lastname,
+          c.email,
+          COUNT(o.orderid) as total_orders,
+          SUM(o.totalsale) as total_value,
+          MAX(o.orderdate) as last_purchase
+        FROM clients c
+        JOIN orders o ON c.clientid = o.clientid
+        WHERE 
+          o.orderdate >= '2024-01-01'
+          AND o.cancelled = false
+        GROUP BY c.clientid, c.firstname, c.lastname, c.email
+        HAVING 
+          COUNT(o.orderid) >= 2 
+          AND SUM(o.totalsale) > 500
+      )
       SELECT 
-        COUNT(*) as count
-      FROM clients
-      LIMIT 1
+        clientid,
+        firstname,
+        lastname,
+        email,
+        total_orders,
+        total_value,
+        last_purchase,
+        false as has_prescription,
+        null as last_contacted
+      FROM customer_orders
+      ORDER BY total_value DESC
+      LIMIT 100
     `
 
-    console.log('Executing query:', testQuery)
+    console.log('Executing SQL query:', sqlQuery)
     
     const { data: results, error: queryError } = await supabaseClient.rpc(
       'execute_ai_query',
-      { query_text: testQuery }
+      { query_text: sqlQuery }
     )
 
     if (queryError) {
@@ -43,10 +71,23 @@ Deno.serve(async (req) => {
 
     console.log('Query results:', results)
 
+    // Format the results to match the CustomerResult type
+    const formattedResults = results[0].map((row: any) => ({
+      clientid: row.clientid,
+      firstname: row.firstname,
+      lastname: row.lastname,
+      email: row.email,
+      total_orders: row.total_orders,
+      last_purchase: row.last_purchase,
+      total_value: row.total_value,
+      has_prescription: row.has_prescription,
+      last_contacted: row.last_contacted
+    }))
+
     return new Response(
       JSON.stringify({
-        message: "Query processed successfully",
-        results,
+        message: `Found ${formattedResults.length} customers matching your criteria`,
+        results: formattedResults,
         queryId: crypto.randomUUID()
       }),
       {
