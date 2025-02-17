@@ -20,8 +20,9 @@ Deno.serve(async (req) => {
     const { query } = await req.json()
     console.log('Processing natural language query:', query)
 
+    // Optimized query with simpler subqueries and better JOIN conditions
     const sqlQuery = `
-      WITH customer_orders AS (
+      WITH base_customers AS (
         SELECT 
           c.clientid,
           c.firstname,
@@ -32,42 +33,13 @@ Deno.serve(async (req) => {
           COUNT(o.orderid) as total_orders,
           SUM(o.totalsale) as total_value,
           MAX(o.orderdate) as last_purchase,
-          (
-            SELECT row_to_json(last_order) FROM (
-              SELECT 
-                nd.nameus as drug_name,
-                o2.amount as quantity,
-                o2.totalsale as value,
-                o2.orderdate as date
-              FROM orders o2
-              JOIN newdrugs nd ON o2.drugid = nd.drugid
-              WHERE o2.clientid = c.clientid
-              ORDER BY o2.orderdate DESC
-              LIMIT 1
-            ) last_order
-          ) as last_order_details,
-          (
-            SELECT COUNT(*) 
-            FROM customer_call_logs ccl 
-            WHERE ccl.client_id = c.clientid
-          ) as call_attempts,
-          (
-            SELECT string_agg(ccl.outcome::text, ',') 
-            FROM customer_call_logs ccl 
-            WHERE ccl.client_id = c.clientid
-          ) as call_outcomes,
           cra.risk_level,
-          cra.is_flagged,
-          (
-            SELECT MAX(called_at)::text 
-            FROM customer_call_logs ccl 
-            WHERE ccl.client_id = c.clientid
-          ) as last_contacted
+          cra.is_flagged
         FROM clients c
         JOIN orders o ON c.clientid = o.clientid
         LEFT JOIN client_risk_assessments cra ON c.clientid = cra.client_id
         WHERE 
-          o.orderdate >= '2024-01-01'
+          o.orderdate >= CURRENT_DATE - INTERVAL '6 months'
           AND o.cancelled = false
         GROUP BY 
           c.clientid, c.firstname, c.lastname, c.email, c.mobile, c.dayphone,
@@ -75,15 +47,47 @@ Deno.serve(async (req) => {
         HAVING 
           COUNT(o.orderid) >= 2 
           AND SUM(o.totalsale) > 500
+        LIMIT 100
+      ),
+      last_orders AS (
+        SELECT DISTINCT ON (o.clientid)
+          o.clientid,
+          nd.nameus as drug_name,
+          o.amount as quantity,
+          o.totalsale as value,
+          o.orderdate as date
+        FROM orders o
+        JOIN newdrugs nd ON o.drugid = nd.drugid
+        JOIN base_customers bc ON o.clientid = bc.clientid
+        WHERE o.cancelled = false
+        ORDER BY o.clientid, o.orderdate DESC
+      ),
+      call_stats AS (
+        SELECT 
+          client_id,
+          COUNT(*) as call_attempts,
+          string_agg(outcome::text, ',') as call_outcomes,
+          MAX(called_at)::text as last_contacted
+        FROM customer_call_logs
+        JOIN base_customers bc ON client_id = bc.clientid
+        GROUP BY client_id
       )
       SELECT 
-        *,
-        EXISTS (
-          SELECT 1 FROM clientrx cr WHERE cr.clientid = customer_orders.clientid
-        ) as has_prescription
-      FROM customer_orders
-      ORDER BY total_value DESC
-      LIMIT 100
+        bc.*,
+        json_build_object(
+          'drug_name', lo.drug_name,
+          'quantity', lo.quantity,
+          'value', lo.value,
+          'date', lo.date
+        ) as last_order_details,
+        cs.call_attempts,
+        cs.call_outcomes,
+        cs.last_contacted,
+        EXISTS (SELECT 1 FROM clientrx cr WHERE cr.clientid = bc.clientid) as has_prescription
+      FROM base_customers bc
+      LEFT JOIN last_orders lo ON bc.clientid = lo.clientid
+      LEFT JOIN call_stats cs ON bc.clientid = cs.client_id
+      ORDER BY bc.total_value DESC
     `
 
     console.log('Executing SQL query:', sqlQuery)
