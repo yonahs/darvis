@@ -1,4 +1,6 @@
 
+export type CallOutcome = 'completed' | 'no_answer' | 'follow_up' | 'not_interested';
+
 export interface CustomerResult {
   clientid: number
   firstname: string
@@ -13,7 +15,7 @@ export interface CustomerResult {
   is_flagged?: boolean
   last_contacted?: string
   call_attempts?: number
-  call_outcomes?: string[]
+  call_outcomes?: CallOutcome[]
   has_prescription?: boolean
   total_tickets?: number
   open_tickets?: number
