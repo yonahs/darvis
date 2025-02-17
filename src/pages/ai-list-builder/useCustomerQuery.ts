@@ -25,12 +25,14 @@ export function useCustomerQuery() {
     try {
       console.log('Sending query to edge function:', message)
       
+      const { data: sessionData } = await supabase.auth.getSession()
+      
       // Process query using edge function with explicit headers
       const { data, error } = await supabase.functions.invoke('process-client-query', {
         body: { query: message },
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.auth.session()?.access_token}`,
+          'Authorization': `Bearer ${sessionData?.session?.access_token}`,
         }
       })
 
@@ -85,6 +87,8 @@ export function useCustomerQuery() {
     try {
       console.log('Executing saved segment:', segment.name)
       
+      const { data: sessionData } = await supabase.auth.getSession()
+      
       const { data, error } = await supabase.functions.invoke('process-client-query', {
         body: { 
           query: segment.natural_language_query,
@@ -92,7 +96,7 @@ export function useCustomerQuery() {
         },
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.auth.session()?.access_token}`,
+          'Authorization': `Bearer ${sessionData?.session?.access_token}`,
         }
       })
 
