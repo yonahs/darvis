@@ -19,6 +19,12 @@ export interface CustomerResult {
   open_tickets?: number
   last_ticket_date?: string
   last_call?: string
+  last_order_details?: {
+    drug_name: string
+    quantity: number
+    value: number
+    date: string
+  }
 }
 
 export interface SavedSegment {
