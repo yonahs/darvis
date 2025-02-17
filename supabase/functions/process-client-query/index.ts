@@ -20,34 +20,33 @@ Deno.serve(async (req) => {
     const { query } = await req.json()
     console.log('Processing natural language query:', query)
 
-    // Optimized query with simpler subqueries and better JOIN conditions
+    // Query to find lapsed Eliquis customers
     const sqlQuery = `
-      WITH base_customers AS (
-        SELECT 
+      WITH eliquis_customers AS (
+        SELECT DISTINCT 
           c.clientid,
           c.firstname,
           c.lastname,
           c.email,
           c.mobile,
           c.dayphone,
-          COUNT(o.orderid) as total_orders,
+          COUNT(DISTINCT o.orderid) as total_orders,
           SUM(o.totalsale) as total_value,
           MAX(o.orderdate) as last_purchase,
-          cra.risk_level,
-          cra.is_flagged
+          MIN(o.orderdate) as first_purchase
         FROM clients c
         JOIN orders o ON c.clientid = o.clientid
-        LEFT JOIN client_risk_assessments cra ON c.clientid = cra.client_id
+        JOIN newdrugdetails ndd ON o.drugdetailid = ndd.id
+        JOIN newdrugs nd ON ndd.drugid = nd.drugid
         WHERE 
-          o.orderdate >= CURRENT_DATE - INTERVAL '6 months'
+          nd.nameus = 'Eliquis'
           AND o.cancelled = false
         GROUP BY 
-          c.clientid, c.firstname, c.lastname, c.email, c.mobile, c.dayphone,
-          cra.risk_level, cra.is_flagged
+          c.clientid, c.firstname, c.lastname, c.email, c.mobile, c.dayphone
         HAVING 
-          COUNT(o.orderid) >= 2 
-          AND SUM(o.totalsale) > 500
-        LIMIT 100
+          COUNT(DISTINCT o.orderid) >= 2  -- At least 2 orders
+          AND MAX(o.orderdate) < CURRENT_DATE - INTERVAL '3 months'  -- No orders in last 3 months
+          AND MIN(o.orderdate) < MAX(o.orderdate)  -- Show purchasing history
       ),
       last_orders AS (
         SELECT DISTINCT ON (o.clientid)
@@ -57,8 +56,9 @@ Deno.serve(async (req) => {
           o.totalsale as value,
           o.orderdate as date
         FROM orders o
-        JOIN newdrugs nd ON o.drugid = nd.drugid
-        JOIN base_customers bc ON o.clientid = bc.clientid
+        JOIN newdrugdetails ndd ON o.drugdetailid = ndd.id
+        JOIN newdrugs nd ON ndd.drugid = nd.drugid
+        JOIN eliquis_customers ec ON o.clientid = ec.clientid
         WHERE o.cancelled = false
         ORDER BY o.clientid, o.orderdate DESC
       ),
@@ -69,11 +69,10 @@ Deno.serve(async (req) => {
           string_agg(outcome::text, ',') as call_outcomes,
           MAX(called_at)::text as last_contacted
         FROM customer_call_logs
-        JOIN base_customers bc ON client_id = bc.clientid
         GROUP BY client_id
       )
       SELECT 
-        bc.*,
+        ec.*,
         json_build_object(
           'drug_name', lo.drug_name,
           'quantity', lo.quantity,
@@ -83,11 +82,11 @@ Deno.serve(async (req) => {
         cs.call_attempts,
         cs.call_outcomes,
         cs.last_contacted,
-        EXISTS (SELECT 1 FROM clientrx cr WHERE cr.clientid = bc.clientid) as has_prescription
-      FROM base_customers bc
-      LEFT JOIN last_orders lo ON bc.clientid = lo.clientid
-      LEFT JOIN call_stats cs ON bc.clientid = cs.client_id
-      ORDER BY bc.total_value DESC
+        EXISTS (SELECT 1 FROM clientrx cr WHERE cr.clientid = ec.clientid) as has_prescription
+      FROM eliquis_customers ec
+      LEFT JOIN last_orders lo ON ec.clientid = lo.clientid
+      LEFT JOIN call_stats cs ON ec.clientid = cs.client_id
+      ORDER BY ec.last_purchase DESC
     `
 
     console.log('Executing SQL query:', sqlQuery)
@@ -125,7 +124,7 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        message: `Found ${formattedResults.length} customers matching your criteria`,
+        message: `Found ${formattedResults.length} lapsed Eliquis customers who haven't ordered in the last 3 months`,
         results: formattedResults,
         queryId: crypto.randomUUID()
       }),
