@@ -39,9 +39,9 @@ export function ChatInterface({
   }
 
   return (
-    <div className="flex flex-col h-[400px] border rounded-lg bg-background">
+    <div className="flex flex-col h-[400px] border rounded-lg bg-background w-full">
       <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
-        <div className="space-y-4">
+        <div className="space-y-4 w-full">
           {messages.map((message) => (
             <div
               key={message.id}
@@ -64,8 +64,8 @@ export function ChatInterface({
         </div>
       </ScrollArea>
 
-      <form onSubmit={handleSubmit} className="p-4 border-t">
-        <div className="flex gap-2">
+      <form onSubmit={handleSubmit} className="p-4 border-t w-full">
+        <div className="flex gap-2 w-full">
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
