@@ -1,32 +1,13 @@
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
-import { Configuration, OpenAIApi } from 'https://esm.sh/openai@4.20.1'
-import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Max-Age': '86400',
 }
-
-const systemPrompt = `You are a SQL query generator for a pharmacy database. Generate SQL queries based on natural language requests.
-The database has these main tables:
-- clients (clientid, firstname, lastname, email, mobile, dayphone)
-- orders (orderid, clientid, drugdetailid, orderdate, totalsale, cancelled)
-- newdrugs (drugid, nameus, chemical)
-- newdrugdetails (id, drugid, strength)
-- customer_call_logs (client_id, outcome, called_at)
-- clientrx (clientid, dateuploaded)
-
-Some important notes:
-1. Always use client_id when joining with customer_call_logs
-2. Use drugdetailid to join orders with newdrugdetails
-3. Filter out cancelled orders with "cancelled = false"
-4. Use proper date intervals for time-based queries
-5. Include relevant customer contact information
-6. Always return results ordered by most relevant criteria first
-
-Return ONLY the SQL query without any explanation or comments.`
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -41,30 +22,32 @@ serve(async (req) => {
     )
 
     const { query } = await req.json()
-    console.log('Processing natural language query:', query)
+    console.log('Processing query:', query)
 
-    // Initialize OpenAI
-    const configuration = new Configuration({
-      apiKey: Deno.env.get('OPENAI_API_KEY'),
-    })
-    const openai = new OpenAIApi(configuration)
+    // For testing, let's start with a simple query to verify the connection
+    const sqlQuery = `
+      SELECT 
+        c.clientid,
+        c.firstname,
+        c.lastname,
+        c.email,
+        c.mobile,
+        c.dayphone,
+        COUNT(DISTINCT o.orderid) as total_orders,
+        MAX(o.orderdate) as last_purchase,
+        SUM(o.totalsale) as total_value
+      FROM clients c
+      LEFT JOIN orders o ON c.clientid = o.clientid
+      WHERE o.cancelled = false
+      GROUP BY c.clientid, c.firstname, c.lastname, c.email, c.mobile, c.dayphone
+      LIMIT 10
+    `
 
-    // Generate SQL query using GPT
-    const completion = await openai.createChatCompletion({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: query }
-      ]
-    })
-
-    const generatedQuery = completion.data.choices[0].message?.content || ''
-    console.log('Generated SQL query:', generatedQuery)
-
-    // Execute the generated query
+    console.log('Executing query:', sqlQuery)
+    
     const { data: results, error: queryError } = await supabaseClient.rpc(
       'execute_ai_query',
-      { query_text: generatedQuery }
+      { query_text: sqlQuery }
     )
 
     if (queryError) {
@@ -74,6 +57,7 @@ serve(async (req) => {
 
     console.log('Query results:', results)
 
+    // Format the results
     const formattedResults = results[0]?.map((row: any) => ({
       clientid: row.clientid,
       firstname: row.firstname,
@@ -83,41 +67,34 @@ serve(async (req) => {
       dayphone: row.dayphone,
       total_orders: row.total_orders,
       last_purchase: row.last_purchase,
-      total_value: row.total_value,
-      last_order_details: row.last_order_details,
-      risk_level: row.risk_level,
-      is_flagged: row.is_flagged,
-      last_contacted: row.last_contacted,
-      call_attempts: row.call_attempts,
-      call_outcomes: row.call_outcomes?.split(','),
-      has_prescription: row.has_prescription
+      total_value: row.total_value
     })) || []
 
     return new Response(
       JSON.stringify({
-        message: `Found ${formattedResults.length} customers matching your criteria`,
+        message: `Found ${formattedResults.length} results`,
         results: formattedResults,
         queryId: crypto.randomUUID()
       }),
       {
         headers: { 
-          ...corsHeaders, 
+          ...corsHeaders,
           'Content-Type': 'application/json'
         },
       }
     )
 
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error processing request:', error)
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        message: "Failed to process query. Please try again."
+        message: "Failed to process query"
       }),
       {
         status: 500,
         headers: { 
-          ...corsHeaders, 
+          ...corsHeaders,
           'Content-Type': 'application/json'
         },
       }
