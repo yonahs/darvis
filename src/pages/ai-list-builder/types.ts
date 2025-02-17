@@ -17,15 +17,22 @@ export interface CustomerResult {
   has_prescription?: boolean
   total_tickets?: number
   open_tickets?: number
+  last_ticket_date?: string
+  last_call?: string
 }
 
 export interface SavedSegment {
   id: string
   name: string
+  created_by: string
   description: string | null
   natural_language_query: string
+  structured_query: Record<string, any>
   created_at: string
   last_executed_at: string | null
+  next_refresh_at: string | null
+  version: number
+  is_active: boolean
   execution_count: number
   result_count: number
   metadata: {

@@ -36,7 +36,21 @@ const AiListBuilder = () => {
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setSavedSegments(data)
+
+      // Transform data to match SavedSegment interface
+      const transformedData: SavedSegment[] = (data || []).map(segment => ({
+        ...segment,
+        execution_count: 0,
+        result_count: 0,
+        metadata: segment.metadata || {
+          criteria: {},
+          filters: {},
+          sortBy: undefined,
+          sortOrder: undefined
+        }
+      }))
+
+      setSavedSegments(transformedData)
     } catch (error) {
       console.error('Error loading segments:', error)
       toast({
