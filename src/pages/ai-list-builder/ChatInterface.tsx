@@ -39,7 +39,7 @@ export function ChatInterface({
   }
 
   return (
-    <div className="flex flex-col h-[400px] border rounded-lg bg-background w-full">
+    <div className="flex flex-col h-[400px] rounded-lg bg-white border shadow-sm w-full">
       <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
         <div className="space-y-4 w-full">
           {messages.map((message) => (
@@ -48,29 +48,31 @@ export function ChatInterface({
               className={cn(
                 "flex w-max max-w-[80%] rounded-lg px-4 py-2",
                 message.role === "user"
-                  ? "ml-auto bg-primary text-primary-foreground"
-                  : "bg-muted"
+                  ? "ml-auto bg-[#DCF8C6] text-gray-800"
+                  : message.role === "system"
+                  ? "bg-blue-100 text-blue-800"
+                  : "bg-white border shadow-sm"
               )}
             >
-              <p className="text-sm">{message.content}</p>
+              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
             </div>
           ))}
           {isProcessing && (
             <div className="flex items-center space-x-2 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
-              <p className="text-sm">Processing your request...</p>
+              <p className="text-sm">AI is thinking...</p>
             </div>
           )}
         </div>
       </ScrollArea>
 
-      <form onSubmit={handleSubmit} className="p-4 border-t w-full">
+      <form onSubmit={handleSubmit} className="p-4 border-t bg-gray-50">
         <div className="flex gap-2 w-full">
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask a question about your customers..."
-            className="flex-1 min-h-[60px]"
+            placeholder="Ask about your customers..."
+            className="flex-1 min-h-[60px] bg-white"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault()
@@ -81,7 +83,7 @@ export function ChatInterface({
           <Button 
             type="submit" 
             disabled={!input.trim() || isProcessing}
-            className="self-end"
+            className="self-end bg-[#25D366] hover:bg-[#128C7E] text-white"
           >
             {isProcessing ? (
               <Loader2 className="h-4 w-4 animate-spin" />
