@@ -50,10 +50,21 @@ export function PaymentCard({ clientId }: PaymentCardProps) {
       
       // Ensure we get the correct type by mapping the response
       const uniqueProcessors = (data || []).reduce<ProcessorPayment[]>((acc, curr) => {
-        // Ensure processor is a single object, not an array
+        // Verify processor is a single object with the correct shape
+        if (!curr.processor || Array.isArray(curr.processor)) {
+          console.warn('Invalid processor data:', curr)
+          return acc
+        }
+
         const payment: ProcessorPayment = {
           processorid: curr.processorid,
-          processor: curr.processor as Processor
+          processor: {
+            autoid: curr.processor.autoid,
+            name: curr.processor.name,
+            displayname: curr.processor.displayname,
+            marker: curr.processor.marker,
+            abbrev: curr.processor.abbrev
+          }
         }
         
         if (!acc.find(p => p.processor.autoid === payment.processor.autoid)) {
