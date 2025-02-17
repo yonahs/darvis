@@ -15,79 +15,80 @@ serve(async (req) => {
 
   try {
     const { query } = await req.json()
-    console.log('Received query:', query)
+    console.log('Processing natural language query:', query)
+
+    // Get OpenAI API key from environment
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not configured')
+    }
+
+    // First, have OpenAI understand the query and generate SQL
+    console.log('Asking LLM to interpret query and generate SQL...')
+    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an AI assistant that converts natural language queries into SQL queries.
+            The database contains pharmacy customer and order data with these main tables:
+            - clients (clientid, firstname, lastname, email, address, city, state, country)
+            - orders (orderid, clientid, drugid, drugdetailid, orderdate, shipdate, totalsale, cancelled)
+            - newdrugs (drugid, nameus, chemical, prescription)
+            - newdrugdetails (id, drugid, strength, packsize)
+            
+            Generate a SQL query that:
+            1. Always includes relevant customer information
+            2. Properly joins necessary tables
+            3. Excludes cancelled orders unless specifically requested
+            4. Returns clear, meaningful column names
+            5. Responds only with the SQL query, no other text
+            `
+          },
+          {
+            role: 'user',
+            content: query
+          }
+        ],
+      }),
+    })
+
+    const openAIData = await openAIResponse.json()
+    const generatedSQL = openAIData.choices[0].message.content
+    console.log('LLM generated SQL:', generatedSQL)
 
     // Create Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     const supabase = createClient(supabaseUrl!, supabaseKey!)
 
-    // First, let's check what medications we have in the database
-    console.log('Checking available medications...')
-    const { data: medications, error: medsError } = await supabase
-      .from('newdrugs')
-      .select('drugid, nameus, chemical')
-      .or('nameus.ilike.%ozempic%,chemical.ilike.%semaglutide%')
+    // Execute the generated SQL
+    console.log('Executing generated SQL...')
+    const { data: queryResults, error: queryError } = await supabase
+      .rpc('execute_ai_query', { query_text: generatedSQL })
 
-    if (medsError) {
-      console.error('Error fetching medications:', medsError)
-      throw medsError
+    if (queryError) {
+      console.error('Error executing query:', queryError)
+      throw queryError
     }
 
-    console.log('Available medications:', medications)
+    const results = queryResults?.[0] || []
+    console.log(`Query returned ${results.length} results`)
 
-    // If we found any matching medications, let's get the customer orders
-    let results = []
-    if (medications && medications.length > 0) {
-      const drugIds = medications.map(med => med.drugid)
-      
-      const searchQuery = `
-        SELECT DISTINCT 
-          c.clientid,
-          c.firstname,
-          c.lastname,
-          c.email,
-          o.orderdate,
-          o.shipdate,
-          o.totalsale,
-          nd.nameus as medication_name,
-          nd.chemical as medication_chemical
-        FROM clients c
-        JOIN orders o ON c.clientid = o.clientid
-        JOIN newdrugs nd ON o.drugid = nd.drugid
-        WHERE nd.drugid = ANY($1)
-        ORDER BY o.shipdate DESC NULLS LAST
-      `
-
-      const { data: queryResults, error: queryError } = await supabase
-        .rpc('execute_ai_query', {
-          query_text: searchQuery.replace('$1', `'{${drugIds.join(',')}}'`)
-        })
-
-      if (queryError) {
-        console.error('Error executing customer query:', queryError)
-        throw queryError
-      }
-
-      results = queryResults?.[0] || []
-      console.log(`Found ${results.length} customer orders`)
-    } else {
-      console.log('No matching medications found in the database')
-    }
-
-    // Prepare a more informative response
-    let message = 'No matching medications found in our database.'
-    if (results.length > 0) {
-      message = `Found ${results.length} orders for Ozempic/Semaglutide, sorted by ship date.`
-    }
-
+    // Return results
     return new Response(
       JSON.stringify({
-        message,
+        message: `Found ${results.length} results based on your query.`,
         results,
-        debug: {
-          medications_found: medications?.length || 0,
-          medication_names: medications?.map(m => m.nameus)
+        metadata: {
+          queryId: crypto.randomUUID(),
+          resultCount: results.length
         }
       }),
       { 
@@ -99,7 +100,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Error processing query:', error)
+    console.error('Error in process-client-query:', error)
     return new Response(
       JSON.stringify({
         error: error.message,
