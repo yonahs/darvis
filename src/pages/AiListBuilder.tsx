@@ -31,8 +31,8 @@ const AiListBuilder = () => {
   }, [setMessages])
 
   return (
-    <div className="flex-1">
-      <Tabs defaultValue="chat" className="h-full">
+    <div className="flex-1 w-full max-w-full px-4">
+      <Tabs defaultValue="chat" className="w-full">
         <TabsList>
           <TabsTrigger value="chat">Chat</TabsTrigger>
           <TabsTrigger value="saved">Saved Segments</TabsTrigger>
