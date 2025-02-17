@@ -1,103 +1,125 @@
 
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+}
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    )
 
-    const { query } = await req.json();
+    const { query } = await req.json()
+    console.log('Received query:', query)
 
-    console.log('Received query:', query);
+    // If it's a test query, let's run a simple count
+    if (query.toLowerCase().includes('test connection')) {
+      const testQuery = `
+        SELECT 
+          COUNT(*) as total_clients,
+          COUNT(DISTINCT c.clientid) as unique_clients,
+          COUNT(DISTINCT o.orderid) as total_orders,
+          COALESCE(SUM(o.totalsale), 0) as total_sales
+        FROM clients c
+        LEFT JOIN orders o ON c.clientid = o.clientid
+        WHERE o.cancelled = false OR o.cancelled IS NULL
+      `
 
-    // First let's find customers who have ordered Eliquis
-    const customerQuery = `
-      WITH eliquis_orders AS (
-        SELECT DISTINCT 
-          o.clientid,
-          o.orderdate,
-          COUNT(*) OVER (PARTITION BY o.clientid) as order_count,
-          MAX(o.orderdate) OVER (PARTITION BY o.clientid) as last_order_date
-        FROM orders o
-        JOIN newdrugdetails ndd ON o.drugdetailid = ndd.id
-        JOIN newdrugs nd ON ndd.drugid = nd.drugid
-        WHERE 
-          (nd.nameus ILIKE '%eliquis%' OR nd.chemical ILIKE '%apixaban%')
-          AND o.cancelled = false
+      console.log('Executing test query:', testQuery)
+      
+      const { data: results, error: queryError } = await supabaseClient.rpc(
+        'execute_ai_query',
+        { query_text: testQuery }
       )
-      SELECT DISTINCT
-        c.clientid,
-        c.firstname,
-        c.lastname,
-        c.email,
-        c.mobile,
-        c.dayphone,
-        eo.last_order_date as last_purchase,
-        eo.order_count as total_orders
-      FROM clients c
-      JOIN eliquis_orders eo ON c.clientid = eo.clientid
-      WHERE 
-        eo.order_count > 2 
-        AND eo.last_order_date < NOW() - INTERVAL '3 months'
-      ORDER BY eo.last_order_date DESC;
-    `;
 
-    console.log('Executing query:', customerQuery);
+      if (queryError) {
+        console.error('Query error:', queryError)
+        throw queryError
+      }
 
-    const { data: results, error } = await supabaseClient.rpc('execute_ai_query', {
-      query_text: customerQuery
-    });
+      console.log('Test query results:', results)
 
-    if (error) {
-      console.error('Query error:', error);
-      throw error;
+      return new Response(
+        JSON.stringify({
+          message: "Connection test successful! Here's a summary of your data:",
+          results: results[0],
+          queryId: crypto.randomUUID()
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
     }
 
-    console.log('Query results:', results);
+    // For regular queries, let's get customer data
+    const customerQuery = `
+      WITH customer_summary AS (
+        SELECT 
+          c.clientid,
+          c.firstname,
+          c.lastname,
+          c.email,
+          c.mobile,
+          c.dayphone,
+          COUNT(DISTINCT o.orderid) as total_orders,
+          MAX(o.orderdate) as last_purchase,
+          COALESCE(SUM(o.totalsale), 0) as total_value
+        FROM clients c
+        LEFT JOIN orders o ON c.clientid = o.clientid
+        WHERE (o.cancelled = false OR o.cancelled IS NULL)
+        GROUP BY c.clientid, c.firstname, c.lastname, c.email, c.mobile, c.dayphone
+        HAVING COUNT(DISTINCT o.orderid) > 0
+        ORDER BY MAX(o.orderdate) DESC
+        LIMIT 10
+      )
+      SELECT * FROM customer_summary
+    `
 
-    // Also get some sample data to verify our tables have data
-    const verificationQuery = `
-      SELECT 
-        (SELECT COUNT(*) FROM orders) as total_orders,
-        (SELECT COUNT(*) FROM newdrugs WHERE nameus ILIKE '%eliquis%' OR chemical ILIKE '%apixaban%') as eliquis_drugs,
-        (SELECT COUNT(*) FROM newdrugdetails) as total_drug_details,
-        (SELECT COUNT(*) FROM clients) as total_clients;
-    `;
+    console.log('Executing query:', customerQuery)
 
-    const { data: verificationData } = await supabaseClient.rpc('execute_ai_query', {
-      query_text: verificationQuery
-    });
+    const { data: results, error: queryError } = await supabaseClient.rpc(
+      'execute_ai_query',
+      { query_text: customerQuery }
+    )
 
-    console.log('Verification data:', verificationData);
+    if (queryError) {
+      console.error('Query error:', queryError)
+      throw queryError
+    }
 
-    return new Response(JSON.stringify({ 
-      results,
-      debug: {
-        verificationData,
-        query: customerQuery
+    console.log('Query results:', results)
+
+    return new Response(
+      JSON.stringify({
+        message: "Here are some recent customers:",
+        results,
+        queryId: crypto.randomUUID()
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    )
 
   } catch (error) {
-    console.error('Error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    console.error('Error:', error)
+    return new Response(
+      JSON.stringify({ 
+        error: error.message,
+        message: "Failed to process query. Please try again."
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    )
   }
-});
+})
