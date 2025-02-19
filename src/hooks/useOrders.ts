@@ -26,37 +26,16 @@ export const useOrders = ({
       console.log("Fetching orders with params:", { page, search, statusFilter, dateRange, shipperFilter })
       try {
         let query = supabase
-          .from("orders")
-          .select(`
-            orderid,
-            orderdate,
-            clients!inner (
-              firstname,
-              lastname
-            ),
-            status,
-            totalsale,
-            processor (name),
-            shippers (display_name),
-            cancelled,
-            billed
-          `)
+          .from("vw_order_details")
+          .select("orderid, orderdate, clientname, orderstatus, totalsale, payment, shipper, cancelled, orderbilled")
           .order("orderdate", { ascending: false })
 
-        // Apply filters
         if (search) {
-          const searchNum = !isNaN(parseInt(search)) ? parseInt(search) : null
-          if (searchNum) {
-            query = query.eq('orderid', searchNum)
-          } else {
-            query = query.or(
-              `clients.firstname.ilike.%${search}%,clients.lastname.ilike.%${search}%`
-            )
-          }
+          query = query.or(`clientname.ilike.%${search}%,orderid.eq.${!isNaN(parseInt(search)) ? search : 0}`)
         }
 
         if (statusFilter.length > 0) {
-          query = query.in("status", statusFilter)
+          query = query.in("orderstatus", statusFilter)
         }
 
         if (dateRange.from) {
@@ -68,10 +47,9 @@ export const useOrders = ({
         }
 
         if (shipperFilter.length > 0) {
-          query = query.in("shipperid", shipperFilter)
+          query = query.in("shipper", shipperFilter)
         }
 
-        // Apply pagination
         const from = (page - 1) * pageSize
         const to = from + pageSize - 1
         query = query.range(from, to)
@@ -83,21 +61,8 @@ export const useOrders = ({
           throw error
         }
 
-        // Transform the data to match OrderDetails type
-        const transformedData: OrderDetails[] = data.map(order => ({
-          orderid: order.orderid,
-          orderdate: order.orderdate,
-          clientname: `${order.clients.firstname} ${order.clients.lastname}`.trim(),
-          orderstatus: order.status,
-          totalsale: order.totalsale,
-          payment: order.processor?.name || 'Unknown',
-          shipper: order.shippers?.display_name || 'Unassigned',
-          cancelled: order.cancelled,
-          orderbilled: order.billed ? 1 : 0
-        }))
-
-        console.log("Successfully fetched orders:", transformedData)
-        return transformedData
+        console.log("Successfully fetched orders:", data)
+        return data
       } catch (err) {
         console.error("Failed to fetch orders:", err)
         throw err
