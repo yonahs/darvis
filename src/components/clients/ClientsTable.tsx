@@ -54,19 +54,20 @@ export function ClientsTable({ clients, isLoading }: ClientsTableProps) {
             <TableHead className="min-w-[120px] py-4">Country</TableHead>
             <TableHead className="w-[100px] py-4">Status</TableHead>
             <TableHead className="w-[80px] py-4">Risk</TableHead>
+            <TableHead className="w-[120px] text-right py-4">Total Orders</TableHead>
             <TableHead className="w-[150px] text-right py-4">Lifetime Value</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={8} className="text-center py-8">
+              <TableCell colSpan={9} className="text-center py-8">
                 Loading...
               </TableCell>
             </TableRow>
           ) : clients.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} className="text-center py-8">
+              <TableCell colSpan={9} className="text-center py-8">
                 No clients found
               </TableCell>
             </TableRow>
@@ -97,6 +98,9 @@ export function ClientsTable({ clients, isLoading }: ClientsTableProps) {
                     riskFactors={client.risk_factors}
                     isHighRisk={client.is_flagged}
                   />
+                </TableCell>
+                <TableCell className="py-3 text-right">
+                  {client.total_orders || 0}
                 </TableCell>
                 <TableCell className="py-3 text-right font-medium">
                   {formatCurrency(client.lifetime_value || 0)}
